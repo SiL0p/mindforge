@@ -67,14 +67,16 @@ class Resource
     #[ORM\Column(type: Types::SMALLINT)]
     private ?int $rating = null;
 
-    #[ORM\ManyToOne(inversedBy: 'resources')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Assert\NotNull(message: 'Please select a subject.')]
-    private ?Subject $subject = null;
+    // Temporarily commented out until Subject entity is created
+    // #[ORM\ManyToOne(inversedBy: 'resources')]
+    // #[ORM\JoinColumn(nullable: false)]
+    // #[Assert\NotNull(message: 'Please select a subject.')]
+    // private ?Subject $subject = null;
 
-    #[ORM\ManyToOne(inversedBy: 'uploadedResources')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $uploader = null;
+    // Temporarily commented out - using static users instead
+    // #[ORM\ManyToOne(inversedBy: 'uploadedResources')]
+    // #[ORM\JoinColumn(nullable: false)]
+    // private ?User $uploader = null;
 
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
@@ -182,25 +184,27 @@ class Resource
         return $this;
     }
 
-    public function getSubject(): ?Subject
-    {
-        return $this->subject;
-    }
+    // Temporarily commented out until Subject entity is created
+    // public function getSubject(): ?Subject
+    // {
+    //     return $this->subject;
+    // }
 
-    public function setSubject(?Subject $subject): static
-    {
-        $this->subject = $subject;
-        return $this;
-    }
+    // public function setSubject(?Subject $subject): static
+    // {
+    //     $this->subject = $subject;
+    //     return $this;
+    // }
 
-    public function getUploader(): ?User
-    {
-        return $this->uploader;
-    }
+    // Temporarily commented out - using static users instead
+    // public function getUploader(): ?User
+    // {
+    //     return $this->uploader;
+    // }
 
-    public function setUploader(?User $uploader): static
-    {
-        $this->uploader = $uploader;
-        return $this;
-    }
+    // public function setUploader(?User $uploader): static
+    // {
+    //     $this->uploader = $uploader;
+    //     return $this;
+    // }
 }
