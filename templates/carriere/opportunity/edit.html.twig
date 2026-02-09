@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit {{ opportunity.title }}{% endblock %}
+
+{% block body %}
+<div class="container" style="margin-top: 80px;">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Edit Career Opportunity</h3>
+                </div>
+                <div class="panel-body">
+                    {{ form_start(form) }}
+                        <div class="form-group">
+                            {{ form_label(form.title) }}
+                            {{ form_widget(form.title) }}
+                            {{ form_errors(form.title) }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.description) }}
+                            {{ form_widget(form.description) }}
+                            {{ form_errors(form.description) }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form_label(form.type) }}
+                                    {{ form_widget(form.type) }}
+                                    {{ form_errors(form.type) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form_label(form.location) }}
+                                    {{ form_widget(form.location) }}
+                                    {{ form_errors(form.location) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form_label(form.duration) }}
+                                    {{ form_widget(form.duration) }}
+                                    {{ form_errors(form.duration) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form_label(form.deadline) }}
+                                    {{ form_widget(form.deadline) }}
+                                    {{ form_errors(form.deadline) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.company) }}
+                            {{ form_widget(form.company) }}
+                            {{ form_errors(form.company) }}
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="main-button">
+                                <i class="fa fa-save"></i> Save Changes
+                            </button>
+                            <a href="{{ path('app_carriere_opportunity_show', {id: opportunity.id}) }}" class="btn btn-default">Cancel</a>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

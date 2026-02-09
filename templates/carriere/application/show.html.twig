@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Application Details{% endblock %}
+
+{% block body %}
+<div class="container" style="margin-top: 80px;">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Application Details</h3>
+                </div>
+                <div class="panel-body">
+                    <h4>{{ application.opportunity.title }}</h4>
+                    <p>
+                        {% if application.opportunity.company %}
+                            <strong>{{ application.opportunity.company.name }}</strong>
+                        {% endif %}
+                    </p>
+
+                    <hr>
+
+                    <p><strong>Status:</strong>
+                        {% if application.status == 'pending' %}
+                            <span class="label label-warning">Pending</span>
+                        {% elseif application.status == 'accepted' %}
+                            <span class="label label-success">Accepted</span>
+                        {% elseif application.status == 'rejected' %}
+                            <span class="label label-danger">Rejected</span>
+                        {% elseif application.status == 'withdrawn' %}
+                            <span class="label label-default">Withdrawn</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Applied:</strong> {{ application.appliedAt|date('F d, Y \\a\\t H:i') }}</p>
+
+                    <hr>
+
+                    {% if application.coverLetter %}
+                        <h4>Cover Letter</h4>
+                        <p style="white-space: pre-line;">{{ application.coverLetter }}</p>
+                    {% else %}
+                        <p class="text-muted"><em>No cover letter submitted</em></p>
+                    {% endif %}
+
+                    <hr>
+
+                    <a href="{{ path('app_carriere_opportunity_show', {id: application.opportunity.id}) }}"
+                       class="btn btn-primary">
+                        View Opportunity
+                    </a>
+                    <a href="{{ path('app_carriere_application_my_applications') }}"
+                       class="btn btn-default">
+                        Back to My Applications
+                    </a>
+
+                    {% if application.isPending %}
+                        <form method="post" action="{{ path('app_carriere_application_withdraw', {id: application.id}) }}"
+                              style="display: inline; margin-left: 10px;"
+                              onsubmit="return confirm('Are you sure you want to withdraw this application?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('withdraw' ~ application.id) }}">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fa fa-times"></i> Withdraw Application
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

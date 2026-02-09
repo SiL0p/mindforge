@@ -1,0 +1,121 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Browse Career Opportunities{% endblock %}
+
+{% block body %}
+<div class="container" style="margin-top: 80px;">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Career Opportunities</h2>
+            <p class="text-muted">Find your next internship, job, or career opportunity</p>
+
+            {% if is_granted('ROLE_COMPANY') %}
+            <div style="margin-bottom: 20px;">
+                <a href="{{ path('app_carriere_opportunity_new') }}" class="main-button">
+                    <i class="fa fa-plus"></i> Post New Opportunity
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Search Form -->
+            <div class="panel panel-default" style="margin-bottom: 30px;">
+                <div class="panel-body">
+                    <form method="get" action="{{ path('app_carriere_opportunity_index') }}">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <input type="text" name="keyword" class="form-control"
+                                           placeholder="Job title or keyword..."
+                                           value="{{ search.keyword }}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <select name="type" class="form-control">
+                                        <option value="">All Types</option>
+                                        <option value="internship" {% if search.type == 'internship' %}selected{% endif %}>Internship</option>
+                                        <option value="apprenticeship" {% if search.type == 'apprenticeship' %}selected{% endif %}>Apprenticeship</option>
+                                        <option value="fulltime" {% if search.type == 'fulltime' %}selected{% endif %}>Full-time</option>
+                                        <option value="parttime" {% if search.type == 'parttime' %}selected{% endif %}>Part-time</option>
+                                        <option value="freelance" {% if search.type == 'freelance' %}selected{% endif %}>Freelance</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <input type="text" name="location" class="form-control"
+                                           placeholder="Location..."
+                                           value="{{ search.location }}">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="main-button btn-block">
+                                    <i class="fa fa-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Opportunities List -->
+            {% if opportunities|length > 0 %}
+                {% for opportunity in opportunities %}
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-10">
+                                <h4 style="margin-top: 0;">
+                                    <a href="{{ path('app_carriere_opportunity_show', {id: opportunity.id}) }}">
+                                        {{ opportunity.title }}
+                                    </a>
+                                </h4>
+                                <p style="margin-bottom: 10px;">
+                                    {% if opportunity.company %}
+                                        <strong>{{ opportunity.company.name }}</strong>
+                                    {% else %}
+                                        <strong>Company not specified</strong>
+                                    {% endif %}
+                                    {% if opportunity.location %}
+                                        <i class="fa fa-map-marker"></i> {{ opportunity.location }}
+                                    {% endif %}
+                                </p>
+                                <p style="margin-bottom: 10px;">
+                                    <span class="label label-primary">{{ opportunity.type|capitalize }}</span>
+                                    {% if opportunity.duration %}
+                                        <span class="label label-info">{{ opportunity.duration }}</span>
+                                    {% endif %}
+                                    {% if opportunity.deadline %}
+                                        <span class="label label-warning">
+                                            Deadline: {{ opportunity.deadline|date('M d, Y') }}
+                                        </span>
+                                    {% endif %}
+                                </p>
+                                <p class="text-muted">
+                                    {{ opportunity.description|length > 200 ? opportunity.description|slice(0, 200) ~ '...' : opportunity.description }}
+                                </p>
+                            </div>
+                            <div class="col-md-2 text-right">
+                                <a href="{{ path('app_carriere_opportunity_show', {id: opportunity.id}) }}"
+                                   class="main-button">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="panel panel-default">
+                    <div class="panel-body text-center">
+                        <p>No career opportunities found matching your criteria.</p>
+                        {% if search.keyword or search.type or search.location %}
+                            <a href="{{ path('app_carriere_opportunity_index') }}" class="main-button">Clear Filters</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
