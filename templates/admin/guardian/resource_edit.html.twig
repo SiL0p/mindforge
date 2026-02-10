@@ -1,0 +1,56 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Éditer la Ressource{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Éditer la Ressource</h1>
+            <p class="text-muted">{{ resource.title }}</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            {{ form_start(form) }}
+            
+            <div class="form-group mb-3">
+                {{ form_label(form.title, 'Titre') }}
+                {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.title) }}
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form_label(form.description, 'Description') }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+                {{ form_errors(form.description) }}
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        {{ form_label(form.type, 'Type') }}
+                        {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.type) }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        {{ form_label(form.subject, 'Sujet') }}
+                        {{ form_widget(form.subject, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.subject) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form_widget(form.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+                <a href="{{ path('admin_resource_index') }}" class="btn btn-secondary">Annuler</a>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

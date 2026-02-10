@@ -1,0 +1,142 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ room.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>{{ room.name }}</h1>
+            <p class="text-muted">{{ room.description }}</p>
+            <div class="mb-2">
+                <span class="badge bg-secondary">{{ room.subject.name }}</span>
+                {% if room.isActive %}
+                    <span class="badge bg-success">Salle Active</span>
+                {% else %}
+                    <span class="badge bg-danger">Salle Fermée</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if is_participant %}
+                <form method="POST" action="{{ path('guardian_room_leave', {id: room.id}) }}" style="display:inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('leave_room_' ~ room.id) }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-sign-out-alt"></i> Quitter la Salle
+                    </button>
+                </form>
+            {% else %}
+                <form method="POST" action="{{ path('guardian_room_join', {id: room.id}) }}" style="display:inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('join_room_' ~ room.id) }}">
+                    <button type="submit" class="btn btn-success" {% if room.isFull %}disabled{% endif %}>
+                        <i class="fas fa-sign-in-alt"></i> Rejoindre la Salle
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Chat Section -->
+        <div class="col-lg-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-comments"></i> Conversation
+                    </h5>
+                </div>
+                <div class="card-body" style="height: 500px; overflow-y: auto;">
+                    {% if messages is empty %}
+                        <div class="alert alert-info text-center">
+                            Aucun message pour le moment. Soyez le premier à commencer la conversation !
+                        </div>
+                    {% else %}
+                        {% for message in messages %}
+                            <div class="mb-3 {% if message.author == app.user %}text-end{% endif %}">
+                                <div class="{% if message.author == app.user %}bg-primary text-white float-end{% else %}bg-light float-start{% endif %} p-2 rounded" style="max-width: 70%; word-wrap: break-word;">
+                                    <strong>{{ message.author.firstName }} {{ message.author.lastName }}</strong>
+                                    <p class="mb-1">{{ message.content }}</p>
+                                    <small>{{ message.createdAt|date('H:i') }}</small>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                {% if is_participant and room.isActive %}
+                <div class="card-footer">
+                    <form method="POST" action="#" class="d-flex gap-2">
+                        <input type="text" class="form-control" placeholder="Écrivez un message..." required>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Envoyer
+                        </button>
+                    </form>
+                </div>
+                {% elseif not is_participant %}
+                    <div class="card-footer bg-warning text-center">
+                        <p class="mb-0">Rejoignez la salle pour participer à la conversation</p>
+                    </div>
+                {% else %}
+                    <div class="card-footer bg-danger text-white text-center">
+                        <p class="mb-0">Cette salle est fermée</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar: Room Info & Participants -->
+        <div class="col-lg-4">
+            <!-- Room Details -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle"></i> Détails de la Salle
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-6">Créateur:</dt>
+                        <dd class="col-sm-6">{{ room.creator.firstName }} {{ room.creator.lastName }}</dd>
+                        
+                        <dt class="col-sm-6">Sujet:</dt>
+                        <dd class="col-sm-6">{{ room.subject.name }}</dd>
+                        
+                        <dt class="col-sm-6">Créée:</dt>
+                        <dd class="col-sm-6">{{ room.createdAt|date('d/m/Y H:i') }}</dd>
+                        
+                        <dt class="col-sm-6">Capacité:</dt>
+                        <dd class="col-sm-6">{{ room.participants|length }}/{{ room.maxParticipants }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Participants List -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users"></i> Participants ({{ room.participants|length }})
+                    </h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for participant in room.participants %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ participant.firstName }} {{ participant.lastName }}</strong>
+                                    {% if participant == room.creator %}
+                                        <span class="badge bg-warning ms-2">Créateur</span>
+                                    {% endif %}
+                                    {% if participant == app.user %}
+                                        <span class="badge bg-info ms-2">Vous</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
