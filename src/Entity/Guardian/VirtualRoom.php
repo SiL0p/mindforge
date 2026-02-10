@@ -3,6 +3,8 @@
 
 namespace App\Entity\Guardian;
 
+use App\Entity\Architect\User;
+use App\Entity\Planner\Subject;
 use App\Repository\Guardian\VirtualRoomRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -76,13 +78,14 @@ class VirtualRoom
     private Collection $participants;
 
     // RELATIONSHIP: One Room has Many ChatMessages
-    #[ORM\OneToMany(targetEntity: ChatMessage::class, mappedBy: 'virtualRoom', orphanRemoval: true)]
-    private Collection $chatMessages;
+    // NOTE: ChatMessage entity is not yet implemented (Community module in progress)
+    // #[ORM\OneToMany(targetEntity: ChatMessage::class, mappedBy: 'virtualRoom', orphanRemoval: true)]
+    // private Collection $chatMessages;
 
     public function __construct()
     {
         $this->participants = new ArrayCollection();
-        $this->chatMessages = new ArrayCollection();
+        // $this->chatMessages = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -138,5 +141,6 @@ class VirtualRoom
     /**
      * @return Collection<int, ChatMessage>
      */
-    public function getChatMessages(): Collection { return $this->chatMessages; }
+    // NOTE: ChatMessage entity is not yet implemented
+    // public function getChatMessages(): Collection { return $this->chatMessages; }
 }

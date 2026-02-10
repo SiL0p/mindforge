@@ -200,7 +200,7 @@ class GuardianController extends AbstractController
         return $this->render('guardian/room_detail.html.twig', [
             'room' => $room,
             'is_participant' => $isParticipant,
-            'messages' => $room->getChatMessages(),
+            'messages' => [], // TODO: Implement ChatMessage entity from Community module
         ]);
     }
 
