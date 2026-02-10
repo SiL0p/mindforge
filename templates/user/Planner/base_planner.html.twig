@@ -1,0 +1,15 @@
+{# templates/user/planner/base_planner.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'components/_sidebar_planner.html.twig' %}
+        
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+            {% include 'components/_flashes.html.twig' %}
+            {% block planner_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %}
