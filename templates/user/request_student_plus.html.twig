@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Request Student+ Status{% endblock %}
+
+{% block body %}
+<!-- Header -->
+<header id="header">
+    <div class="container">
+        <div class="navbar-header">
+            <div class="navbar-brand">
+                <a class="logo" href="{{ path('app_home') }}">
+                    <img src="{{ asset('user/img/logo-alt.png') }}" alt="logo">
+                </a>
+            </div>
+        </div>
+        <nav id="nav">
+            <ul class="main-menu nav navbar-nav navbar-right">
+                <li><a href="{{ path('app_home') }}">Home</a></li>
+                <li><a href="{{ path('app_request_status', {email: user.email}) }}">My Requests</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<div class="container" style="margin-top: 100px; margin-bottom: 50px;">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            {# Testing: Show which user we're working with #}
+            <div class="alert alert-info">
+                <strong>Testing Mode:</strong> Logged in as {{ user.email }}
+                {% if all_users|length > 1 %}
+                    <br>
+                    <small>Switch user:</small>
+                    <div class="btn-group">
+                        {% for u in all_users %}
+                            <a href="{{ path('app_request_student_plus', {email: u.email}) }}" 
+                               class="btn btn-xs {% if u.id == user.id %}btn-primary{% else %}btn-default{% endif %}">
+                                {{ u.email }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="text-center">Request Student+ Status</h3>
+                </div>
+                <div class="panel-body">
+                    {# Flash Messages #}
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">{{ message }}</div>
+                    {% endfor %}
+                    
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger">{{ message }}</div>
+                    {% endfor %}
+                    
+                    {% for message in app.flashes('warning') %}
+                        <div class="alert alert-warning">{{ message }}</div>
+                    {% endfor %}
+                    
+                    {% for message in app.flashes('info') %}
+                        <div class="alert alert-info">{{ message }}</div>
+                    {% endfor %}
+                    
+                    <div class="alert alert-info">
+                        <strong>About Student+ Status:</strong><br>
+                        Student+ members get access to exclusive features like advanced study tools, 
+                        priority support, and premium resources. Please explain why you want this status.
+                    </div>
+                    
+                    <form method="post" action="{{ path('app_request_student_plus', {email: user.email}) }}">
+                        <div class="form-group">
+                            <label for="motivation">
+                                Why do you want Student+ status? 
+                                <small class="text-muted">(Minimum 50 characters)</small>
+                            </label>
+                            <textarea 
+                                name="motivation" 
+                                id="motivation" 
+                                class="form-control" 
+                                rows="8" 
+                                required
+                                placeholder="Explain your motivation for requesting Student+ status. Be specific about how you plan to use the additional features and contribute to the community..."
+                            ></textarea>
+                            <small class="text-muted">
+                                <span id="charCount">0</span> / 50 characters minimum
+                            </small>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fa fa-paper-plane"></i> Submit Request
+                            </button>
+                            <a href="{{ path('app_home') }}" class="btn btn-default btn-lg">
+                                <i class="fa fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('motivation');
+    const charCount = document.getElementById('charCount');
+    
+    textarea.addEventListener('input', function() {
+        const length = this.value.length;
+        charCount.textContent = length;
+        
+        if (length < 50) {
+            charCount.style.color = 'red';
+        } else {
+            charCount.style.color = 'green';
+        }
+    });
+});
+</script>
+{% endblock %}
