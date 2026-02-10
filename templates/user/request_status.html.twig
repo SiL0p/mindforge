@@ -1,0 +1,99 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Role Requests{% endblock %}
+
+{% block body %}
+<!-- Header -->
+<header id="header">
+    <div class="container">
+        <div class="navbar-header">
+            <div class="navbar-brand">
+                <a class="logo" href="{{ path('app_home') }}">
+                    <img src="{{ asset('user/img/logo-alt.png') }}" alt="logo">
+                </a>
+            </div>
+        </div>
+        <nav id="nav">
+            <ul class="main-menu nav navbar-nav navbar-right">
+                <li><a href="{{ path('app_home') }}">Home</a></li>
+                <li><a href="{{ path('app_request_student_plus') }}">New Request</a></li>
+                <li><a href="{{ path('app_logout') }}">Logout</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<div class="container" style="margin-top: 100px; margin-bottom: 50px;">
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <h2>My Role Requests</h2>
+            
+            {# Flash Messages #}
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+            
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">{{ message }}</div>
+            {% endfor %}
+            
+            {% if requests is empty %}
+                <div class="alert alert-info">
+                    <strong>No requests yet!</strong><br>
+                    You haven't submitted any Student+ requests yet.
+                    <a href="{{ path('app_request_student_plus') }}" class="btn btn-primary btn-sm">
+                        Submit a Request
+                    </a>
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Request Date</th>
+                                <th>Status</th>
+                                <th>Motivation</th>
+                                <th>Admin Notes</th>
+                                <th>Reviewed Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in requests %}
+                            <tr>
+                                <td>{{ request.requestedAt|date('Y-m-d H:i') }}</td>
+                                <td>
+                                    {% if request.status == 'pending' %}
+                                        <span class="label label-warning">Pending</span>
+                                    {% elseif request.status == 'approved' %}
+                                        <span class="label label-success">Approved</span>
+                                    {% else %}
+                                        <span class="label label-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ request.motivation|slice(0, 100) }}{% if request.motivation|length > 100 %}...{% endif %}</small>
+                                </td>
+                                <td>
+                                    {% if request.adminNotes %}
+                                        <small>{{ request.adminNotes }}</small>
+                                    {% else %}
+                                        <em class="text-muted">No notes yet</em>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if request.reviewedAt %}
+                                        {{ request.reviewedAt|date('Y-m-d H:i') }}
+                                    {% else %}
+                                        <em class="text-muted">Not reviewed</em>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
