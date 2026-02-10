@@ -3,7 +3,7 @@
 
 namespace App\Form\Guardian;
 
-use App\Entity\Architect\Subject;
+use App\Entity\Planner\Subject;
 use App\Entity\Guardian\VirtualRoom;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
