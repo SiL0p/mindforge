@@ -8,7 +8,7 @@ use App\Entity\Guardian\VirtualRoom;
 use App\Form\Guardian\ResourceType;
 use App\Form\Guardian\VirtualRoomType;
 use App\Repository\Guardian\ResourceRepository;
-use App\Repository\Architect\SubjectRepository;
+use App\Repository\Planner\SubjectRepository;
 use App\Repository\Guardian\VirtualRoomRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

@@ -4,7 +4,7 @@
 namespace App\Form\Guardian;
 
 use App\Entity\Guardian\Resource;
-use App\Entity\Architect\Subject;
+use App\Entity\Planner\Subject;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
