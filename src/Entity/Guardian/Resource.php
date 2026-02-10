@@ -3,6 +3,8 @@
 
 namespace App\Entity\Guardian;
 
+use App\Entity\Architect\User;
+use App\Entity\Planner\Subject;
 use App\Repository\Guardian\ResourceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;

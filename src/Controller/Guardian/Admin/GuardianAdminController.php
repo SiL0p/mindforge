@@ -1,7 +1,7 @@
 <?php
-// src/Controller/Admin/GuardianAdminController.php
+// src/Controller/Guardian/Admin/GuardianAdminController.php
 
-namespace App\Controller\Admin;
+namespace App\Controller\Guardian\Admin;
 
 use App\Entity\Guardian\Resource;
 use App\Entity\Guardian\VirtualRoom;
