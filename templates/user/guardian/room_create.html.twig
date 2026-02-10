@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer une Salle Virtuelle{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1>Créer une Nouvelle Salle Virtuelle</h1>
+            <p class="text-muted">Créez un espace de collaboration avec d'autres utilisateurs</p>
+
+            <div class="card">
+                <div class="card-body">
+                    {{ form_start(form) }}
+                    
+                    <div class="form-group mb-3">
+                        {{ form_label(form.name, 'Nom de la Salle') }}
+                        {{ form_widget(form.name, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Groupe d\'Étude - Mathématiques'}}) }}
+                        {% if form.name.vars.errors|length %}
+                            <div class="invalid-feedback d-block">
+                                {{ form_errors(form.name) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group mb-3">
+                        {{ form_label(form.description, 'Description') }}
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Décrivez l\'objectif de votre salle...'}}) }}
+                        {% if form.description.vars.errors|length %}
+                            <div class="invalid-feedback d-block">
+                                {{ form_errors(form.description) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form_label(form.subject, 'Sujet') }}
+                                {{ form_widget(form.subject, {'attr': {'class': 'form-control'}}) }}
+                                {% if form.subject.vars.errors|length %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(form.subject) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form_label(form.maxParticipants, 'Nombre Maximum de Participants') }}
+                                {{ form_widget(form.maxParticipants, {'attr': {'class': 'form-control', 'type': 'number', 'min': 2, 'max': 50}}) }}
+                                {% if form.maxParticipants.vars.errors|length %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(form.maxParticipants) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        {{ form_label(form.isActive, '') }}
+                        <div class="form-check form-switch">
+                            {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
+                            <label class="form-check-label" for="{{ form.isActive.vars.id }}">
+                                La salle est activée lors de la création
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Créer la Salle
+                        </button>
+                        <a href="{{ path('guardian_rooms') }}" class="btn btn-secondary">Annuler</a>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

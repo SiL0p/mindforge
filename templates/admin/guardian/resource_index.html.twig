@@ -1,0 +1,58 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion des Ressources{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Gestion des Ressources</h1>
+        </div>
+    </div>
+
+    {% if resources is empty %}
+        <div class="alert alert-info">
+            Aucune ressource disponible.
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Type</th>
+                        <th>Sujet</th>
+                        <th>Uploadé par</th>
+                        <th>Date d'upload</th>
+                        <th>Téléchargements</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resource in resources %}
+                        <tr>
+                            <td>{{ resource.title }}</td>
+                            <td>{{ resource.type }}</td>
+                            <td>{{ resource.subject }}</td>
+                            <td>{{ resource.uploader.firstName }} {{ resource.uploader.lastName }}</td>
+                            <td>{{ resource.uploadedAt|date('d/m/Y H:i') }}</td>
+                            <td>{{ resource.downloadCount }}</td>
+                            <td>
+                                <a href="{{ path('admin_resource_edit', {id: resource.id}) }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-edit"></i> Éditer
+                                </a>
+                                <form method="POST" action="{{ path('admin_resource_delete', {id: resource.id}) }}" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_resource_' ~ resource.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i> Supprimer
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

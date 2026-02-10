@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bibliothèque de Ressources{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Bibliothèque de Ressources</h1>
+            <p class="text-muted">Accédez à une collection de ressources pédagogiques</p>
+        </div>
+        {% if can_upload %}
+        <div class="col-md-4 text-end">
+            <a href="{{ path('guardian_resource_upload') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-upload"></i> Ajouter une Ressource
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="subject" class="form-label">Sujet</label>
+                    <select id="subject" name="subject" class="form-select">
+                        <option value="">-- Tous les sujets --</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject.id }}" {% if filters.subject == subject.id %}selected{% endif %}>
+                                {{ subject.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="type" class="form-label">Type</label>
+                    <select id="type" name="type" class="form-select">
+                        <option value="">-- Tous les types --</option>
+                        <option value="pdf" {% if filters.type == 'pdf' %}selected{% endif %}>PDF</option>
+                        <option value="image" {% if filters.type == 'image' %}selected{% endif %}>Image</option>
+                        <option value="video" {% if filters.type == 'video' %}selected{% endif %}>Vidéo</option>
+                        <option value="document" {% if filters.type == 'document' %}selected{% endif %}>Document</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Recherche</label>
+                    <input type="text" id="search" name="search" class="form-control" value="{{ filters.search }}" placeholder="Rechercher...">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-success">Filtrer</button>
+                    <a href="{{ path('guardian_library') }}" class="btn btn-secondary">Réinitialiser</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resources Grid -->
+    {% if resources is empty %}
+        <div class="alert alert-info">
+            Aucune ressource trouvée avec les filtres actuels.
+        </div>
+    {% else %}
+        <div class="row">
+            {% for resource in resources %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ resource.title }}</h5>
+                            <p class="card-text text-muted">{{ resource.description|slice(0, 100) }}...</p>
+                            <div class="mb-2">
+                                <span class="badge bg-primary">{{ resource.type }}</span>
+                                <span class="badge bg-secondary">{{ resource.subject }}</span>
+                            </div>
+                            <small class="text-muted d-block mb-2">
+                                Par {{ resource.uploader.firstName }} {{ resource.uploader.lastName }}
+                            </small>
+                            <small class="text-muted d-block">
+                                <i class="fas fa-download"></i> {{ resource.downloadCount }} téléchargement(s)
+                            </small>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <a href="{{ path('guardian_resource_download', {id: resource.id}) }}" class="btn btn-sm btn-primary float-start">
+                                <i class="fas fa-download"></i> Télécharger
+                            </a>
+                            {% if app.user == resource.uploader or is_granted('ROLE_ADMIN') %}
+                                <form method="POST" action="{{ path('guardian_resource_delete', {id: resource.id}) }}" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_own_resource_' ~ resource.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-danger float-end">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
