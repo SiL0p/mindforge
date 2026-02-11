@@ -1,0 +1,103 @@
+{# templates/user/planner/calendar/index.html.twig #}
+{% extends 'user/planner/base_planner.html.twig' %}
+
+{% block title %}Calendrier | MindForge{% endblock %}
+
+{% block stylesheets %}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css' rel='stylesheet' />
+<style>
+    .fc {
+        --fc-border-color: var(--mf-border);
+        --fc-button-bg-color: var(--mf-card);
+        --fc-button-border-color: var(--mf-border);
+        --fc-button-text-color: var(--mf-text);
+        --fc-button-hover-bg-color: var(--mf-primary);
+        --fc-button-hover-border-color: var(--mf-primary);
+        --fc-button-active-bg-color: var(--mf-primary);
+        --fc-today-bg-color: rgba(104, 64, 214, 0.1);
+    }
+    .fc .fc-button-primary:not(:disabled).fc-button-active,
+    .fc .fc-button-primary:not(:disabled):active {
+        background-color: var(--mf-primary);
+        border-color: var(--mf-primary);
+    }
+    .fc-theme-standard td, .fc-theme-standard th {
+        border-color: var(--mf-border);
+    }
+    .fc .fc-daygrid-day.fc-day-today {
+        background-color: rgba(104, 64, 214, 0.15);
+    }
+</style>
+{% endblock %}
+
+{% block planner_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="montserrat h3 mb-1">Calendrier</h1>
+        <p class="text-muted-mf mb-0">Vue unifiée de vos tâches et examens</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ path('app_planner_task_new') }}" class="btn btn-outline-mf btn-sm">
+            <i class="bi bi-plus-lg me-2"></i>Tâche
+        </a>
+        <a href="{{ path('app_planner_exam_new') }}" class="btn btn-primary-mf btn-sm">
+            <i class="bi bi-plus-lg me-2"></i>Examen
+        </a>
+    </div>
+</div>
+
+<div class="card-mf p-4">
+    <div id="calendar"></div>
+</div>
+
+<div class="mt-4 d-flex gap-4 justify-content-center">
+    <div class="d-flex align-items-center">
+        <span class="rounded-circle me-2" style="width: 12px; height: 12px; background: #6840d6;"></span>
+        <small class="text-muted-mf">Tâche à faire</small>
+    </div>
+    <div class="d-flex align-items-center">
+        <span class="rounded-circle me-2" style="width: 12px; height: 12px; background: #f59e0b;"></span>
+        <small class="text-muted-mf">Tâche en cours</small>
+    </div>
+    <div class="d-flex align-items-center">
+        <span class="rounded-circle me-2" style="width: 12px; height: 12px; background: #10b981;"></span>
+        <small class="text-muted-mf">Tâche terminée</small>
+    </div>
+    <div class="d-flex align-items-center">
+        <span class="rounded-circle me-2" style="width: 12px; height: 12px; background: #af17c2;"></span>
+        <small class="text-muted-mf">Examen</small>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('calendar');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,listWeek'
+            },
+            locale: 'fr',
+            themeSystem: 'standard',
+            events: {{ events|raw }},
+            eventClick: function(info) {
+                if (info.event.url) {
+                    window.location.href = info.event.url;
+                    return false;
+                }
+            },
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            }
+        });
+        calendar.render();
+    });
+</script>
+{% endblock %}

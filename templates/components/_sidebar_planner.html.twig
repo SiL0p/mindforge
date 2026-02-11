@@ -1,0 +1,52 @@
+{# templates/components/_sidebar_planner.html.twig #}
+<div class="col-md-3 col-lg-2 d-md-block sidebar collapse bg-card border-end border-mindforge" style="min-height: calc(100vh - 70px);">
+    <div class="position-sticky pt-4 px-3">
+        <div class="d-flex align-items-center mb-4 px-2">
+            <i class="bi bi-calendar-check text-primary-mf fs-4 me-2"></i>
+            <span class="montserrat fw-semibold">Planner</span>
+        </div>
+        
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link-mf d-flex align-items-center {{ app.request.get('_route') == 'app_planner_dashboard' ? 'active' : '' }}" 
+                   href="{{ path('app_planner_dashboard') }}">
+                    <i class="bi bi-grid me-3"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-mf d-flex align-items-center {{ app.request.get('_route') == 'app_planner_tasks' ? 'active' : '' }}" 
+                   href="{{ path('app_planner_tasks') }}">
+                    <i class="bi bi-kanban me-3"></i>
+                    Mes Tâches
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-mf d-flex align-items-center {{ app.request.get('_route') == 'app_planner_calendar' ? 'active' : '' }}" 
+                   href="{{ path('app_planner_calendar') }}">
+                    <i class="bi bi-calendar-week me-3"></i>
+                    Calendrier
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-mf d-flex align-items-center {{ app.request.get('_route') == 'app_planner_exams' ? 'active' : '' }}" 
+                   href="{{ path('app_planner_exams') }}">
+                    <i class="bi bi-mortarboard me-3"></i>
+                    Examens
+                </a>
+            </li>
+        </ul>
+        
+        <h6 class="sidebar-heading px-3 mt-4 mb-2 text-muted-mf text-uppercase small">
+            Actions rapides
+        </h6>
+        <div class="px-2">
+            <a href="{{ path('app_planner_task_new') }}" class="btn btn-primary-mf w-100 mb-2">
+                <i class="bi bi-plus-lg me-2"></i>Nouvelle tâche
+            </a>
+            <a href="{{ path('app_planner_exam_new') }}" class="btn btn-outline-mf w-100">
+                <i class="bi bi-plus-lg me-2"></i>Ajouter examen
+            </a>
+        </div>
+    </div>
+</div>
