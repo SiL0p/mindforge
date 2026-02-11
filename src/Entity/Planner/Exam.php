@@ -1,7 +1,8 @@
 <?php
-// src/Entity/Exam.php
-namespace App\Entity;
+// src/Entity/Planner/Exam.php
+namespace App\Entity\Planner;
 
+use App\Entity\Architect\User;
 use App\Repository\Planner\ExamRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -52,7 +53,9 @@ class Exam
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
-        $this->createdAt = new \DateTimeImmutable();
+        if (!$this->createdAt) {
+            $this->createdAt = new \DateTimeImmutable();
+        }
     }
 
     // Getters & Setters

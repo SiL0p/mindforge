@@ -1,8 +1,9 @@
 <?php
-// src/Repository/TaskRepository.php
+// src/Repository/Planner/TaskRepository.php
 namespace App\Repository\Planner;
 
-use App\Entity\Task;
+use App\Entity\Planner\Task;
+use App\Entity\Architect\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -13,7 +14,7 @@ class TaskRepository extends ServiceEntityRepository
         parent::__construct($registry, Task::class);
     }
 
-    public function findPendingByUser($user): array
+    public function findPendingByUser(User $user): array
     {
         return $this->createQueryBuilder('t')
             ->where('t.owner = :user')

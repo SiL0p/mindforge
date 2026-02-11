@@ -1,6 +1,6 @@
 <?php
 // src/Form/TaskType.php
-namespace App\Form;
+namespace App\Form\Planner;
 
 use App\Entity\Planner\Subject;
 use App\Entity\Planner\Task;
@@ -71,6 +71,7 @@ class TaskType extends AbstractType
             ])
             ->add('dueDate', DateTimeType::class, [
                 'widget' => 'single_text',
+                'input' => 'datetime_immutable',
                 'required' => false,
                 'attr' => ['class' => 'form-control bg-dark text-light border-secondary'],
                 'label' => 'Date d\'échéance',

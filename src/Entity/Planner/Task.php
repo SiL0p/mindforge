@@ -1,7 +1,8 @@
 <?php
-// src/Entity/Task.php
-namespace App\Entity;
+// src/Entity/Planner/Task.php
+namespace App\Entity\Planner;
 
+use App\Entity\Architect\User;
 use App\Repository\Planner\TaskRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -39,9 +40,18 @@ class Task
     private ?string $description = null;
 
     #[ORM\Column(length: 20)]
+    #[Assert\Choice(
+        choices: [self::STATUS_TODO, self::STATUS_IN_PROGRESS, self::STATUS_DONE],
+        message: "Statut invalide."
+    )]
     private ?string $status = self::STATUS_TODO;
 
     #[ORM\Column]
+    #[Assert\Range(
+        min: self::PRIORITY_LOW,
+        max: self::PRIORITY_HIGH,
+        notInRangeMessage: "La priorite doit etre entre {{ min }} et {{ max }}."
+    )]
     private ?int $priority = self::PRIORITY_MEDIUM;
 
     #[ORM\Column(nullable: true)]
@@ -70,14 +80,24 @@ class Task
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
-        $this->createdAt = new \DateTimeImmutable();
+        if (!$this->createdAt) {
+            $this->createdAt = new \DateTimeImmutable();
+        }
+
+        if ($this->status === self::STATUS_DONE && !$this->completedAt) {
+            $this->completedAt = new \DateTimeImmutable();
+        }
     }
 
     #[ORM\PreUpdate]
     public function onPreUpdate(): void
     {
-        if ($this->status === self::STATUS_DONE && !$this->completedAt) {
-            $this->completedAt = new \DateTimeImmutable();
+        if ($this->status === self::STATUS_DONE) {
+            if (!$this->completedAt) {
+                $this->completedAt = new \DateTimeImmutable();
+            }
+        } elseif ($this->completedAt) {
+            $this->completedAt = null;
         }
     }
 
@@ -88,7 +108,20 @@ class Task
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(?string $description): static { $this->description = $description; return $this; }
     public function getStatus(): ?string { return $this->status; }
-    public function setStatus(string $status): static { $this->status = $status; return $this; }
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+
+        if ($status === self::STATUS_DONE) {
+            if (!$this->completedAt) {
+                $this->completedAt = new \DateTimeImmutable();
+            }
+        } else {
+            $this->completedAt = null;
+        }
+
+        return $this;
+    }
     public function getPriority(): ?int { return $this->priority; }
     public function setPriority(int $priority): static { $this->priority = $priority; return $this; }
     public function getDueDate(): ?\DateTimeImmutable { return $this->dueDate; }

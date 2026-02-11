@@ -1,6 +1,6 @@
 <?php
 // src/Form/ExamType.php
-namespace App\Form;
+namespace App\Form\Planner;
 
 use App\Entity\Planner\Exam;
 use App\Entity\Planner\Subject;
@@ -57,6 +57,7 @@ class ExamType extends AbstractType
             ])
             ->add('examDate', DateTimeType::class, [
                 'widget' => 'single_text',
+                'input' => 'datetime_immutable',
                 'constraints' => [
                     new NotBlank(['message' => 'La date de l\'examen est obligatoire.']),
                 ],

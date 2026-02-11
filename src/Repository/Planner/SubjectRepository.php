@@ -1,8 +1,8 @@
 <?php
-// src/Repository/SubjectRepository.php
+// src/Repository/Planner/SubjectRepository.php
 namespace App\Repository\Planner;
 
-use App\Entity\Subject;
+use App\Entity\Planner\Subject;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
