@@ -14,10 +14,47 @@
 
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap">
+    <style>
+        .guardian-admin-ui {
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+        }
+
+        .guardian-admin-ui .guardian-admin-hero {
+            background: linear-gradient(135deg, #ffffff, #eef6ff);
+            border-radius: 20px;
+            padding: 24px 28px;
+            box-shadow: 0 18px 35px rgba(15, 23, 42, 0.12);
+            border: 1px solid rgba(15, 23, 42, 0.06);
+        }
+
+        .guardian-admin-ui .guardian-admin-card {
+            border-radius: 18px;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+            background: #ffffff;
+        }
+
+        .guardian-admin-ui .guardian-admin-table thead {
+            background: #0f172a;
+            color: #ffffff;
+        }
+
+        .guardian-admin-ui .guardian-admin-table tbody tr:hover {
+            background: rgba(56, 189, 248, 0.08);
+        }
+
+        .guardian-admin-ui .badge {
+            border-radius: 999px;
+        }
+    </style>
+
     {% block stylesheets %}{% endblock %}
 </head>
 
-<body class="sb-nav-fixed">
+<body class="sb-nav-fixed {% block body_class %}{% endblock %}">
 
     {% include 'admin/partials/topbar.html.twig' %}
 
@@ -29,7 +66,9 @@
         <div id="layoutSidenav_content">
             <main>
                 <div class="container-fluid px-4">
-                    {% block body %}{% endblock %}
+                    {% block body %}
+                        {% block content %}{% endblock %}
+                    {% endblock %}
                 </div>
             </main>
 

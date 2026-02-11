@@ -1,92 +1,91 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Bibliothèque de Ressources{% endblock %}
+{% block body_class %}guardian-ui{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h1>Bibliothèque de Ressources</h1>
-            <p class="text-muted">Accédez à une collection de ressources pédagogiques</p>
+<div class="guardian-shell">
+    <section class="guardian-hero mb-4">
+        <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 position-relative">
+            <div>
+                <span class="guardian-pill"><i class="fas fa-book-open"></i> Ressources populaires</span>
+                <h1 class="guardian-title">Bibliothèque de Ressources</h1>
+                <p class="guardian-subtitle">Accédez a une collection ludique de ressources pedagogiques partagees.</p>
+            </div>
+            {% if can_upload %}
+                <a href="{{ path('guardian_resource_upload') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-upload"></i> Ajouter une Ressource
+                </a>
+            {% endif %}
         </div>
-        {% if can_upload %}
-        <div class="col-md-4 text-end">
-            <a href="{{ path('guardian_resource_upload') }}" class="btn btn-primary btn-lg">
-                <i class="fas fa-upload"></i> Ajouter une Ressource
-            </a>
-        </div>
-        {% endif %}
-    </div>
+    </section>
 
-    <!-- Filters -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="GET" class="row g-3">
-                <div class="col-md-4">
-                    <label for="subject" class="form-label">Sujet</label>
-                    <select id="subject" name="subject" class="form-select">
-                        <option value="">-- Tous les sujets --</option>
-                        {% for subject in subjects %}
-                            <option value="{{ subject.id }}" {% if filters.subject == subject.id %}selected{% endif %}>
-                                {{ subject.name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label for="type" class="form-label">Type</label>
-                    <select id="type" name="type" class="form-select">
-                        <option value="">-- Tous les types --</option>
-                        <option value="pdf" {% if filters.type == 'pdf' %}selected{% endif %}>PDF</option>
-                        <option value="image" {% if filters.type == 'image' %}selected{% endif %}>Image</option>
-                        <option value="video" {% if filters.type == 'video' %}selected{% endif %}>Vidéo</option>
-                        <option value="document" {% if filters.type == 'document' %}selected{% endif %}>Document</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label for="search" class="form-label">Recherche</label>
-                    <input type="text" id="search" name="search" class="form-control" value="{{ filters.search }}" placeholder="Rechercher...">
-                </div>
-                <div class="col-12">
-                    <button type="submit" class="btn btn-success">Filtrer</button>
-                    <a href="{{ path('guardian_library') }}" class="btn btn-secondary">Réinitialiser</a>
-                </div>
-            </form>
-        </div>
-    </div>
+    <section class="guardian-panel p-4 mb-4">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="subject" class="form-label">Sujet</label>
+                <select id="subject" name="subject" class="form-select">
+                    <option value="">-- Tous les sujets --</option>
+                    {% for subject in subjects %}
+                        <option value="{{ subject.id }}" {% if filters.subject == subject.id %}selected{% endif %}>
+                            {{ subject.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="type" class="form-label">Type</label>
+                <select id="type" name="type" class="form-select">
+                    <option value="">-- Tous les types --</option>
+                    <option value="pdf" {% if filters.type == 'pdf' %}selected{% endif %}>PDF</option>
+                    <option value="summary" {% if filters.type == 'summary' %}selected{% endif %}>Fiche</option>
+                    <option value="cheat_sheet" {% if filters.type == 'cheat_sheet' %}selected{% endif %}>Anti-seche</option>
+                    <option value="exercise" {% if filters.type == 'exercise' %}selected{% endif %}>Exercices</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="search" class="form-label">Recherche</label>
+                <input type="text" id="search" name="search" class="form-control" value="{{ filters.search }}" placeholder="Rechercher...">
+            </div>
+            <div class="col-12 d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-success">Filtrer</button>
+                <a href="{{ path('guardian_library') }}" class="btn btn-outline-dark">Reinitialiser</a>
+            </div>
+        </form>
+    </section>
 
-    <!-- Resources Grid -->
     {% if resources is empty %}
-        <div class="alert alert-info">
-            Aucune ressource trouvée avec les filtres actuels.
+        <div class="guardian-panel p-4 text-center">
+            <h4 class="mb-2">Aucune ressource pour l'instant</h4>
+            <p class="text-muted">Changez vos filtres ou lancez une nouvelle contribution.</p>
         </div>
     {% else %}
         <div class="row">
             {% for resource in resources %}
                 <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ resource.title }}</h5>
-                            <p class="card-text text-muted">{{ resource.description|slice(0, 100) }}...</p>
-                            <div class="mb-2">
-                                <span class="badge bg-primary">{{ resource.type }}</span>
-                                <span class="badge bg-secondary">{{ resource.subject }}</span>
+                    <div class="guardian-card h-100 p-3" style="animation-delay: {{ loop.index0 * 60 }}ms;">
+                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <div>
+                                <h5 class="mb-1">{{ resource.title }}</h5>
+                                <div class="text-muted small">{{ resource.subject.name }}</div>
                             </div>
-                            <small class="text-muted d-block mb-2">
-                                Par {{ resource.uploader.firstName }} {{ resource.uploader.lastName }}
-                            </small>
-                            <small class="text-muted d-block">
-                                <i class="fas fa-download"></i> {{ resource.downloadCount }} téléchargement(s)
-                            </small>
+                            <span class="guardian-badge" style="background: rgba(72,198,239,0.2); color: #1b4d6b;">
+                                {{ resource.type|upper }}
+                            </span>
                         </div>
-                        <div class="card-footer bg-light">
-                            <a href="{{ path('guardian_resource_download', {id: resource.id}) }}" class="btn btn-sm btn-primary float-start">
-                                <i class="fas fa-download"></i> Télécharger
+                        <p class="text-muted">{{ resource.description ? resource.description|slice(0, 110) ~ '…' : 'Aucune description.' }}</p>
+                        <div class="d-flex justify-content-between align-items-center text-muted small mb-3">
+                            <span><i class="fas fa-user"></i> {{ resource.uploader.firstName }} {{ resource.uploader.lastName }}</span>
+                            <span><i class="fas fa-download"></i> {{ resource.downloadCount }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ path('guardian_resource_download', {id: resource.id}) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-download"></i> Telecharger
                             </a>
                             {% if app.user == resource.uploader or is_granted('ROLE_ADMIN') %}
-                                <form method="POST" action="{{ path('guardian_resource_delete', {id: resource.id}) }}" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr ?');">
+                                <form method="POST" action="{{ path('guardian_resource_delete', {id: resource.id}) }}" onsubmit="return confirm('Etes-vous sur ?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_own_resource_' ~ resource.id) }}">
-                                    <button type="submit" class="btn btn-sm btn-danger float-end">
+                                    <button type="submit" class="btn btn-sm btn-outline-dark">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>

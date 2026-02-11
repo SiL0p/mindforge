@@ -14,11 +14,189 @@
     {# MAIN STYLE #}
     <link rel="stylesheet" href="{{ asset('user/css/style.css') }}">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+    <style>
+        .guardian-ui {
+            --g-ink: #1e1b2e;
+            --g-muted: #5b5376;
+            --g-card: #ffffff;
+            --g-sand: #fff4e8;
+            --g-accent-1: #ff6b6b;
+            --g-accent-2: #48c6ef;
+            --g-accent-3: #ffd166;
+            --g-accent-4: #7c5cff;
+            background: radial-gradient(circle at 10% 20%, rgba(255, 214, 102, 0.25), transparent 40%),
+                radial-gradient(circle at 90% 10%, rgba(72, 198, 239, 0.25), transparent 45%),
+                linear-gradient(135deg, #fff7f0, #f7f7ff);
+            color: var(--g-ink);
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            min-height: 100vh;
+        }
+
+        .guardian-shell {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+        }
+
+        .guardian-hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 28px;
+            padding: 32px 36px;
+            background: linear-gradient(140deg, #ffffff, #fff1f1);
+            box-shadow: 0 20px 50px rgba(30, 27, 46, 0.12);
+            animation: guardian-rise 700ms ease;
+        }
+
+        .guardian-hero::before,
+        .guardian-hero::after {
+            content: "";
+            position: absolute;
+            border-radius: 999px;
+            opacity: 0.6;
+            filter: blur(0.5px);
+        }
+
+        .guardian-hero::before {
+            width: 160px;
+            height: 160px;
+            background: rgba(124, 92, 255, 0.18);
+            top: -40px;
+            right: -30px;
+        }
+
+        .guardian-hero::after {
+            width: 120px;
+            height: 120px;
+            background: rgba(72, 198, 239, 0.2);
+            bottom: -30px;
+            left: 20px;
+        }
+
+        .guardian-title {
+            font-family: "Fraunces", "Times New Roman", serif;
+            font-size: clamp(2.1rem, 3vw, 3rem);
+            margin-bottom: 8px;
+        }
+
+        .guardian-subtitle {
+            color: var(--g-muted);
+            font-size: 1.05rem;
+        }
+
+        .guardian-panel {
+            border-radius: 20px;
+            background: var(--g-card);
+            box-shadow: 0 14px 35px rgba(30, 27, 46, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .guardian-card {
+            border-radius: 18px;
+            background: var(--g-card);
+            border: 1px solid rgba(30, 27, 46, 0.06);
+            box-shadow: 0 18px 30px rgba(30, 27, 46, 0.08);
+            transition: transform 200ms ease, box-shadow 200ms ease;
+            animation: guardian-rise 650ms ease both;
+        }
+
+        .guardian-card:hover {
+            transform: translateY(-6px) rotate(-0.3deg);
+            box-shadow: 0 24px 40px rgba(30, 27, 46, 0.14);
+        }
+
+        .guardian-badge {
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .guardian-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(124, 92, 255, 0.12);
+            color: #3f2fbf;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .guardian-ui .form-control,
+        .guardian-ui .form-select {
+            border-radius: 14px;
+            border: 1px solid rgba(30, 27, 46, 0.1);
+            background: #ffffff;
+            box-shadow: none;
+        }
+
+        .guardian-ui .btn {
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .guardian-ui .btn-primary {
+            background: linear-gradient(120deg, #ff6b6b, #ff8f6b);
+            border: none;
+        }
+
+        .guardian-ui .btn-success {
+            background: linear-gradient(120deg, #48c6ef, #6f86ff);
+            border: none;
+        }
+
+        .guardian-ui .btn-outline-dark {
+            border-width: 2px;
+        }
+
+        .guardian-chat {
+            background: #fff7f4;
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        .guardian-message {
+            display: inline-block;
+            padding: 10px 14px;
+            border-radius: 14px;
+            max-width: 80%;
+        }
+
+        .guardian-message--own {
+            background: #ff6b6b;
+            color: #fff;
+        }
+
+        .guardian-message--other {
+            background: #ffffff;
+            color: var(--g-ink);
+            border: 1px solid rgba(30, 27, 46, 0.08);
+        }
+
+        @keyframes guardian-rise {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
     {% block stylesheets %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 
-    {% block body %}{% endblock %}
+    {% block body %}
+        {% block content %}{% endblock %}
+    {% endblock %}
 
     {# JS FILES #}
     <script src="{{ asset('user/js/jquery.min.js') }}"></script>
