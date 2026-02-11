@@ -47,7 +47,7 @@ class GuardianController extends AbstractController
             'search' => $request->query->get('search'),
         ];
 
-        return $this->render('guardian/library.html.twig', [
+        return $this->render('user/guardian/library.html.twig', [
             'resources' => $repo->findByFilters($filters),
             'subjects' => $subjectRepo->findAll(),
             'filters' => $filters,
@@ -90,7 +90,7 @@ class GuardianController extends AbstractController
             return $this->redirectToRoute('guardian_library');
         }
 
-        return $this->render('guardian/resource_upload.html.twig', [
+        return $this->render('user/guardian/resource_upload.html.twig', [
             'form' => $form,
         ]);
     }
@@ -151,7 +151,7 @@ class GuardianController extends AbstractController
     ): Response {
         $subjectId = $request->query->get('subject');
         
-        return $this->render('guardian/rooms.html.twig', [
+        return $this->render('user/guardian/rooms.html.twig', [
             'rooms' => $repo->findActiveRooms($subjectId),
             'subjects' => $subjectRepo->findAll(),
             'current_subject' => $subjectId,
@@ -180,7 +180,7 @@ class GuardianController extends AbstractController
             return $this->redirectToRoute('guardian_room_detail', ['id' => $room->getId()]);
         }
 
-        return $this->render('guardian/room_create.html.twig', [
+        return $this->render('user/guardian/room_create.html.twig', [
             'form' => $form,
         ]);
     }
@@ -203,7 +203,7 @@ class GuardianController extends AbstractController
             return $this->redirectToRoute('guardian_rooms');
         }
 
-        return $this->render('guardian/room_detail.html.twig', [
+        return $this->render('user/guardian/room_detail.html.twig', [
             'room' => $room,
             'is_participant' => $isParticipant,
             'messages' => $messageRepo->findByRoom($room),
