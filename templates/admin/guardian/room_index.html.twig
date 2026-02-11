@@ -1,6 +1,6 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Gestion des Salles Virtuelles{% endblock %}
+{% block title %}Virtual Room Management{% endblock %}
 {% block body_class %}guardian-admin-ui{% endblock %}
 
 {% block content %}
@@ -8,28 +8,28 @@
     <div class="row mb-4">
         <div class="col-md-8">
             <div class="guardian-admin-hero">
-                <h1>Gestion des Salles Virtuelles</h1>
-                <p class="text-muted mb-0">Pilotez l'activite et la disponibilite des salles.</p>
+                <h1>Virtual Room Management</h1>
+                <p class="text-muted mb-0">Manage room activity and availability.</p>
             </div>
         </div>
     </div>
 
     {% if rooms is empty %}
         <div class="guardian-admin-card p-4 text-center">
-            Aucune salle virtuelle disponible.
+            No virtual rooms available.
         </div>
     {% else %}
         <div class="guardian-admin-card p-3 table-responsive">
             <table class="table guardian-admin-table table-hover align-middle">
                 <thead>
                     <tr>
-                        <th>Nom</th>
-                        <th>Sujet</th>
-                        <th>Créateur</th>
+                        <th>Name</th>
+                        <th>Subject</th>
+                        <th>Creator</th>
                         <th>Participants</th>
-                        <th>Capacité Maximale</th>
-                        <th>Statut</th>
-                        <th>Créée le</th>
+                        <th>Max Capacity</th>
+                        <th>Status</th>
+                        <th>Created</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -43,9 +43,9 @@
                             <td>{{ room.maxParticipants }}</td>
                             <td>
                                 {% if room.isActive %}
-                                    <span class="badge bg-success">Actif</span>
+                                    <span class="badge bg-success">Active</span>
                                 {% else %}
-                                    <span class="badge bg-danger">Fermé</span>
+                                    <span class="badge bg-danger">Closed</span>
                                 {% endif %}
                             </td>
                             <td>{{ room.createdAt|date('d/m/Y H:i') }}</td>
@@ -54,13 +54,13 @@
                                     <input type="hidden" name="_token" value="{{ csrf_token('toggle_room_' ~ room.id) }}">
                                     <button type="submit" class="btn btn-sm {% if room.isActive %}btn-warning{% else %}btn-info{% endif %}">
                                         <i class="fas fa-toggle-{{ room.isActive ? 'on' : 'off' }}"></i>
-                                        {{ room.isActive ? 'Fermer' : 'Ouvrir' }}
+                                        {{ room.isActive ? 'Close' : 'Open' }}
                                     </button>
                                 </form>
-                                <form method="POST" action="{{ path('admin_room_delete', {id: room.id}) }}" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr ?');">
+                                <form method="POST" action="{{ path('admin_room_delete', {id: room.id}) }}" style="display:inline;" onsubmit="return confirm('Are you sure?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_room_' ~ room.id) }}">
                                     <button type="submit" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash"></i> Supprimer
+                                        <i class="fas fa-trash"></i> Delete
                                     </button>
                                 </form>
                             </td>

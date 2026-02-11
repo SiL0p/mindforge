@@ -28,51 +28,17 @@ final class UserController extends AbstractController
     }
 
     #[Route('/login', name: 'app_login')]
-public function login(
-    Request $request,
-    AuthenticationUtils $authenticationUtils,
-    UserPasswordHasherInterface $passwordHasher,
-    EntityManagerInterface $em
-): Response {
-    // If it's a GET request, just show the form
-    if (!$request->isMethod('POST')) {
+    public function login(
+        AuthenticationUtils $authenticationUtils
+    ): Response {
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
-        
+
         return $this->render('user/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
         ]);
     }
-    
-    // If it's a POST request, process the login
-    $email = $request->request->get('_username');
-    $password = $request->request->get('_password');
-    
-    // Find user by email
-    $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
-    
-    if (!$user) {
-        $this->addFlash('error', 'Invalid email or password.');
-        return $this->render('user/login.html.twig', [
-            'last_username' => $email,
-            'error' => null,
-        ]);
-    }
-    
-    // Check if password is correct
-    if (!$passwordHasher->isPasswordValid($user, $password)) {
-        $this->addFlash('error', 'Invalid email or password.');
-        return $this->render('user/login.html.twig', [
-            'last_username' => $email,
-            'error' => null,
-        ]);
-    }
-    
-    // Login successful! Redirect to home or dashboard
-    $this->addFlash('success', 'Welcome back!');
-    return $this->redirectToRoute('app_home');
-}
     #[Route('/signup', name: 'app_signup')]
     public function signup(
         Request $request,

@@ -24,7 +24,7 @@
     <div class="messages-container">
         {% if messages|length == 0 %}
             <div class="empty-state">
-                <p>Aucun message pour le moment. Soyez le premier à envoyer un message!</p>
+                <p>No messages yet. Be the first to send one!</p>
             </div>
         {% else %}
             {% for message in messages|reverse %}
@@ -33,7 +33,7 @@
                         <strong>{{ message.sender.email }}</strong>
                         <span class="message-time">{{ message.createdAt|date('d/m/Y H:i') }}</span>
                         {% if message.isEdited %}
-                            <span class="badge badge-info">Modifié</span>
+                            <span class="badge badge-info">Edited</span>
                         {% endif %}
                     </div>
                     <div class="message-content">
@@ -43,12 +43,12 @@
                         <div class="message-actions">
                             <form method="POST" action="{{ path('community_message_edit', {id: message.id}) }}" style="display:inline;">
                                 <button type="button" class="btn btn-sm btn-outline-primary" onclick="editMessage(this)">
-                                    Modifier
+                                    Edit
                                 </button>
                             </form>
                             <form method="POST" action="{{ path('community_message_delete', {id: message.id}) }}" style="display:inline;">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Êtes-vous sûr?')">
-                                    Supprimer
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">
+                                    Delete
                                 </button>
                             </form>
                         </div>
@@ -63,13 +63,13 @@
         <nav class="pagination-nav">
             {% if currentPage > 1 %}
                 <a href="{{ path('community_room_chat', {id: virtualRoom.id, page: currentPage - 1}) }}" class="btn btn-sm btn-outline-secondary">
-                    Page précédente
+                    Previous page
                 </a>
             {% endif %}
-            <span class="page-info">Page {{ currentPage }} sur {{ totalPages }}</span>
+            <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
             {% if currentPage < totalPages %}
                 <a href="{{ path('community_room_chat', {id: virtualRoom.id, page: currentPage + 1}) }}" class="btn btn-sm btn-outline-secondary">
-                    Page suivante
+                    Next page
                 </a>
             {% endif %}
         </nav>
@@ -82,15 +82,15 @@
                 <textarea 
                     name="content" 
                     class="form-control" 
-                    placeholder="Écrivez votre message..." 
+                    placeholder="Write your message..." 
                     rows="3" 
                     required
                     minlength="1"
                     maxlength="5000"
                 ></textarea>
-                <small class="form-text text-muted">Max 5000 caractères</small>
+                <small class="form-text text-muted">Max 5000 characters</small>
             </div>
-            <button type="submit" class="btn btn-primary">Envoyer</button>
+            <button type="submit" class="btn btn-primary">Send</button>
         </form>
     </div>
 </div>

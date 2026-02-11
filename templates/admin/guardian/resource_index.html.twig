@@ -1,6 +1,6 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Gestion des Ressources{% endblock %}
+{% block title %}Resource Management{% endblock %}
 {% block body_class %}guardian-admin-ui{% endblock %}
 
 {% block content %}
@@ -8,27 +8,27 @@
     <div class="row mb-4">
         <div class="col-md-8">
             <div class="guardian-admin-hero">
-                <h1>Gestion des Ressources</h1>
-                <p class="text-muted mb-0">Supervisez les ressources partagees et leur qualite.</p>
+                <h1>Resource Management</h1>
+                <p class="text-muted mb-0">Oversee shared resources and quality.</p>
             </div>
         </div>
     </div>
 
     {% if resources is empty %}
         <div class="guardian-admin-card p-4 text-center">
-            Aucune ressource disponible.
+            No resources available.
         </div>
     {% else %}
         <div class="guardian-admin-card p-3 table-responsive">
             <table class="table guardian-admin-table table-hover align-middle">
                 <thead>
                     <tr>
-                        <th>Titre</th>
+                        <th>Title</th>
                         <th>Type</th>
-                        <th>Sujet</th>
-                        <th>Uploadé par</th>
-                        <th>Date d'upload</th>
-                        <th>Téléchargements</th>
+                        <th>Subject</th>
+                        <th>Uploaded by</th>
+                        <th>Upload date</th>
+                        <th>Downloads</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -43,12 +43,12 @@
                             <td>{{ resource.downloadCount }}</td>
                             <td>
                                 <a href="{{ path('admin_resource_edit', {id: resource.id}) }}" class="btn btn-sm btn-primary">
-                                    <i class="fas fa-edit"></i> Éditer
+                                    <i class="fas fa-edit"></i> Edit
                                 </a>
-                                <form method="POST" action="{{ path('admin_resource_delete', {id: resource.id}) }}" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr ?');">
+                                <form method="POST" action="{{ path('admin_resource_delete', {id: resource.id}) }}" style="display:inline;" onsubmit="return confirm('Are you sure?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_resource_' ~ resource.id) }}">
                                     <button type="submit" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash"></i> Supprimer
+                                        <i class="fas fa-trash"></i> Delete
                                     </button>
                                 </form>
                             </td>

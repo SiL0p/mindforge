@@ -3,46 +3,70 @@
    Clean, Professional, SaaS/EdTech Aesthetic
    ============================================================================ */
 
-/* COLOR PALETTE - Soft Purple Theme */
+/* COLOR PALETTE - MindForge Dark */
 :root {
-    --primary: #6d5ce7;
-    --primary-light: #a29bfe;
-    --primary-dark: #5f3dc4;
-    
-    --secondary: #00b894;
-    --success: #00b894;
-    --danger: #ff6b6b;
-    --warning: #fdcb6e;
-    --info: #0984e3;
-    
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8f9fa;
-    --bg-tertiary: #f0f2f5;
-    
-    --text-primary: #2d3436;
-    --text-secondary: #636e72;
-    --text-tertiary: #95a5a6;
-    
-    --border-color: #e8eaed;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
-    --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.18);
-    
-    --radius-sm: 6px;
+    /* Couleurs Principales */
+    --color-primary: #6840d6;
+    --color-secondary: #2e65d9;
+    --color-accent: #af17c2;
+
+    /* Variantes (Hover) */
+    --color-primary-hover: #5530b5;
+    --color-secondary-hover: #1e50bc;
+
+    /* Arriere-plans (Dark Mode) */
+    --bg-app: #0f172a;
+    --bg-card: #1e293b;
+    --bg-input: #334155;
+
+    /* Texte */
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+
+    /* Gradients */
+    --gradient-brand: linear-gradient(135deg, #6840d6 0%, #af17c2 100%);
+    --gradient-focus: linear-gradient(90deg, #6840d6 0%, #2e65d9 100%);
+
+    /* Espacement & Formes */
+    --radius-sm: 8px;
     --radius-md: 12px;
-    --radius-lg: 16px;
+    --radius-lg: 20px;
     --radius-full: 9999px;
-    
+
     --spacing-xs: 4px;
     --spacing-sm: 8px;
     --spacing-md: 16px;
     --spacing-lg: 24px;
     --spacing-xl: 32px;
     --spacing-2xl: 48px;
-    
+
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-fast: all 0.15s ease-out;
+
+    /* Backward-compatible tokens */
+    --primary: var(--color-primary);
+    --primary-light: #7d5be6;
+    --primary-dark: var(--color-primary-hover);
+
+    --secondary: var(--color-secondary);
+    --success: #00b894;
+    --danger: #ff6b6b;
+    --warning: #fdcb6e;
+    --info: var(--color-secondary);
+
+    --bg-primary: var(--bg-app);
+    --bg-secondary: var(--bg-card);
+    --bg-tertiary: var(--bg-input);
+
+    --text-primary: var(--text-main);
+    --text-secondary: var(--text-muted);
+    --text-tertiary: #cbd5e1;
+
+    --border-color: #2b3650;
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.35);
+    --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.4);
+    --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.45);
+    --shadow-xl: 0 12px 32px rgba(15, 23, 42, 0.5);
 }
 
 /* ============================================================================

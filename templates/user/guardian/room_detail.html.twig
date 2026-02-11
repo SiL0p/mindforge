@@ -8,15 +8,15 @@
     <section class="guardian-hero mb-4">
         <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
             <div>
-                <span class="guardian-pill"><i class="fas fa-comments"></i> Salle collaborative</span>
+                <span class="guardian-pill"><i class="fas fa-comments"></i> Collaboration room</span>
                 <h1 class="guardian-title">{{ room.name }}</h1>
-                <p class="guardian-subtitle">{{ room.description ?: 'Bienvenue dans votre espace de discussion.' }}</p>
+                <p class="guardian-subtitle">{{ room.description ?: 'Welcome to your discussion space.' }}</p>
                 <div class="d-flex flex-wrap gap-2">
                     <span class="guardian-badge" style="background: rgba(124, 92, 255, 0.18); color: #3f2fbf;">
                         {{ room.subject.name }}
                     </span>
                     <span class="guardian-badge" style="background: {{ room.isActive ? 'rgba(72, 198, 239, 0.2)' : 'rgba(255, 107, 107, 0.2)' }}; color: {{ room.isActive ? '#1b4d6b' : '#9b1c1c' }};">
-                        {{ room.isActive ? 'Salle Active' : 'Salle Fermee' }}
+                        {{ room.isActive ? 'Active room' : 'Closed room' }}
                     </span>
                 </div>
             </div>
@@ -25,14 +25,14 @@
                     <form method="POST" action="{{ path('guardian_room_leave', {id: room.id}) }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('leave_room_' ~ room.id) }}">
                         <button type="submit" class="btn btn-outline-dark">
-                            <i class="fas fa-sign-out-alt"></i> Quitter la Salle
+                            <i class="fas fa-sign-out-alt"></i> Leave room
                         </button>
                     </form>
                 {% else %}
                     <form method="POST" action="{{ path('guardian_room_join', {id: room.id}) }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('join_room_' ~ room.id) }}">
                         <button type="submit" class="btn btn-success" {% if room.isFull %}disabled{% endif %}>
-                            <i class="fas fa-sign-in-alt"></i> Rejoindre la Salle
+                            <i class="fas fa-sign-in-alt"></i> Join room
                         </button>
                     </form>
                 {% endif %}
@@ -48,7 +48,7 @@
                 </div>
                 <div class="guardian-chat" style="height: 460px; overflow-y: auto;">
                     {% if messages is empty %}
-                        <div class="text-center text-muted">Aucun message pour le moment. Lancez la conversation.</div>
+                        <div class="text-center text-muted">No messages yet. Start the conversation.</div>
                     {% else %}
                         {% for message in messages %}
                             <div class="mb-3 d-flex {% if message.author == app.user %}justify-content-end{% else %}justify-content-start{% endif %}">
@@ -64,16 +64,16 @@
                 {% if is_participant and room.isActive %}
                     <div class="p-3 border-top">
                         <form method="POST" action="#" class="d-flex gap-2">
-                            <input type="text" class="form-control" placeholder="Ecrivez un message..." required>
+                            <input type="text" class="form-control" placeholder="Write a message..." required>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-paper-plane"></i> Envoyer
+                                <i class="fas fa-paper-plane"></i> Send
                             </button>
                         </form>
                     </div>
                 {% elseif not is_participant %}
-                    <div class="p-3 text-center text-muted">Rejoignez la salle pour participer a la conversation.</div>
+                    <div class="p-3 text-center text-muted">Join the room to participate in the conversation.</div>
                 {% else %}
-                    <div class="p-3 text-center text-muted">Cette salle est fermee.</div>
+                    <div class="p-3 text-center text-muted">This room is closed.</div>
                 {% endif %}
             </div>
         </div>
@@ -82,10 +82,10 @@
             <div class="guardian-panel p-3 mb-4">
                 <h5 class="mb-3"><i class="fas fa-info-circle"></i> Details</h5>
                 <div class="d-grid gap-2 text-muted">
-                    <div><strong>Createur:</strong> {{ room.creator.firstName }} {{ room.creator.lastName }}</div>
-                    <div><strong>Sujet:</strong> {{ room.subject.name }}</div>
-                    <div><strong>Creee:</strong> {{ room.createdAt|date('d/m/Y H:i') }}</div>
-                    <div><strong>Capacite:</strong> {{ room.participants|length }}/{{ room.maxParticipants }}</div>
+                    <div><strong>Creator:</strong> {{ room.creator.firstName }} {{ room.creator.lastName }}</div>
+                    <div><strong>Subject:</strong> {{ room.subject.name }}</div>
+                    <div><strong>Created:</strong> {{ room.createdAt|date('d/m/Y H:i') }}</div>
+                    <div><strong>Capacity:</strong> {{ room.participants|length }}/{{ room.maxParticipants }}</div>
                 </div>
             </div>
 
@@ -97,10 +97,10 @@
                             <div>
                                 <strong>{{ participant.firstName }} {{ participant.lastName }}</strong>
                                 {% if participant == room.creator %}
-                                    <span class="guardian-badge" style="background: rgba(255, 209, 102, 0.3); color: #8a5b00;">Createur</span>
+                                    <span class="guardian-badge" style="background: rgba(255, 209, 102, 0.3); color: #8a5b00;">Creator</span>
                                 {% endif %}
                                 {% if participant == app.user %}
-                                    <span class="guardian-badge" style="background: rgba(72, 198, 239, 0.2); color: #1b4d6b;">Vous</span>
+                                    <span class="guardian-badge" style="background: rgba(72, 198, 239, 0.2); color: #1b4d6b;">You</span>
                                 {% endif %}
                             </div>
                         </div>
