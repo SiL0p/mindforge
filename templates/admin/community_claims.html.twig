@@ -1,0 +1,523 @@
+{# templates/admin/community_claims.html.twig #}
+{% extends "admin/base.html.twig" %}
+
+{% block title %}Gestion des Tickets | Admin | MindForge{% endblock %}
+
+{% block body %}
+<div class="admin-claims-container">
+    <div class="page-header">
+        <h2>Gestion des Tickets de Support</h2>
+        <span class="badge">{{ openClaimsCount }} en cours</span>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <form method="GET" class="filters-form">
+            <input 
+                type="hidden" 
+                name="status" 
+                value="{{ filterStatus ? filterStatus : '' }}"
+            />
+            <input 
+                type="hidden" 
+                name="priority" 
+                value="{{ filterPriority ? filterPriority : '' }}"
+            />
+            <div class="filter-group">
+                <label>Statut</label>
+                <select name="status" class="form-control" onchange="this.form.submit();">
+                    <option value="">Tous</option>
+                    <option value="open" {% if filterStatus == 'open' %}selected{% endif %}>Ouvert</option>
+                    <option value="in_progress" {% if filterStatus == 'in_progress' %}selected{% endif %}>En cours</option>
+                    <option value="resolved" {% if filterStatus == 'resolved' %}selected{% endif %}>Résolu</option>
+                    <option value="closed" {% if filterStatus == 'closed' %}selected{% endif %}>Fermé</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Priorité</label>
+                <select name="priority" class="form-control" onchange="this.form.submit();">
+                    <option value="">Tous</option>
+                    <option value="low" {% if filterPriority == 'low' %}selected{% endif %}>Faible</option>
+                    <option value="medium" {% if filterPriority == 'medium' %}selected{% endif %}>Moyen</option>
+                    <option value="high" {% if filterPriority == 'high' %}selected{% endif %}>Élevé</option>
+                    <option value="critical" {% if filterPriority == 'critical' %}selected{% endif %}>Critique</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    {% if app.flashes %}
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ type == 'error' ? 'danger' : 'success' }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+
+    <!-- Claims Table -->
+    <div class="claims-table-container">
+        {% if claims|length == 0 %}
+            <div class="empty-state">
+                <p>Aucun ticket trouvé.</p>
+            </div>
+        {% else %}
+            <table class="claims-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Titre</th>
+                        <th>Créateur</th>
+                        <th>Statut</th>
+                        <th>Priorité</th>
+                        <th>Assigné à</th>
+                        <th>Créé</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for claim in claims %}
+                        <tr class="claim-row priority-{{ claim.priority }}">
+                            <td>#{{ claim.id }}</td>
+                            <td class="claim-title">{{ claim.title }}</td>
+                            <td>{{ claim.createdBy.email }}</td>
+                            <td>
+                                <span class="status-badge status-{{ claim.status }}">
+                                    {{ claim.status|trans }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="priority-badge priority-{{ claim.priority }}">
+                                    {{ claim.priority|trans }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if claim.assignedTo %}
+                                    {{ claim.assignedTo.email }}
+                                {% else %}
+                                    <em style="color: #999;">Non assigné</em>
+                                {% endif %}
+                            </td>
+                            <td>{{ claim.createdAt|date('d/m/Y H:i') }}</td>
+                            <td class="actions">
+                                <a href="{{ path('community_claim_view', {id: claim.id}) }}" class="btn-small btn-info">
+                                    Voir
+                                </a>
+                                <form method="POST" action="{{ path('admin_community_claim_update_status', {id: claim.id}) }}" style="display:inline;">
+                                    <button type="button" class="btn-small btn-edit" onclick="openStatusModal({{ claim.id }})">
+                                        Modifier
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal for Status Update -->
+<div id="statusModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeStatusModal()">&times;</span>
+        <h3>Mettre à jour le Ticket</h3>
+        <form id="statusForm" method="POST">
+            <div class="form-group">
+                <label for="status">Statut</label>
+                <select id="status" name="status" class="form-control" required>
+                    <option value="open">Ouvert</option>
+                    <option value="in_progress">En cours</option>
+                    <option value="resolved">Résolu</option>
+                    <option value="closed">Fermé</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="priority">Priorité</label>
+                <select id="priority" name="priority" class="form-control" required>
+                    <option value="low">Faible</option>
+                    <option value="medium">Moyen</option>
+                    <option value="high">Élevé</option>
+                    <option value="critical">Critique</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="admin_notes">Notes d'Administration</label>
+                <textarea id="admin_notes" name="admin_notes" class="form-control" rows="3"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+function openStatusModal(claimId) {
+    document.getElementById('statusForm').action = `/admin/claim/${claimId}/update-status`;
+    document.getElementById('statusModal').style.display = 'block';
+}
+
+function closeStatusModal() {
+    document.getElementById('statusModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('statusModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.admin-claims-container {
+    padding: 2rem;
+    background: linear-gradient(135deg, #0f172a 0%, #1a2940 100%);
+    color: #fff;
+    min-height: 100vh;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+    background: linear-gradient(135deg, #1a2333 0%, #2d3e52 100%);
+    border: 2px solid #6840d6;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 8px 30px rgba(104, 64, 214, 0.15);
+}
+
+.page-header h2 {
+    color: #6840d6;
+    margin: 0;
+    font-size: 1.9rem;
+    font-weight: 700;
+}
+
+.badge {
+    background: linear-gradient(135deg, #6840d6 0%, #af17c2 100%);
+    padding: 0.7rem 1.5rem;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(104, 64, 214, 0.2);
+}
+
+.filters-section {
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, #1a2333 0%, #2d3e52 100%);
+    padding: 1.5rem;
+    border: 2px solid #2d3e52;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.filters-form {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 0.65rem;
+    color: #bbb;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.filter-group select {
+    width: 100%;
+    padding: 0.75rem;
+    background: #0f172a;
+    border: 2px solid #6840d6;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.filter-group select:hover,
+.filter-group select:focus {
+    border-color: #af17c2;
+    box-shadow: 0 0 15px rgba(104, 64, 214, 0.2);
+    outline: none;
+}
+
+.claims-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: linear-gradient(135deg, #1a2333 0%, #2d3e52 100%);
+    border: 2px solid #2d3e52;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.claims-table thead th {
+    background: linear-gradient(135deg, rgba(104, 64, 214, 0.2) 0%, rgba(175, 23, 194, 0.1) 100%);
+    padding: 1.2rem;
+    text-align: left;
+    color: #6840d6;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #6840d6;
+}
+
+.claims-table tbody tr {
+    border-bottom: 1px solid rgba(104, 64, 214, 0.1);
+    transition: all 0.3s;
+}
+
+.claims-table tbody tr:hover {
+    background: rgba(104, 64, 214, 0.08);
+}
+
+.claims-table tbody td {
+    padding: 1.2rem;
+    color: #d0d0d0;
+    font-size: 0.95rem;
+}
+
+.status-badge, .priority-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.status-open {
+    background: rgba(104, 64, 214, 0.2);
+    color: #6840d6;
+    border: 1px solid #6840d6;
+}
+
+.status-in_progress {
+    background: rgba(46, 101, 217, 0.2);
+    color: #2e65d9;
+    border: 1px solid #2e65d9;
+}
+
+.status-resolved {
+    background: rgba(11, 107, 63, 0.2);
+    color: #51cf66;
+    border: 1px solid #51cf66;
+}
+
+.status-closed {
+    background: rgba(68, 68, 68, 0.3);
+    color: #aaa;
+    border: 1px solid #666;
+}
+
+.priority-critical {
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff8787;
+    border: 1px solid #ff8787;
+}
+
+.priority-high {
+    background: rgba(255, 159, 64, 0.2);
+    color: #ffb347;
+    border: 1px solid #ffb347;
+}
+
+.priority-medium {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid #ffc107;
+}
+
+.priority-low {
+    background: rgba(81, 207, 102, 0.2);
+    color: #51cf66;
+    border: 1px solid #51cf66;
+}
+
+.btn-small {
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    font-weight: 600;
+}
+
+.btn-info {
+    background: transparent;
+    color: #2e65d9;
+    border: 2px solid #2e65d9;
+}
+
+.btn-info:hover {
+    background: #2e65d9;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(46, 101, 217, 0.3);
+}
+
+.btn-edit {
+    background: transparent;
+    color: #6840d6;
+    border: 2px solid #6840d6;
+}
+
+.btn-edit:hover {
+    background: #6840d6;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(104, 64, 214, 0.3);
+}
+
+.modal {
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1a2333 0%, #2d3e52 100%);
+    margin: 10% auto;
+    padding: 2.5rem;
+    border: 2px solid #6840d6;
+    width: 90%;
+    max-width: 550px;
+    border-radius: 15px;
+    color: #fff;
+    box-shadow: 0 20px 60px rgba(104, 64, 214, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.close {
+    color: #999;
+    float: right;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.close:hover {
+    color: #ff6b6b;
+}
+
+.modal-content label {
+    display: block;
+    margin-bottom: 0.6rem;
+    color: #bbb;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.modal-content select,
+.modal-content textarea,
+.modal-content input {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1.2rem;
+    background: #0f172a;
+    border: 2px solid #2d3e52;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+}
+
+.modal-content select:focus,
+.modal-content textarea:focus,
+.modal-content input:focus {
+    outline: none;
+    border-color: #6840d6;
+    box-shadow: 0 0 15px rgba(104, 64, 214, 0.2);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #1a2333 0%, #2d3e52 100%);
+    border: 2px dashed #6840d6;
+    border-radius: 15px;
+    color: #999;
+}
+
+.empty-state p {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 1024px) {
+    .filters-form {
+        flex-direction: column;
+    }
+
+    .filter-group {
+        min-width: 100%;
+    }
+
+    .modal-content {
+        width: 95%;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-claims-container {
+        padding: 1rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .claims-table {
+        font-size: 0.85rem;
+    }
+
+    .claims-table thead th,
+    .claims-table tbody td {
+        padding: 0.8rem 0.5rem;
+    }
+
+    .btn-small {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}
+</style>
+{% endblock %}

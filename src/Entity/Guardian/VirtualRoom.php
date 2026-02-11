@@ -4,6 +4,7 @@
 namespace App\Entity\Guardian;
 
 use App\Entity\Architect\User;
+use App\Entity\Community\ChatMessage;
 use App\Entity\Planner\Subject;
 use App\Repository\Guardian\VirtualRoomRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -64,8 +65,7 @@ class VirtualRoom
 
     // RELATIONSHIP: Many Rooms belong to One Subject
     #[ORM\ManyToOne(targetEntity: Subject::class, inversedBy: 'virtualRooms')]
-    #[ORM\JoinColumn(nullable: false, name: 'subject_id', referencedColumnName: 'id')]
-    #[Assert\NotNull(message: 'Veuillez sélectionner une matière.')]
+    #[ORM\JoinColumn(nullable: true, name: 'subject_id', referencedColumnName: 'id')]
     private ?Subject $subject = null;
 
     // RELATIONSHIP: Many-to-Many Users participate in Many Rooms
@@ -78,14 +78,13 @@ class VirtualRoom
     private Collection $participants;
 
     // RELATIONSHIP: One Room has Many ChatMessages
-    // NOTE: ChatMessage entity is not yet implemented (Community module in progress)
-    // #[ORM\OneToMany(targetEntity: ChatMessage::class, mappedBy: 'virtualRoom', orphanRemoval: true)]
-    // private Collection $chatMessages;
+    #[ORM\OneToMany(targetEntity: ChatMessage::class, mappedBy: 'virtualRoom', orphanRemoval: true)]
+    private Collection $chatMessages;
 
     public function __construct()
     {
         $this->participants = new ArrayCollection();
-        // $this->chatMessages = new ArrayCollection();
+        $this->chatMessages = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -141,6 +140,24 @@ class VirtualRoom
     /**
      * @return Collection<int, ChatMessage>
      */
-    // NOTE: ChatMessage entity is not yet implemented
-    // public function getChatMessages(): Collection { return $this->chatMessages; }
+    public function getChatMessages(): Collection { return $this->chatMessages; }
+
+    public function addChatMessage(ChatMessage $chatMessage): self
+    {
+        if (!$this->chatMessages->contains($chatMessage)) {
+            $this->chatMessages->add($chatMessage);
+            $chatMessage->setVirtualRoom($this);
+        }
+        return $this;
+    }
+
+    public function removeChatMessage(ChatMessage $chatMessage): self
+    {
+        if ($this->chatMessages->removeElement($chatMessage)) {
+            if ($chatMessage->getVirtualRoom() === $this) {
+                $chatMessage->setVirtualRoom(null);
+            }
+        }
+        return $this;
+    }
 }
