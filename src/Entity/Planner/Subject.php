@@ -1,114 +1,77 @@
 <?php
+// src/Entity/Subject.php
+namespace App\Entity;
 
-namespace App\Entity\Planner;
-
-use App\Entity\Guardian\Resource;
-use App\Entity\Guardian\VirtualRoom;
 use App\Repository\Planner\SubjectRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SubjectRepository::class)]
-#[ORM\Table(name: 'subject')]
+#[ORM\HasLifecycleCallbacks]
 class Subject
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::STRING, length: 120, unique: true)]
-    #[Assert\NotBlank(message: 'Le nom de la matiere est requis.')]
-    #[Assert\Length(
-        min: 2,
-        max: 120,
-        minMessage: 'Le nom doit contenir au moins {{ limit }} caracteres.',
-        maxMessage: 'Le nom ne peut pas depasser {{ limit }} caracteres.'
-    )]
+    #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: "Le nom de la matière ne peut pas être vide.")]
+    #[Assert\Length(max: 100, maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères.")]
     private ?string $name = null;
 
-    #[ORM\OneToMany(mappedBy: 'subject', targetEntity: Resource::class, orphanRemoval: true)]
-    private Collection $resources;
+    #[ORM\Column(length: 20, unique: true)]
+    private ?string $code = null;
 
-    #[ORM\OneToMany(mappedBy: 'subject', targetEntity: VirtualRoom::class, orphanRemoval: true)]
-    private Collection $virtualRooms;
+    #[ORM\Column(length: 7)]
+    private ?string $color = "#6840d6";
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\OneToMany(mappedBy: 'subject', targetEntity: Task::class)]
+    private Collection $tasks;
+
+    #[ORM\OneToMany(mappedBy: 'subject', targetEntity: Exam::class)]
+    private Collection $exams;
 
     public function __construct()
     {
-        $this->resources = new ArrayCollection();
-        $this->virtualRooms = new ArrayCollection();
+        $this->tasks = new ArrayCollection();
+        $this->exams = new ArrayCollection();
     }
 
-    public function getId(): ?int
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
     {
-        return $this->id;
+        $this->createdAt = new \DateTimeImmutable();
+        if (!$this->code) {
+            $this->code = strtoupper(substr(uniqid(), -6));
+        }
     }
 
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-        return $this;
-    }
-
+    public function getId(): ?int { return $this->id; }
+    public function getName(): ?string { return $this->name; }
+    public function setName(string $name): static { $this->name = $name; return $this; }
+    public function getCode(): ?string { return $this->code; }
+    public function getColor(): ?string { return $this->color; }
+    public function setColor(string $color): static { $this->color = $color; return $this; }
+    public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
+    
     /**
-     * @return Collection<int, Resource>
+     * @return Collection<int, Task>
      */
-    public function getResources(): Collection
-    {
-        return $this->resources;
-    }
-
-    public function addResource(Resource $resource): self
-    {
-        if (!$this->resources->contains($resource)) {
-            $this->resources->add($resource);
-            $resource->setSubject($this);
-        }
-        return $this;
-    }
-
-    public function removeResource(Resource $resource): self
-    {
-        if ($this->resources->removeElement($resource)) {
-            if ($resource->getSubject() === $this) {
-                $resource->setSubject(null);
-            }
-        }
-        return $this;
-    }
-
+    public function getTasks(): Collection { return $this->tasks; }
+    
     /**
-     * @return Collection<int, VirtualRoom>
+     * @return Collection<int, Exam>
      */
-    public function getVirtualRooms(): Collection
-    {
-        return $this->virtualRooms;
-    }
+    public function getExams(): Collection { return $this->exams; }
 
-    public function addVirtualRoom(VirtualRoom $virtualRoom): self
+    public function __toString(): string
     {
-        if (!$this->virtualRooms->contains($virtualRoom)) {
-            $this->virtualRooms->add($virtualRoom);
-            $virtualRoom->setSubject($this);
-        }
-        return $this;
-    }
-
-    public function removeVirtualRoom(VirtualRoom $virtualRoom): self
-    {
-        if ($this->virtualRooms->removeElement($virtualRoom)) {
-            if ($virtualRoom->getSubject() === $this) {
-                $virtualRoom->setSubject(null);
-            }
-        }
-        return $this;
+        return $this->name ?? '';
     }
 }
