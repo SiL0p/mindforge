@@ -1,0 +1,80 @@
+{% extends 'guardian/base.html.twig' %}
+
+{% block title %}Virtual Study Rooms{% endblock %}
+
+{% block guardian_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1>🏫 Virtual Study Rooms</h1>
+    </div>
+    <div class="col-md-4 text-end">
+        {% if can_create %}
+            <a href="{{ path('guardian_room_create') }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Create Room
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Subject Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-8">
+                <select name="subject" class="form-select">
+                    <option value="">-- All Subjects --</option>
+                    {% for subject in subjects %}
+                        <option value="{{ subject.id }}" {% if current_subject == subject.id %}selected{% endif %}>
+                            {{ subject.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Rooms List -->
+{% if rooms is empty %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No active rooms at the moment. {% if can_create %}<a href="{{ path('guardian_room_create') }}">Create one</a>!{% endif %}
+    </div>
+{% else %}
+    <div class="row">
+        {% for room in rooms %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ room.name }}</h5>
+                        <p class="card-text text-muted">{{ room.description[:80] }}{% if room.description|length > 80 %}...{% endif %}</p>
+                        
+                        <div class="mb-3">
+                            <small class="d-block">
+                                👤 Created by: <strong>{{ room.creator.email }}</strong>
+                            </small>
+                            <small class="d-block">
+                                👥 Participants: <strong>{{ room.participants|length }}/{{ room.maxParticipants }}</strong>
+                            </small>
+                            {% if room.isFull() %}
+                                <span class="badge bg-danger">Full</span>
+                            {% else %}
+                                <span class="badge bg-success">Available</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light">
+                        <a href="{{ path('guardian_room_detail', {id: room.id}) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-door-open"></i> Enter Room
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

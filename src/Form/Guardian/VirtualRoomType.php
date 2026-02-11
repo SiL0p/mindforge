@@ -3,8 +3,8 @@
 
 namespace App\Form\Guardian;
 
-use App\Entity\Planner\Subject;
 use App\Entity\Guardian\VirtualRoom;
+// use App\Entity\Planner\Subject; // TODO: Enable when Planner module is implemented
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -57,16 +57,17 @@ class VirtualRoomType extends AbstractType
                     ]),
                 ],
             ])
-            ->add('subject', EntityType::class, [
-                'class' => Subject::class,
-                'choice_label' => 'name',
-                'label' => 'Matière concernée',
-                'placeholder' => '-- Sélectionnez une matière --',
-                'attr' => ['class' => 'form-select bg-dark text-light border-secondary'],
-                'constraints' => [
-                    new NotBlank(['message' => 'Veuillez sélectionner une matière.']),
-                ],
-            ])
+            // TODO: Uncomment when Planner module is implemented
+            // ->add('subject', EntityType::class, [
+            //     'class' => Subject::class,
+            //     'choice_label' => 'name',
+            //     'label' => 'Matière concernée',
+            //     'placeholder' => '-- Sélectionnez une matière --',
+            //     'attr' => ['class' => 'form-select bg-dark text-light border-secondary'],
+            //     'constraints' => [
+            //         new NotBlank(['message' => 'Veuillez sélectionner une matière.']),
+            //     ],
+            // ])
             ->add('maxParticipants', ChoiceType::class, [
                 'label' => 'Nombre maximum de participants',
                 'choices' => [

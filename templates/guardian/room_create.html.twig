@@ -1,0 +1,43 @@
+{% extends 'guardian/base.html.twig' %}
+
+{% block title %}Create Virtual Room{% endblock %}
+
+{% block guardian_content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1>➕ Create a Virtual Study Room</h1>
+        <p class="text-muted">Set up a space for collaborative learning</p>
+
+        <div class="card">
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                <div class="mb-3">
+                    {{ form_label(form.name) }}
+                    {{ form_widget(form.name, {'attr': {'class': 'form-control', 'placeholder': 'e.g., Java Algorithm Study Group'}}) }}
+                    {{ form_errors(form.name) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.description) }}
+                    {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 3, 'placeholder': 'What is this room about? Any rules?'}}) }}
+                    {{ form_errors(form.description) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.maxParticipants) }}
+                    {{ form_widget(form.maxParticipants, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_errors(form.maxParticipants) }}
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-plus-circle"></i> Create Room
+                </button>
+                <a href="{{ path('guardian_rooms') }}" class="btn btn-outline-secondary">Cancel</a>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
