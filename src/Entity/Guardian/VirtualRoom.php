@@ -4,7 +4,8 @@
 namespace App\Entity\Guardian;
 
 use App\Entity\Architect\User;
-//use App\Entity\Planner\Subject;
+use App\Entity\Planner\Subject;
+use App\Entity\Community\ChatMessage;
 use App\Repository\Guardian\VirtualRoomRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -62,12 +63,11 @@ class VirtualRoom
     #[ORM\JoinColumn(nullable: false, name: 'creator_id', referencedColumnName: 'id')]
     private ?User $creator = null;
 
-    // RELATIONSHIP: Many Rooms belong to One Subject (Planner module - not yet implemented)
-    // TODO: Enable when Planner module is implemented
-    // #[ORM\ManyToOne(targetEntity: Subject::class, inversedBy: 'virtualRooms')]
-    // #[ORM\JoinColumn(nullable: false, name: 'subject_id', referencedColumnName: 'id')]
-    // #[Assert\NotNull(message: 'Veuillez sélectionner une matière.')]
-    // private ?Subject $subject = null;
+    // RELATIONSHIP: Many Rooms belong to One Subject (Planner module)
+    #[ORM\ManyToOne(targetEntity: Subject::class, inversedBy: 'virtualRooms')]
+    #[ORM\JoinColumn(nullable: false, name: 'subject_id', referencedColumnName: 'id')]
+    #[Assert\NotNull(message: 'Veuillez sélectionner une matière.')]
+    private ?Subject $subject = null;
 
     // RELATIONSHIP: Many-to-Many Users participate in Many Rooms
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'joinedRooms')]
@@ -79,14 +79,13 @@ class VirtualRoom
     private Collection $participants;
 
     // RELATIONSHIP: One Room has Many ChatMessages
-    // NOTE: ChatMessage entity is not yet implemented (Community module in progress)
-    // #[ORM\OneToMany(targetEntity: ChatMessage::class, mappedBy: 'virtualRoom', orphanRemoval: true)]
-    // private Collection $chatMessages;
+    #[ORM\OneToMany(targetEntity: ChatMessage::class, mappedBy: 'virtualRoom', orphanRemoval: true)]
+    private Collection $chatMessages;
 
     public function __construct()
     {
         $this->participants = new ArrayCollection();
-        // $this->chatMessages = new ArrayCollection();
+        $this->chatMessages = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -107,9 +106,8 @@ class VirtualRoom
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
     public function getCreator(): ?User { return $this->creator; }
     public function setCreator(?User $creator): self { $this->creator = $creator; return $this; }
-    // TODO: Uncomment when Planner module is implemented
-    // public function getSubject(): ?Subject { return $this->subject; }
-    // public function setSubject(?Subject $subject): self { $this->subject = $subject; return $this; }
+    public function getSubject(): ?Subject { return $this->subject; }
+    public function setSubject(?Subject $subject): self { $this->subject = $subject; return $this; }
 
     /**
      * @return Collection<int, User>
@@ -143,6 +141,25 @@ class VirtualRoom
     /**
      * @return Collection<int, ChatMessage>
      */
-    // NOTE: ChatMessage entity is not yet implemented
-    // public function getChatMessages(): Collection { return $this->chatMessages; }
+    public function getChatMessages(): Collection { return $this->chatMessages; }
+
+    public function addChatMessage(ChatMessage $chatMessage): self
+    {
+        if (!$this->chatMessages->contains($chatMessage)) {
+            $this->chatMessages->add($chatMessage);
+            $chatMessage->setVirtualRoom($this);
+        }
+        return $this;
+    }
+
+    public function removeChatMessage(ChatMessage $chatMessage): self
+    {
+        if ($this->chatMessages->removeElement($chatMessage)) {
+            if ($chatMessage->getVirtualRoom() === $this) {
+                $chatMessage->setVirtualRoom(null);
+            }
+        }
+        return $this;
+    }
 }
+    

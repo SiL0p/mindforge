@@ -18,9 +18,9 @@ class VirtualRoomRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('vr')
             ->leftJoin('vr.creator', 'c')
-            // ->leftJoin('vr.subject', 's') // TODO: Enable when Planner module is implemented
+            ->leftJoin('vr.subject', 's')
             ->leftJoin('vr.participants', 'p')
-            ->addSelect('c', 'p')
+            ->addSelect('c', 's', 'p')
             ->orderBy('vr.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
@@ -30,17 +30,16 @@ class VirtualRoomRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('vr')
             ->leftJoin('vr.creator', 'c')
-            // ->leftJoin('vr.subject', 's') // TODO: Enable when Planner module is implemented
+            ->leftJoin('vr.subject', 's')
             ->leftJoin('vr.participants', 'p')
-            ->addSelect('c', 'p')
+            ->addSelect('c', 's', 'p')
             ->where('vr.isActive = :active')
             ->setParameter('active', true);
 
-        // TODO: Enable subject filtering when Planner module is implemented
-        // if ($subjectId) {
-        //     $qb->andWhere('s.id = :subject')
-        //        ->setParameter('subject', $subjectId);
-        // }
+        if ($subjectId) {
+            $qb->andWhere('s.id = :subject')
+               ->setParameter('subject', $subjectId);
+        }
 
         return $qb->orderBy('vr.createdAt', 'DESC')
                   ->getQuery()

@@ -5,11 +5,14 @@ namespace App\Controller\Guardian;
 
 use App\Entity\Guardian\Resource;
 use App\Entity\Guardian\VirtualRoom;
+use App\Entity\Planner\Subject;
+use App\Entity\Community\ChatMessage;
 use App\Form\Guardian\ResourceType;
 use App\Form\Guardian\VirtualRoomType;
 use App\Repository\Guardian\ResourceRepository;
-// use App\Repository\Planner\SubjectRepository; // TODO: Implement Planner module
 use App\Repository\Guardian\VirtualRoomRepository;
+use App\Repository\Planner\SubjectRepository;
+use App\Repository\Community\ChatMessageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -35,7 +38,8 @@ class GuardianController extends AbstractController
     #[Route('/library', name: 'guardian_library', methods: ['GET'])]
     public function library(
         Request $request,
-        ResourceRepository $repo
+        ResourceRepository $repo,
+        SubjectRepository $subjectRepo
     ): Response {
         $filters = [
             'subject' => $request->query->get('subject'),
@@ -45,7 +49,7 @@ class GuardianController extends AbstractController
 
         return $this->render('guardian/library.html.twig', [
             'resources' => $repo->findByFilters($filters),
-            'subjects' => [], // TODO: Use SubjectRepository when Planner module is implemented
+            'subjects' => $subjectRepo->findAll(),
             'filters' => $filters,
             'can_upload' => $this->isGranted('ROLE_STUDENT_PLUS'),
         ]);
@@ -142,13 +146,14 @@ class GuardianController extends AbstractController
     #[Route('/rooms', name: 'guardian_rooms', methods: ['GET'])]
     public function listRooms(
         Request $request,
-        VirtualRoomRepository $repo
+        VirtualRoomRepository $repo,
+        SubjectRepository $subjectRepo
     ): Response {
         $subjectId = $request->query->get('subject');
         
         return $this->render('guardian/rooms.html.twig', [
             'rooms' => $repo->findActiveRooms($subjectId),
-            'subjects' => [], // TODO: Use SubjectRepository when Planner module is implemented
+            'subjects' => $subjectRepo->findAll(),
             'current_subject' => $subjectId,
             'can_create' => $this->isGranted('ROLE_STUDENT_PLUS'),
         ]);
@@ -181,7 +186,10 @@ class GuardianController extends AbstractController
     }
 
     #[Route('/rooms/{id}', name: 'guardian_room_detail', methods: ['GET'])]
-    public function roomDetail(VirtualRoom $room): Response
+    public function roomDetail(
+        VirtualRoom $room,
+        ChatMessageRepository $messageRepo
+    ): Response
     {
         if (!$room->isActive() && !$this->isGranted('ROLE_ADMIN')) {
             $this->addFlash('error', 'Cette salle est fermée.');
@@ -198,7 +206,7 @@ class GuardianController extends AbstractController
         return $this->render('guardian/room_detail.html.twig', [
             'room' => $room,
             'is_participant' => $isParticipant,
-            'messages' => [], // TODO: Implement ChatMessage entity from Community module
+            'messages' => $messageRepo->findByRoom($room),
         ]);
     }
 

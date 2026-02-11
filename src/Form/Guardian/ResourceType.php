@@ -4,7 +4,7 @@
 namespace App\Form\Guardian;
 
 use App\Entity\Guardian\Resource;
-// use App\Entity\Planner\Subject; // TODO: Enable when Planner module is implemented
+use App\Entity\Planner\Subject;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -53,17 +53,16 @@ class ResourceType extends AbstractType
                     ]),
                 ],
             ])
-            // TODO: Uncomment when Planner module is implemented
-            // ->add('subject', EntityType::class, [
-            //     'class' => Subject::class,
-            //     'choice_label' => 'name',
-            //     'label' => 'Matière',
-            //     'placeholder' => '-- Sélectionnez une matière --',
-            //     'attr' => ['class' => 'form-select bg-dark text-light border-secondary'],
-            //     'constraints' => [
-            //         new NotBlank(['message' => 'Veuillez sélectionner une matière.']),
-            //     ],
-            // ])
+            ->add('subject', EntityType::class, [
+                'class' => Subject::class,
+                'choice_label' => 'name',
+                'label' => 'Matière',
+                'placeholder' => '-- Sélectionnez une matière --',
+                'attr' => ['class' => 'form-select bg-dark text-light border-secondary'],
+                'constraints' => [
+                    new NotBlank(['message' => 'Veuillez sélectionner une matière.']),
+                ],
+            ])
             ->add('type', ChoiceType::class, [
                 'label' => 'Type de ressource',
                 'choices' => [

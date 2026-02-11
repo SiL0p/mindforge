@@ -4,7 +4,7 @@
 namespace App\Entity\Guardian;
 
 use App\Entity\Architect\User;
-//use App\Entity\Planner\Subject;
+use App\Entity\Planner\Subject;
 use App\Repository\Guardian\ResourceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -65,12 +65,11 @@ class Resource
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    // RELATIONSHIP: Many Resources belong to One Subject (Planner module - not yet implemented)
-    // TODO: Enable when Planner module is implemented
-    // #[ORM\ManyToOne(targetEntity: Subject::class, inversedBy: 'resources')]
-    // #[ORM\JoinColumn(nullable: false, name: 'subject_id', referencedColumnName: 'id')]
-    // #[Assert\NotNull(message: 'Veuillez sélectionner une matière.')]
-    // private ?Subject $subject = null;
+    // RELATIONSHIP: Many Resources belong to One Subject (Planner module)
+    #[ORM\ManyToOne(targetEntity: Subject::class, inversedBy: 'resources')]
+    #[ORM\JoinColumn(nullable: false, name: 'subject_id', referencedColumnName: 'id')]
+    #[Assert\NotNull(message: 'Veuillez sélectionner une matière.')]
+    private ?Subject $subject = null;
 
     // RELATIONSHIP: Many Resources uploaded by One User (Student+)
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'uploadedResources')]
@@ -115,9 +114,8 @@ class Resource
     public function setRating(int $rating): self { $this->rating = $rating; return $this; }
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
     public function getUpdatedAt(): ?\DateTimeImmutable { return $this->updatedAt; }
-    // TODO: Uncomment when Planner module is implemented
-    // public function getSubject(): ?Subject { return $this->subject; }
-    // public function setSubject(?Subject $subject): self { $this->subject = $subject; return $this; }
+    public function getSubject(): ?Subject { return $this->subject; }
+    public function setSubject(?Subject $subject): self { $this->subject = $subject; return $this; }
     public function getUploader(): ?User { return $this->uploader; }
     public function setUploader(?User $uploader): self { $this->uploader = $uploader; return $this; }
     public function getFile() { return $this->file; }
