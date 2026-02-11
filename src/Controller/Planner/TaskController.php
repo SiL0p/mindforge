@@ -4,7 +4,7 @@ namespace App\Controller\Planner;
 
 use App\Entity\Planner\Task;
 use App\Form\Planner\TaskType;
-use App\Repository\TaskRepository;
+use App\Repository\Planner\TaskRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
