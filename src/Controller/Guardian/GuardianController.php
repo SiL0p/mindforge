@@ -8,7 +8,7 @@ use App\Entity\Guardian\VirtualRoom;
 use App\Form\Guardian\ResourceType;
 use App\Form\Guardian\VirtualRoomType;
 use App\Repository\Guardian\ResourceRepository;
-use App\Repository\Planner\SubjectRepository;
+// use App\Repository\Planner\SubjectRepository; // TODO: Implement Planner module
 use App\Repository\Guardian\VirtualRoomRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -35,8 +35,7 @@ class GuardianController extends AbstractController
     #[Route('/library', name: 'guardian_library', methods: ['GET'])]
     public function library(
         Request $request,
-        ResourceRepository $repo,
-        SubjectRepository $subjectRepo
+        ResourceRepository $repo
     ): Response {
         $filters = [
             'subject' => $request->query->get('subject'),
@@ -46,7 +45,7 @@ class GuardianController extends AbstractController
 
         return $this->render('guardian/library.html.twig', [
             'resources' => $repo->findByFilters($filters),
-            'subjects' => $subjectRepo->findAllActive(),
+            'subjects' => [], // TODO: Use SubjectRepository when Planner module is implemented
             'filters' => $filters,
             'can_upload' => $this->isGranted('ROLE_STUDENT_PLUS'),
         ]);
@@ -143,14 +142,13 @@ class GuardianController extends AbstractController
     #[Route('/rooms', name: 'guardian_rooms', methods: ['GET'])]
     public function listRooms(
         Request $request,
-        VirtualRoomRepository $repo,
-        SubjectRepository $subjectRepo
+        VirtualRoomRepository $repo
     ): Response {
         $subjectId = $request->query->get('subject');
         
         return $this->render('guardian/rooms.html.twig', [
             'rooms' => $repo->findActiveRooms($subjectId),
-            'subjects' => $subjectRepo->findAllActive(),
+            'subjects' => [], // TODO: Use SubjectRepository when Planner module is implemented
             'current_subject' => $subjectId,
             'can_create' => $this->isGranted('ROLE_STUDENT_PLUS'),
         ]);

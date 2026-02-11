@@ -3,6 +3,8 @@
 namespace App\Entity\Architect;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -34,10 +36,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
+    // RELATIONSHIPS: Guardian Module
+    #[ORM\OneToMany(targetEntity: 'App\Entity\Guardian\Resource', mappedBy: 'uploader')]
+    private Collection $uploadedResources;
+
+    #[ORM\OneToMany(targetEntity: 'App\Entity\Guardian\VirtualRoom', mappedBy: 'creator')]
+    private Collection $createdRooms;
+
+    #[ORM\ManyToMany(targetEntity: 'App\Entity\Guardian\VirtualRoom', mappedBy: 'participants')]
+    private Collection $joinedRooms;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
         $this->roles = ['ROLE_USER'];
+        $this->uploadedResources = new ArrayCollection();
+        $this->createdRooms = new ArrayCollection();
+        $this->joinedRooms = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -119,6 +134,85 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUpdatedAt(?\DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, App\Entity\Guardian\Resource>
+     */
+    public function getUploadedResources(): Collection
+    {
+        return $this->uploadedResources;
+    }
+
+    public function addUploadedResource($resource): self
+    {
+        if (!$this->uploadedResources->contains($resource)) {
+            $this->uploadedResources->add($resource);
+            $resource->setUploader($this);
+        }
+        return $this;
+    }
+
+    public function removeUploadedResource($resource): self
+    {
+        if ($this->uploadedResources->removeElement($resource)) {
+            if ($resource->getUploader() === $this) {
+                $resource->setUploader(null);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, App\Entity\Guardian\VirtualRoom>
+     */
+    public function getCreatedRooms(): Collection
+    {
+        return $this->createdRooms;
+    }
+
+    public function addCreatedRoom($room): self
+    {
+        if (!$this->createdRooms->contains($room)) {
+            $this->createdRooms->add($room);
+            $room->setCreator($this);
+        }
+        return $this;
+    }
+
+    public function removeCreatedRoom($room): self
+    {
+        if ($this->createdRooms->removeElement($room)) {
+            if ($room->getCreator() === $this) {
+                $room->setCreator(null);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, App\Entity\Guardian\VirtualRoom>
+     */
+    public function getJoinedRooms(): Collection
+    {
+        return $this->joinedRooms;
+    }
+
+    public function addJoinedRoom($room): self
+    {
+        if (!$this->joinedRooms->contains($room)) {
+            $this->joinedRooms->add($room);
+            $room->addParticipant($this);
+        }
+        return $this;
+    }
+
+    public function removeJoinedRoom($room): self
+    {
+        if ($this->joinedRooms->removeElement($room)) {
+            $room->removeParticipant($this);
+        }
         return $this;
     }
 }

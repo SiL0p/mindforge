@@ -18,8 +18,8 @@ class ResourceRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('r')
             ->leftJoin('r.uploader', 'u')
-            ->leftJoin('r.subject', 's')
-            ->addSelect('u', 's')
+            // ->leftJoin('r.subject', 's') // TODO: Enable when Planner module is implemented
+            ->addSelect('u')
             ->orderBy('r.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
@@ -29,14 +29,15 @@ class ResourceRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('r')
             ->leftJoin('r.uploader', 'u')
-            ->leftJoin('r.subject', 's')
-            ->addSelect('u', 's')
+            // ->leftJoin('r.subject', 's') // TODO: Enable when Planner module is implemented
+            ->addSelect('u')
             ->where('r.id IS NOT NULL');
 
-        if (!empty($filters['subject'])) {
-            $qb->andWhere('s.id = :subject')
-               ->setParameter('subject', $filters['subject']);
-        }
+        // TODO: Enable subject filtering when Planner module is implemented
+        // if (!empty($filters['subject'])) {
+        //     $qb->andWhere('s.id = :subject')
+        //        ->setParameter('subject', $filters['subject']);
+        // }
 
         if (!empty($filters['type'])) {
             $qb->andWhere('r.type = :type')
