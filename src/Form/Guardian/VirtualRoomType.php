@@ -7,6 +7,7 @@ use App\Entity\Guardian\VirtualRoom;
 use App\Entity\Planner\Subject;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -84,6 +85,10 @@ class VirtualRoomType extends AbstractType
                         'notInRangeMessage' => 'La limite doit être entre {{ min }} et {{ max }}.',
                     ]),
                 ],
+            ])
+            ->add('isActive', CheckboxType::class, [
+                'label' => 'Salle active à la création',
+                'required' => false,
             ]);
     }
 

@@ -1,6 +1,6 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Éditer la Ressource{% endblock %}
+{% block title %}Edit Resource{% endblock %}
 {% block body_class %}guardian-admin-ui{% endblock %}
 
 {% block content %}
@@ -8,7 +8,7 @@
     <div class="row mb-4">
         <div class="col-md-8">
             <div class="guardian-admin-hero">
-                <h1>Éditer la Ressource</h1>
+                <h1>Edit Resource</h1>
                 <p class="text-muted mb-0">{{ resource.title }}</p>
             </div>
         </div>
@@ -18,7 +18,7 @@
             {{ form_start(form) }}
             
             <div class="form-group mb-3">
-                {{ form_label(form.title, 'Titre') }}
+                {{ form_label(form.title, 'Title') }}
                 {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
                 {{ form_errors(form.title) }}
             </div>
@@ -39,7 +39,7 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group mb-3">
-                        {{ form_label(form.subject, 'Sujet') }}
+                        {{ form_label(form.subject, 'Subject') }}
                         {{ form_widget(form.subject, {'attr': {'class': 'form-control'}}) }}
                         {{ form_errors(form.subject) }}
                     </div>
@@ -47,8 +47,8 @@
             </div>
 
             <div class="d-flex flex-wrap gap-2">
-                <button type="submit" class="btn btn-primary">Enregistrer</button>
-                <a href="{{ path('admin_resource_index') }}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="{{ path('admin_resource_index') }}" class="btn btn-secondary">Cancel</a>
             </div>
 
             {{ form_end(form) }}
