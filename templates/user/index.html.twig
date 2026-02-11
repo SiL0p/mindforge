@@ -29,6 +29,41 @@
 		<![endif]-->
 
     </head>
+	<style>
+        /* Dropdown menu styling */
+        .dropdown-menu {
+            background-color: #fff;
+            border: 1px solid #ccc;
+        }
+
+        .dropdown-menu > li > a {
+            color: #333 !important;
+            padding: 10px 20px;
+        }
+
+        .dropdown-menu > li > a:hover,
+        .dropdown-menu > li > a:focus {
+            color: #000 !important;
+            background-color: #f5f5f5;
+        }
+
+        .dropdown-menu > .dropdown-header {
+            color: #333 !important;
+            font-weight: bold;
+            padding: 10px 20px;
+        }
+
+        .dropdown-menu .divider {
+            height: 1px;
+            margin: 9px 0;
+            background-color: #e5e5e5;
+        }
+
+        .dropdown-menu > li > a i {
+            color: #333;
+            margin-right: 8px;
+        }
+    </style>
 	<body>
 
 		<!-- Header -->
@@ -55,15 +90,51 @@
 				<!-- Navigation -->
 <nav id="nav">
     <ul class="main-menu nav navbar-nav navbar-right">
-							<li><a href="{{ path('app_home') }}">Home</a></li>
-							<li><a href="#">About</a></li>
-							<li><a href="#">Courses</a></li>
-							<li><a href="#">rommes</a></li>
-							<li><a href="#">careers center</a></li>
-							<li><a href="#">leader board</a></li>
-							<li><a href="{{ path('app_blog') }}">Blog</a></li>
-							<li><a href="{{ path('app_contact') }}">Contact</a></li>
-						</ul>
+        <li><a href="{{ path('app_home') }}">Home</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Courses</a></li>
+        <li><a href="#">Rooms</a></li>
+        <li><a href="#">Careers Center</a></li>
+        <li><a href="#">Leader Board</a></li>
+        <li><a href="{{ path('app_blog') }}">Blog</a></li>
+        <li><a href="{{ path('app_contact') }}">Contact</a></li>
+        
+        {% if app.user %}
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-user-circle"></i> Profile <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li class="dropdown-header">
+                        <i class="fa fa-user"></i> {{ app.user.email }}
+                    </li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="{{ path('app_profile_view') }}">
+                        <i class="fa fa-id-card"></i> View Profile
+                    </a></li>
+                    <li><a href="{{ path('app_profile_edit') }}">
+                        <i class="fa fa-edit"></i> Edit Profile
+                    </a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="{{ path('app_request_status') }}">
+                        <i class="fa fa-list-alt"></i> My Requests
+                    </a></li>
+                    <li><a href="{{ path('app_request_student_plus') }}">
+                        <i class="fa fa-star"></i> Request Student+
+                    </a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="{{ path('app_logout') }}">
+                        <i class="fa fa-sign-out"></i> Logout
+                    </a></li>
+                </ul>
+            </li>
+        {% else %}
+            <li><a href="{{ path('app_login') }}">
+                <i class="fa fa-sign-in"></i> Login
+            </a></li>
+           
+        {% endif %}
+    </ul>
 </nav>
 
 				<!-- /Navigation -->
