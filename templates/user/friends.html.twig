@@ -1,0 +1,340 @@
+{# templates/user/friends.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}My Friends{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .friends-container {
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 100px 0 50px 0;
+        }
+        
+        .friend-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.2s;
+        }
+        
+        .friend-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .friend-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .friend-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            margin-right: 15px;
+        }
+        
+        .section-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .badge-pending {
+            background: #fbbf24;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-count {
+            background: #f5576c;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #a0aec0;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<!-- Header -->
+<header id="header">
+    <div class="container">
+        <div class="navbar-header">
+            <div class="navbar-brand">
+                <a class="logo" href="{{ path('app_home') }}">
+                    <img src="{{ asset('user/img/logo-alt.png') }}" alt="logo">
+                </a>
+            </div>
+        </div>
+        <nav id="nav">
+            <ul class="main-menu nav navbar-nav navbar-right">
+                <li><a href="{{ path('app_home') }}">Home</a></li>
+                <li class="active"><a href="{{ path('app_friends') }}">Friends</a></li>
+                {% if app.user %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-user-circle"></i> Profile <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-header">
+                                <i class="fa fa-user"></i> {{ app.user.email }}
+                            </li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="{{ path('app_profile_view') }}">
+                                <i class="fa fa-id-card"></i> View Profile
+                            </a></li>
+                            <li><a href="{{ path('app_profile_edit') }}">
+                                <i class="fa fa-edit"></i> Edit Profile
+                            </a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="{{ path('app_logout') }}">
+                                <i class="fa fa-sign-out"></i> Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<div class="friends-container">
+    <div class="container">
+        <div class="text-center" style="margin-bottom: 40px;">
+            <h1 style="font-size: 42px; font-weight: 700; color: #2d3748;">
+                <i class="fa fa-users"></i> My Friends
+            </h1>
+            <p style="font-size: 16px; color: #718096; margin-top: 10px;">
+                Connect with other students and build your network
+            </p>
+        </div>
+
+        {# Flash Messages #}
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <i class="fa fa-check-circle"></i> {{ message }}
+            </div>
+        {% endfor %}
+        
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <i class="fa fa-exclamation-circle"></i> {{ message }}
+            </div>
+        {% endfor %}
+        
+        {% for message in app.flashes('info') %}
+            <div class="alert alert-info alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <i class="fa fa-info-circle"></i> {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="row">
+            {# Friend Requests Section #}
+            <div class="col-md-6">
+                <div class="section-card">
+                    <div class="section-title">
+                        <i class="fa fa-user-clock"></i> Friend Requests 
+                        {% if received_requests|length > 0 %}
+                            <span class="badge-count">{{ received_requests|length }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if received_requests is empty %}
+                        <div class="empty-state">
+                            <i class="fa fa-inbox"></i>
+                            <p>No pending friend requests</p>
+                        </div>
+                    {% else %}
+                        {% for request in received_requests %}
+                            <div class="friend-card">
+                                <div class="friend-info">
+                                    <div class="friend-avatar">
+                                        {{ request.email|slice(0, 1)|upper }}
+                                    </div>
+                                    <div>
+                                        <strong style="color: #2d3748;">{{ request.email }}</strong>
+                                    </div>
+                                </div>
+                                <div>
+                                    <a href="{{ path('app_friend_accept', {id: request.id}) }}" 
+                                       class="btn btn-success btn-sm"
+                                       style="margin-right: 5px;">
+                                        <i class="fa fa-check"></i> Accept
+                                    </a>
+                                    <a href="{{ path('app_friend_reject', {id: request.id}) }}" 
+                                       class="btn btn-danger btn-sm">
+                                        <i class="fa fa-times"></i> Reject
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Sent Requests Section #}
+            <div class="col-md-6">
+                <div class="section-card">
+                    <div class="section-title">
+                        <i class="fa fa-paper-plane"></i> Sent Requests
+                    </div>
+                    
+                    {% if sent_requests is empty %}
+                        <div class="empty-state">
+                            <i class="fa fa-inbox"></i>
+                            <p>No sent requests</p>
+                        </div>
+                    {% else %}
+                        {% for request in sent_requests %}
+                            <div class="friend-card">
+                                <div class="friend-info">
+                                    <div class="friend-avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                        {{ request.email|slice(0, 1)|upper }}
+                                    </div>
+                                    <div>
+                                        <strong style="color: #2d3748;">{{ request.email }}</strong>
+                                        <br>
+                                        <span class="badge-pending">
+                                            <i class="fa fa-clock"></i> Pending
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# My Friends List #}
+        <div class="section-card">
+            <div class="section-title">
+                <i class="fa fa-user-friends"></i> My Friends 
+                {% if friends|length > 0 %}
+                    <span class="badge-count">{{ friends|length }}</span>
+                {% endif %}
+            </div>
+            
+            {% if friends is empty %}
+                <div class="empty-state">
+                    <i class="fa fa-user-friends"></i>
+                    <p style="font-size: 16px;">You don't have any friends yet.</p>
+                    <p style="color: #cbd5e0;">Send friend requests below to get started!</p>
+                </div>
+            {% else %}
+                <div class="row">
+                    {% for friend in friends %}
+                        <div class="col-md-6">
+                            <div class="friend-card">
+                                <div class="friend-info">
+                                    <div class="friend-avatar" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                                        {{ friend.email|slice(0, 1)|upper }}
+                                    </div>
+                                    <div>
+                                        <strong style="color: #2d3748;">{{ friend.email }}</strong>
+                                        <br>
+                                        <small style="color: #718096;">
+                                            <i class="fa fa-check-circle" style="color: #38ef7d;"></i> Friends
+                                        </small>
+                                    </div>
+                                </div>
+                                <div>
+                                    <a href="{{ path('app_friend_remove', {id: friend.id}) }}" 
+                                       class="btn btn-danger btn-sm"
+                                       onclick="return confirm('Are you sure you want to remove this friend?')">
+                                        <i class="fa fa-user-minus"></i> Remove
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        {# Find Friends Section #}
+        <div class="section-card">
+            <div class="section-title">
+                <i class="fa fa-search"></i> Find Friends
+            </div>
+            
+            {% if suggested_users is empty %}
+                <div class="empty-state">
+                    <i class="fa fa-users"></i>
+                    <p>No users available to add at the moment</p>
+                </div>
+            {% else %}
+                <div class="row">
+                    {% for user in suggested_users %}
+                        <div class="col-md-6">
+                            <div class="friend-card">
+                                <div class="friend-info">
+                                    <div class="friend-avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                        {{ user.email|slice(0, 1)|upper }}
+                                    </div>
+                                    <div>
+                                        <strong style="color: #2d3748;">{{ user.email }}</strong>
+                                    </div>
+                                </div>
+                                <div>
+                                    <a href="{{ path('app_friend_send_request', {id: user.id}) }}" 
+                                       class="btn btn-primary btn-sm">
+                                        <i class="fa fa-user-plus"></i> Add Friend
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
