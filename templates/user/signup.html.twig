@@ -29,7 +29,7 @@
 
                         <form method="POST" action="{{ path('app_signup') }}">
                             <input type="hidden" name="_csrf_token"
-                                   value="{{ csrf_token('authenticate') }}">
+                                   value="{{ csrf_token('signup') }}">
 
                             <div class="form-group">
                                 <label for="first_name">First Name</label>

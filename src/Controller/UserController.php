@@ -28,51 +28,29 @@ final class UserController extends AbstractController
     }
 
     #[Route('/login', name: 'app_login')]
-public function login(
-    Request $request,
-    AuthenticationUtils $authenticationUtils,
-    UserPasswordHasherInterface $passwordHasher,
-    EntityManagerInterface $em
-): Response {
-    // If it's a GET request, just show the form
-    if (!$request->isMethod('POST')) {
+    public function login(AuthenticationUtils $authenticationUtils): Response
+    {
+        // If user is already logged in, redirect to home
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_home');
+        }
+
+        // Get the last authentication error if any
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
-        
+
         return $this->render('user/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
         ]);
     }
-    
-    // If it's a POST request, process the login
-    $email = $request->request->get('_username');
-    $password = $request->request->get('_password');
-    
-    // Find user by email
-    $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
-    
-    if (!$user) {
-        $this->addFlash('error', 'Invalid email or password.');
-        return $this->render('user/login.html.twig', [
-            'last_username' => $email,
-            'error' => null,
-        ]);
+
+    #[Route('/logout', name: 'app_logout')]
+    public function logout(): void
+    {
+        // This method is intercepted by the Symfony logout listener
+        // The authenticator will handle the logout process
     }
-    
-    // Check if password is correct
-    if (!$passwordHasher->isPasswordValid($user, $password)) {
-        $this->addFlash('error', 'Invalid email or password.');
-        return $this->render('user/login.html.twig', [
-            'last_username' => $email,
-            'error' => null,
-        ]);
-    }
-    
-    // Login successful! Redirect to home or dashboard
-    $this->addFlash('success', 'Welcome back!');
-    return $this->redirectToRoute('app_home');
-}
     #[Route('/signup', name: 'app_signup')]
     public function signup(
         Request $request,
@@ -147,41 +125,54 @@ public function login(
         return $this->render('user/blog-post.html.twig');
     }
 
-    // Logout route (Symfony intercepts this)
-    #[Route('/logout', name: 'app_logout')]
-    public function logout(): void
-    {
-        throw new \LogicException('This method can be blank - it will be intercepted by Symfony.');
-    }
-#[Route('/request-student-plus', name: 'app_request_student_plus')]
+  #[Route('/request-student-plus', name: 'app_request_student_plus')]
 public function requestStudentPlus(
     Request $request,
     EntityManagerInterface $em
 ): Response {
-    // Get all users
-    $users = $em->getRepository(User::class)->findAll();
+    // Get the currently logged-in user
+    $user = $this->getUser();
     
-    // If no users, use a dummy for testing
-    if (empty($users)) {
-        $user = null;
-    } else {
-        // Use first user
-        $user = $users[0];
+    // If no user is logged in, redirect to login
+    if (!$user) {
+        return $this->redirectToRoute('app_login');
+    }
+    
+    // Check if user already has Student+ or Admin role
+    if ($user->getRoles() && (in_array('ROLE_STUDENT_PLUS', $user->getRoles()) || in_array('ROLE_ADMIN', $user->getRoles()))) {
+        $this->addFlash('info', 'You already have Student+ or Admin status!');
+        return $this->redirectToRoute('app_home');
+    }
+    
+    // Check if user already has a pending request
+    $existingRequest = $em->getRepository(RoleRequest::class)->findOneBy([
+        'user' => $user,
+        'status' => 'pending' // Assuming you have a status field
+    ]);
+    
+    if ($existingRequest) {
+        $this->addFlash('warning', 'You already have a pending request. Please wait for admin approval.');
+        return $this->redirectToRoute('app_request_status');
     }
     
     // Handle form submission
-    if ($request->isMethod('POST') && $user) {
+    if ($request->isMethod('POST')) {
         $motivation = $request->request->get('motivation');
         
         if (!empty($motivation) && strlen($motivation) >= 50) {
             $roleRequest = new RoleRequest();
             $roleRequest->setUser($user);
             $roleRequest->setMotivation($motivation);
+            // Set default status to pending
+            $roleRequest->setStatus('pending');
             
             $em->persist($roleRequest);
             $em->flush();
             
-            $this->addFlash('success', 'Request submitted successfully!');
+            $this->addFlash('success', 'Request submitted successfully! We will review it soon.');
+            
+            // Redirect to avoid form resubmission
+            return $this->redirectToRoute('app_request_status');
         } else {
             $this->addFlash('error', 'Motivation must be at least 50 characters.');
         }
@@ -189,26 +180,28 @@ public function requestStudentPlus(
     
     return $this->render('user/request_student_plus.html.twig', [
         'user' => $user,
-        'all_users' => $users,
     ]);
 }
 
 #[Route('/my-request-status', name: 'app_request_status')]
 public function requestStatus(EntityManagerInterface $em): Response
 {
-    $users = $em->getRepository(User::class)->findAll();
-    $user = empty($users) ? null : $users[0];
+    // Get the currently logged-in user
+    $user = $this->getUser();
     
-    $requests = [];
-    if ($user) {
-        $requests = $em->getRepository(RoleRequest::class)->findBy(
-            ['user' => $user],
-            ['requestedAt' => 'DESC']
-        );
+    // If no user is logged in, redirect to login
+    if (!$user) {
+        return $this->redirectToRoute('app_login');
     }
+    
+    $requests = $em->getRepository(RoleRequest::class)->findBy(
+        ['user' => $user],
+        ['requestedAt' => 'DESC']
+    );
     
     return $this->render('user/request_status.html.twig', [
         'requests' => $requests,
         'user' => $user,
     ]);
-}}
+}
+}

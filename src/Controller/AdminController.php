@@ -1,6 +1,6 @@
 <?php
 namespace App\Controller;
-
+use App\Service\AnalyticsService;
 use App\Entity\Architect\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -188,4 +188,20 @@ public function rejectRequest(
         'request' => $request,
     ]);
 }
-}
+ #[Route('/admin/analytics', name: 'admin_analytics')]
+    public function index(AnalyticsService $analytics)
+    {
+        $userStats     = $analytics->getUserStats();
+        $activityStats = $analytics->getActivityStats();
+        $locales       = $analytics->getLocales();
+        $timezones     = $analytics->getTimezones();
+        $recentUsers   = $analytics->getRecentActiveUsers();
+
+        return $this->render('admin/analytics.html.twig', [
+            'userStats'     => $userStats,
+            'activityStats' => $activityStats,
+            'locales'       => $locales,
+            'timezones'     => $timezones,
+            'recentUsers'   => $recentUsers,
+        ]);
+    }}
