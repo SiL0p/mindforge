@@ -1,18 +1,20 @@
 {% extends 'admin/base.html.twig' %}
 
 {% block title %}Éditer la Ressource{% endblock %}
+{% block body_class %}guardian-admin-ui{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-md-8">
-            <h1>Éditer la Ressource</h1>
-            <p class="text-muted">{{ resource.title }}</p>
+            <div class="guardian-admin-hero">
+                <h1>Éditer la Ressource</h1>
+                <p class="text-muted mb-0">{{ resource.title }}</p>
+            </div>
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-body">
+    <div class="guardian-admin-card p-4">
             {{ form_start(form) }}
             
             <div class="form-group mb-3">
@@ -44,13 +46,12 @@
                 </div>
             </div>
 
-            <div class="form-group mb-3">
-                {{ form_widget(form.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
                 <a href="{{ path('admin_resource_index') }}" class="btn btn-secondary">Annuler</a>
             </div>
 
             {{ form_end(form) }}
-        </div>
     </div>
 </div>
 {% endblock %}

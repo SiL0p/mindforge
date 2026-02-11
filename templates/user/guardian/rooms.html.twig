@@ -1,96 +1,85 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Salles Virtuelles{% endblock %}
+{% block body_class %}guardian-ui{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h1>Salles Virtuelles</h1>
-            <p class="text-muted">Rejoignez une salle pour collaborer avec d'autres utilisateurs</p>
-        </div>
-        {% if can_create %}
-        <div class="col-md-4 text-end">
-            <a href="{{ path('guardian_room_create') }}" class="btn btn-primary btn-lg">
-                <i class="fas fa-plus"></i> Créer une Salle
-            </a>
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- Filter by Subject -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="GET" class="row g-3">
-                <div class="col-md-6">
-                    <label for="subject" class="form-label">Filtrer par Sujet</label>
-                    <select id="subject" name="subject" class="form-select">
-                        <option value="">-- Tous les sujets --</option>
-                        {% for subject in subjects %}
-                            <option value="{{ subject.id }}" {% if current_subject == subject.id %}selected{% endif %}>
-                                {{ subject.name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">&nbsp;</label>
-                    <button type="submit" class="btn btn-success w-100">Filtrer</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Rooms List -->
-    {% if rooms is empty %}
-        <div class="alert alert-info">
-            Aucune salle virtuelle disponible pour le moment.
+<div class="guardian-shell">
+    <section class="guardian-hero mb-4">
+        <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
+            <div>
+                <span class="guardian-pill"><i class="fas fa-users"></i> Collaboration instantanee</span>
+                <h1 class="guardian-title">Salles Virtuelles</h1>
+                <p class="guardian-subtitle">Rejoignez une salle pour echanger, reviser et avancer ensemble.</p>
+            </div>
             {% if can_create %}
-                <a href="{{ path('guardian_room_create') }}" class="alert-link">Créez-en une !</a>
+                <a href="{{ path('guardian_room_create') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus"></i> Creer une Salle
+                </a>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="guardian-panel p-4 mb-4">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label for="subject" class="form-label">Filtrer par Sujet</label>
+                <select id="subject" name="subject" class="form-select">
+                    <option value="">-- Tous les sujets --</option>
+                    {% for subject in subjects %}
+                        <option value="{{ subject.id }}" {% if current_subject == subject.id %}selected{% endif %}>
+                            {{ subject.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <button type="submit" class="btn btn-success w-100">Filtrer</button>
+            </div>
+        </form>
+    </section>
+
+    {% if rooms is empty %}
+        <div class="guardian-panel p-4 text-center">
+            <h4 class="mb-2">Aucune salle pour le moment</h4>
+            <p class="text-muted">Revenez bientot ou lancez la premiere salle.</p>
+            {% if can_create %}
+                <a href="{{ path('guardian_room_create') }}" class="btn btn-primary">Creer une salle</a>
             {% endif %}
         </div>
     {% else %}
         <div class="row">
             {% for room in rooms %}
                 <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-header bg-light">
-                            <h5 class="card-title mb-0">{{ room.name }}</h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text text-muted">{{ room.description }}</p>
-                            <div class="mb-3">
-                                <span class="badge bg-secondary">{{ room.subject.name }}</span>
-                                {% if room.isFull %}
-                                    <span class="badge bg-danger">Complet</span>
-                                {% else %}
-                                    <span class="badge bg-success">Disponible</span>
-                                {% endif %}
+                    <div class="guardian-card h-100 p-3" style="animation-delay: {{ loop.index0 * 60 }}ms;">
+                        <div class="d-flex align-items-start justify-content-between">
+                            <div>
+                                <h5 class="mb-1">{{ room.name }}</h5>
+                                <div class="text-muted small">{{ room.subject.name }}</div>
                             </div>
-                            <dl class="row small">
-                                <dt class="col-sm-6">Créateur:</dt>
-                                <dd class="col-sm-6">{{ room.creator.firstName }} {{ room.creator.lastName }}</dd>
-                                
-                                <dt class="col-sm-6">Participants:</dt>
-                                <dd class="col-sm-6">{{ room.participants|length }}/{{ room.maxParticipants }}</dd>
-                                
-                                <dt class="col-sm-6">Créée:</dt>
-                                <dd class="col-sm-6">{{ room.createdAt|date('d/m/Y') }}</dd>
-                            </dl>
+                            <span class="guardian-badge" style="background: {{ room.isFull ? 'rgba(255, 107, 107, 0.2)' : 'rgba(72, 198, 239, 0.2)' }}; color: {{ room.isFull ? '#9b1c1c' : '#1b4d6b' }};">
+                                {{ room.isFull ? 'Complet' : 'Disponible' }}
+                            </span>
                         </div>
-                        <div class="card-footer bg-light">
+                        <p class="text-muted mt-3">{{ room.description ?: 'Aucune description pour le moment.' }}</p>
+                        <div class="d-flex flex-wrap gap-2 text-muted small mb-3">
+                            <span><i class="fas fa-user"></i> {{ room.creator.firstName }} {{ room.creator.lastName }}</span>
+                            <span><i class="fas fa-users"></i> {{ room.participants|length }}/{{ room.maxParticipants }}</span>
+                            <span><i class="fas fa-calendar"></i> {{ room.createdAt|date('d/m/Y') }}</span>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
                             <a href="{{ path('guardian_room_detail', {id: room.id}) }}" class="btn btn-sm btn-primary">
-                                <i class="fas fa-eye"></i> Voir la Salle
+                                <i class="fas fa-eye"></i> Voir
                             </a>
                             {% if not app.user in room.participants and not room.isFull %}
-                                <form method="POST" action="{{ path('guardian_room_join', {id: room.id}) }}" style="display:inline;">
+                                <form method="POST" action="{{ path('guardian_room_join', {id: room.id}) }}">
                                     <input type="hidden" name="_token" value="{{ csrf_token('join_room_' ~ room.id) }}">
                                     <button type="submit" class="btn btn-sm btn-success">
                                         <i class="fas fa-sign-in-alt"></i> Rejoindre
                                     </button>
                                 </form>
                             {% elseif app.user in room.participants %}
-                                <span class="badge bg-info ms-2">Vous êtes membre</span>
+                                <span class="guardian-badge" style="background: rgba(124, 92, 255, 0.2); color: #3f2fbf;">Vous etes membre</span>
                             {% endif %}
                         </div>
                     </div>
