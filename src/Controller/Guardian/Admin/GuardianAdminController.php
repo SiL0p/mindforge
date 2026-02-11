@@ -5,7 +5,7 @@ namespace App\Controller\Guardian\Admin;
 
 use App\Entity\Guardian\Resource;
 use App\Entity\Guardian\VirtualRoom;
-use App\Form\AdminResourceEditType;
+use App\Form\Guardian\AdminResourceEditType;
 use App\Repository\Guardian\ResourceRepository;
 use App\Repository\Guardian\VirtualRoomRepository;
 use Doctrine\ORM\EntityManagerInterface;

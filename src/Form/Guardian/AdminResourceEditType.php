@@ -1,58 +1,54 @@
 <?php
-// src/Form/VirtualRoomType.php
+// src/Form/AdminResourceEditType.php
 
-namespace App\Form\Guardian;
+namespace App\Form;
 
-use App\Entity\Guardian\VirtualRoom;
+use App\Entity\Guardian\Resource;
 use App\Entity\Planner\Subject;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Range;
 
-class VirtualRoomType extends AbstractType
+class AdminResourceEditType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('name', TextType::class, [
-                'label' => 'Nom de la salle',
+            ->add('title', TextType::class, [
+                'label' => 'Titre de la ressource',
                 'attr' => [
-                    'placeholder' => 'Ex: Groupe de révision - Algorithmique',
+                    'placeholder' => 'Ex: Cours complet Java - Threads et Concurrence',
                     'class' => 'form-control bg-dark text-light border-secondary',
                 ],
                 'constraints' => [
-                    new NotBlank(['message' => 'Le nom est obligatoire.']),
+                    new NotBlank(['message' => 'Le titre est obligatoire.']),
                     new Length([
                         'min' => 3,
-                        'max' => 100,
-                        'minMessage' => 'Le nom doit faire au moins {{ limit }} caractères.',
-                        'maxMessage' => 'Le nom ne peut pas dépasser {{ limit }} caractères.',
-                    ]),
-                    new Regex([
-                        'pattern' => '/^[a-zA-Z0-9\s\-_]+$/',
-                        'message' => 'Caractères autorisés: lettres, chiffres, espaces, tirets, underscores.',
+                        'max' => 255,
+                        'minMessage' => 'Le titre doit faire au moins {{ limit }} caractères.',
+                        'maxMessage' => 'Le titre ne peut pas dépasser {{ limit }} caractères.',
                     ]),
                 ],
             ])
             ->add('description', TextareaType::class, [
-                'label' => 'Description / Règles',
+                'label' => 'Description',
                 'required' => false,
                 'attr' => [
-                    'placeholder' => 'Objectifs de la session, règles de participation...',
-                    'rows' => 3,
+                    'placeholder' => 'Décrivez le contenu de cette ressource...',
+                    'rows' => 4,
                     'class' => 'form-control bg-dark text-light border-secondary',
                 ],
                 'constraints' => [
                     new Length([
-                        'max' => 500,
+                        'max' => 2000,
                         'maxMessage' => 'La description ne peut pas dépasser {{ limit }} caractères.',
                     ]),
                 ],
@@ -60,28 +56,39 @@ class VirtualRoomType extends AbstractType
             ->add('subject', EntityType::class, [
                 'class' => Subject::class,
                 'choice_label' => 'name',
-                'label' => 'Matière concernée',
+                'label' => 'Matière',
                 'placeholder' => '-- Sélectionnez une matière --',
                 'attr' => ['class' => 'form-select bg-dark text-light border-secondary'],
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez sélectionner une matière.']),
                 ],
             ])
-            ->add('maxParticipants', ChoiceType::class, [
-                'label' => 'Nombre maximum de participants',
+            ->add('type', ChoiceType::class, [
+                'label' => 'Type de ressource',
                 'choices' => [
-                    '5 étudiants' => 5,
-                    '10 étudiants' => 10,
-                    '15 étudiants' => 15,
-                    '20 étudiants' => 20,
+                    'Document PDF' => 'pdf',
+                    'Fiche de révision' => 'summary',
+                    'Anti-sèche' => 'cheat_sheet',
+                    'Série d\'exercices' => 'exercise',
                 ],
+                'placeholder' => '-- Sélectionnez un type --',
                 'attr' => ['class' => 'form-select bg-dark text-light border-secondary'],
                 'constraints' => [
-                    new NotBlank(['message' => 'Veuillez sélectionner une limite.']),
+                    new NotBlank(['message' => 'Veuillez sélectionner un type.']),
+                ],
+            ])
+            ->add('rating', IntegerType::class, [
+                'label' => 'Note (0-5)',
+                'attr' => [
+                    'class' => 'form-control bg-dark text-light border-secondary',
+                    'min' => 0,
+                    'max' => 5,
+                ],
+                'constraints' => [
                     new Range([
-                        'min' => 2,
-                        'max' => 50,
-                        'notInRangeMessage' => 'La limite doit être entre {{ min }} et {{ max }}.',
+                        'min' => 0,
+                        'max' => 5,
+                        'notInRangeMessage' => 'La note doit être entre {{ min }} et {{ max }}.',
                     ]),
                 ],
             ]);
@@ -90,8 +97,8 @@ class VirtualRoomType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => VirtualRoom::class,
-            'attr' => ['novalidate' => 'novalidate'],
+            'data_class' => Resource::class,
+            'attr' => ['novalidate' => 'novalidate'], // Disable HTML5 validation
         ]);
     }
 }
