@@ -1,0 +1,183 @@
+{# templates/user/planner/task/index.html.twig #}
+{% extends 'user/planner/base_planner.html.twig' %}
+
+{% block title %}Mes Tâches | MindForge{% endblock %}
+
+{% block planner_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="montserrat h3 mb-1">Mes Tâches</h1>
+        <p class="text-muted-mf mb-0">Organisez votre travail avec la méthode Kanban</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-mf" onclick="startVoiceTask()">
+            <i class="bi bi-mic me-2"></i>Voice Task
+        </button>
+        <a href="{{ path('app_planner_task_new') }}" class="btn btn-primary-mf">
+            <i class="bi bi-plus-lg me-2"></i>Nouvelle tâche
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% for status_key, status_info in statuses %}
+        <div class="col-md-4">
+            <div class="kanban-column p-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="montserrat mb-0">
+                        <span style="color: {{ status_info.color }}">●</span>
+                        {{ status_info.label }}
+                    </h6>
+                    <span class="badge bg-card border border-mindforge">{{ tasks[status_key]|length }}</span>
+                </div>
+                
+                <div class="vstack gap-2" id="column-{{ status_key }}">
+                    {% for task in tasks[status_key] %}
+                        <div class="task-card p-3 priority-{{ task.priority == 3 ? 'high' : task.priority == 2 ? 'medium' : 'low' }}">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0 fw-semibold">{{ task.title }}</h6>
+                                <div class="dropdown">
+                                    <button class="btn btn-link text-muted-mf p-0" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end bg-card border-mindforge">
+                                        <li>
+                                            <a class="dropdown-item text-light" href="{{ path('app_planner_task_edit', {id: task.id}) }}">
+                                                <i class="bi bi-pencil me-2"></i>Modifier
+                                            </a>
+                                        </li>
+                                        {% if status_key != 'done' %}
+                                            {% set next_status = status_key == 'todo' ? 'in_progress' : 'done' %}
+                                            <li>
+                                                <form method="post" action="{{ path('app_planner_task_status', {id: task.id, status: next_status}) }}" class="d-inline">
+                                                    <button type="submit" class="dropdown-item text-light">
+                                                        <i class="bi bi-arrow-right me-2"></i>
+                                                        {{ next_status == 'in_progress' ? 'Démarrer' : 'Terminer' }}
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        {% endif %}
+                                        <li><hr class="dropdown-divider border-mindforge"></li>
+                                        <li>
+                                            <form method="post" action="{{ path('app_planner_task_delete', {id: task.id}) }}" onsubmit="return confirm('Supprimer cette tâche ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    <i class="bi bi-trash me-2"></i>Supprimer
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            {% if task.description %}
+                                <p class="text-muted-mf small mb-2 text-truncate">{{ task.description }}</p>
+                            {% endif %}
+                            
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                {% if task.subject %}
+                                    <span class="badge" style="background: {{ task.subject.color }}20; color: {{ task.subject.color }}; border: 1px solid {{ task.subject.color }}40;">
+                                        {{ task.subject.name }}
+                                    </span>
+                                {% endif %}
+                                {% if task.estimatedMinutes %}
+                                    <span class="badge bg-card border border-mindforge text-muted-mf">
+                                        <i class="bi bi-clock me-1"></i>{{ task.estimatedMinutes }}min
+                                    </span>
+                                {% endif %}
+                            </div>
+                            
+                            {% if task.dueDate %}
+                                <div class="d-flex align-items-center text-muted-mf small">
+                                    <i class="bi bi-calendar-event me-2"></i>
+                                    {{ task.dueDate|date('d M Y') }}
+                                    {% if task.dueDate < date() and status_key != 'done' %}
+                                        <span class="badge bg-danger ms-2">En retard</span>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4 text-muted-mf">
+                            <i class="bi bi-inbox fs-2 mb-2 d-block"></i>
+                            <small>Aucune tâche</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{# Modal Voice Task #}
+<div class="modal fade" id="voiceModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-card border-mindforge">
+            <div class="modal-header border-mindforge">
+                <h5 class="modal-title montserrat">Nouvelle tâche vocale</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-5">
+                <div class="mb-4">
+                    <div class="rounded-circle bg-primary-mf d-inline-flex align-items-center justify-content-center" 
+                         style="width: 80px; height: 80px; animation: pulse 1.5s infinite;">
+                        <i class="bi bi-mic-fill fs-2 text-white"></i>
+                    </div>
+                </div>
+                <p class="text-muted-mf mb-0">Parlez maintenant...<br><small>"Réviser le chapitre 3 de Java pour demain"</small></p>
+                <form id="voiceForm" method="post" action="{{ path('app_planner_task_voice') }}" class="mt-3">
+                    <input type="hidden" name="text" id="voiceText">
+                </form>
+            </div>
+            <div class="modal-footer border-mindforge">
+                <button type="button" class="btn btn-outline-mf" data-bs-dismiss="modal">Annuler</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+    }
+</style>
+
+<script>
+    function startVoiceTask() {
+        const modal = new bootstrap.Modal(document.getElementById('voiceModal'));
+        modal.show();
+        
+        // Simulation reconnaissance vocale (à remplacer par Web Speech API)
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'fr-FR';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('voiceText').value = transcript;
+                document.getElementById('voiceForm').submit();
+            };
+            
+            recognition.onerror = function() {
+                alert('Erreur de reconnaissance vocale. Veuillez réessayer.');
+                modal.hide();
+            };
+            
+            recognition.start();
+        } else {
+            // Fallback: prompt manuel
+            setTimeout(() => {
+                const text = prompt("Votre tâche (simulation) :");
+                if (text) {
+                    document.getElementById('voiceText').value = text;
+                    document.getElementById('voiceForm').submit();
+                }
+            }, 1000);
+        }
+    }
+</script>
+{% endblock %}
