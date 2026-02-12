@@ -1,0 +1,151 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Role Requests{% endblock %}
+
+{% block body %}
+<!-- Header -->
+<header id="header">
+    <div class="container">
+        <div class="navbar-header">
+            <div class="navbar-brand">
+                <a class="logo" href="{{ path('app_home') }}">
+                    <img src="{{ asset('user/img/logo.png') }}" alt="logo">
+                </a>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav id="nav">
+            <ul class="main-menu nav navbar-nav navbar-right">
+                <li><a href="{{ path('app_home') }}">Home</a></li>
+                <li><a href="{{ path('app_request_student_plus') }}">New Request</a></li>
+                <li><a href="{{ path('app_logout') }}">Logout</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+<!-- /Header -->
+
+<!-- Hero-area -->
+<div class="hero-area section">
+    <div class="bg-image bg-parallax overlay"
+         style="background-image:url({{ asset('user/img/blog-post-background.jpg') }})"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2 text-center">
+                <h1 class="white-text">My Role Requests</h1>
+                <p class="white-text">Track the status of your Student+ applications</p>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Hero-area -->
+
+<!-- Requests Section -->
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+
+                <div class="blog-post"
+                     style="padding: 30px; background: #fff; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1);">
+
+                    {# Flash Messages #}
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">
+                            <i class="fa fa-check-circle"></i> {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger">
+                            <i class="fa fa-exclamation-circle"></i> {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    {% if requests is empty %}
+                        <div class="alert alert-info text-center">
+                            <strong>No requests yet!</strong><br><br>
+                            You haven't submitted any Student+ requests yet.
+                            <br><br>
+                            <a href="{{ path('app_request_student_plus') }}"
+                               class="main-button icon-button">
+                                <i class="fa fa-plus"></i> Submit a Request
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Request Date</th>
+                                        <th>Status</th>
+                                        <th>Motivation</th>
+                                        <th>Admin Notes</th>
+                                        <th>Reviewed Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for request in requests %}
+                                        <tr>
+                                            <td>{{ request.requestedAt|date('Y-m-d H:i') }}</td>
+
+                                            <td>
+                                                {% if request.status == 'pending' %}
+                                                    <span class="label label-warning">Pending</span>
+                                                {% elseif request.status == 'approved' %}
+                                                    <span class="label label-success">Approved</span>
+                                                {% else %}
+                                                    <span class="label label-danger">Rejected</span>
+                                                {% endif %}
+                                            </td>
+
+                                            <td>
+                                                <small>
+                                                    {{ request.motivation|slice(0, 120) }}
+                                                    {% if request.motivation|length > 120 %}...{% endif %}
+                                                </small>
+                                            </td>
+
+                                            <td>
+                                                {% if request.adminNotes %}
+                                                    <small>{{ request.adminNotes }}</small>
+                                                {% else %}
+                                                    <em class="text-muted">No notes yet</em>
+                                                {% endif %}
+                                            </td>
+
+                                            <td>
+                                                {% if request.reviewedAt %}
+                                                    {{ request.reviewedAt|date('Y-m-d H:i') }}
+                                                {% else %}
+                                                    <em class="text-muted">Not reviewed</em>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Requests Section -->
+
+<!-- Footer -->
+<footer id="footer" class="section">
+    <div class="container text-center">
+        <div class="footer-logo">
+            <a class="logo" href="{{ path('app_home') }}">
+                <img src="{{ asset('user/img/logo.png') }}" alt="logo">
+            </a>
+        </div>
+        <p>&copy; 2026 All Rights Reserved</p>
+    </div>
+</footer>
+<!-- /Footer -->
+{% endblock %}

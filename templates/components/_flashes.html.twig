@@ -1,0 +1,10 @@
+{# templates/components/_flashes.html.twig #}
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show bg-card border-mindforge text-light" role="alert">
+            <i class="bi bi-{{ label == 'success' ? 'check-circle' : label == 'error' or label == 'danger' ? 'exclamation-triangle' : 'info-circle' }} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endfor %}

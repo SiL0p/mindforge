@@ -1,0 +1,102 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block body %}
+<!-- Header -->
+<header id="header">
+    <div class="container">
+        <div class="navbar-header">
+            <!-- Logo -->
+            <div class="navbar-brand">
+                <a class="logo" href="{{ path('app_home') }}">
+                    <img src="{{ asset('user/img/logo.png') }}" alt="logo">
+                </a>
+            </div>
+            <!-- /Logo -->
+        </div>
+
+        <!-- Navigation -->
+        <nav id="nav">
+            <ul class="main-menu nav navbar-nav navbar-right">
+                <li><a href="{{ path('app_home') }}">Home</a></li>
+                <li><a href="{{ path('app_blog') }}">Blog</a></li>
+                <li><a href="{{ path('app_contact') }}">Contact</a></li>
+                <li><a href="{{ path('app_home') }}">Home</a></li>
+        <li><a href="{{ path('app_profile_view') }}">
+            <i class="fa fa-arrow-left"></i> Back to Profile
+        </a></li>
+            </ul>
+        </nav>
+        <!-- /Navigation -->
+    </div>
+</header>
+<!-- /Header -->
+
+<!-- Hero-area -->
+<div class="hero-area section">
+    <div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/blog-post-background.jpg') }})"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2 text-center">
+                <h1 class="white-text">Edit Your Profile</h1>
+                <p class="white-text">Update your bio and avatar</p>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Hero-area -->
+
+<!-- Form Section -->
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="blog-post" style="padding: 30px; background: #fff; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1);">
+
+                    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+
+                        <div class="form-group text-center">
+                            {% if profile.avatar %}
+                                <img src="{{ asset('uploads/avatars/' ~ profile.avatar) }}" alt="Avatar" class="img-circle" style="width:120px; height:120px; object-fit:cover; margin-bottom:15px;">
+                            {% else %}
+                                <img src="{{ asset('user/img/avatar.png') }}" alt="Avatar" class="img-circle" style="width:120px; height:120px; object-fit:cover; margin-bottom:15px;">
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.avatarFile, 'Change Avatar') }}
+                            {{ form_widget(form.avatarFile, {'attr': {'class': 'form-control-file'}}) }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.bio, 'Bio') }}
+                            {{ form_widget(form.bio, {'attr': {'class': 'form-control', 'rows': 5, 'placeholder': 'Tell us about yourself...'}}) }}
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="main-button icon-button">Save Changes</button>
+                        </div>
+
+                    {{ form_end(form) }}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Form Section -->
+
+<!-- Footer -->
+<footer id="footer" class="section">
+    <div class="container text-center">
+        <div class="footer-logo">
+            <a class="logo" href="{{ path('app_home') }}">
+                <img src="{{ asset('user/img/logo.png') }}" alt="logo">
+            </a>
+        </div>
+        <p>&copy; 2026 All Rights Reserved</p>
+    </div>
+</footer>
+<!-- /Footer -->
+{% endblock %}

@@ -1,6 +1,7 @@
 {% extends 'admin/base.html.twig' %}
 
 {% block title %}Dashboard{% endblock %}
+{% block body_class %}guardian-admin-ui{% endblock %}
 
 {% block body %}
 
@@ -9,6 +10,18 @@
 <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item active">Dashboard</li>
 </ol>
+
+<div class="guardian-admin-hero mb-4">
+    <h2 class="h4 mb-3">Guardian Management</h2>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-primary" href="{{ path('admin_resource_index') }}">
+            <i class="fas fa-book"></i> Resources
+        </a>
+        <a class="btn btn-outline-dark" href="{{ path('admin_room_index') }}">
+            <i class="fas fa-users"></i> Rooms
+        </a>
+    </div>
+</div>
 
 {# ===== Cards Row ===== #}
 <div class="row">

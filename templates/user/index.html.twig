@@ -7,7 +7,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		 <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
-		<title>HTML Education Template</title>
+		<title>MindForge</title>
+		<link rel="icon" type="image/png" href="{{ asset('user/img/logo.png') }}">
 
 		<!-- Google font -->
 		<link href="https://fonts.googleapis.com/css?family=Lato:700%7CMontserrat:400,600" rel="stylesheet">
@@ -28,43 +29,42 @@
 		  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 		<![endif]-->
 
-		<style>
-			/* Dropdown menu styling */
-			.dropdown-menu {
-				background-color: #fff;
-				border: 1px solid #ccc;
-			}
-
-			.dropdown-menu > li > a {
-				color: #333 !important;
-				padding: 10px 20px;
-			}
-
-			.dropdown-menu > li > a:hover,
-			.dropdown-menu > li > a:focus {
-				color: #000 !important;
-				background-color: #f5f5f5;
-			}
-
-			.dropdown-menu > .dropdown-header {
-				color: #333 !important;
-				font-weight: bold;
-				padding: 10px 20px;
-			}
-
-			.dropdown-menu .divider {
-				height: 1px;
-				margin: 9px 0;
-				background-color: #e5e5e5;
-			}
-
-			.dropdown-menu > li > a i {
-				color: #333;
-				margin-right: 8px;
-			}
-		</style>
-
     </head>
+	<style>
+        /* Dropdown menu styling */
+        .dropdown-menu {
+            background-color: #fff;
+            border: 1px solid #ccc;
+        }
+
+        .dropdown-menu > li > a {
+            color: #333 !important;
+            padding: 10px 20px;
+        }
+
+        .dropdown-menu > li > a:hover,
+        .dropdown-menu > li > a:focus {
+            color: #000 !important;
+            background-color: #f5f5f5;
+        }
+
+        .dropdown-menu > .dropdown-header {
+            color: #333 !important;
+            font-weight: bold;
+            padding: 10px 20px;
+        }
+
+        .dropdown-menu .divider {
+            height: 1px;
+            margin: 9px 0;
+            background-color: #e5e5e5;
+        }
+
+        .dropdown-menu > li > a i {
+            color: #333;
+            margin-right: 8px;
+        }
+    </style>
 	<body>
 
 		<!-- Header -->
@@ -91,42 +91,57 @@
 				<!-- Navigation -->
 <nav id="nav">
     <ul class="main-menu nav navbar-nav navbar-right">
-							<li><a href="{{ path('app_home') }}">Home</a></li>
-							<li><a href="#">About</a></li>
-							<li><a href="#">Courses</a></li>
-							<li><a href="#">Rooms</a></li>
-							<li><a href="{{ path('app_carriere_opportunity_index') }}">Careers Center</a></li>
-							<li><a href="#">Leader Board</a></li>
-							<li><a href="{{ path('app_blog') }}">Blog</a></li>
-							<li><a href="{{ path('app_contact') }}">Contact</a></li>
-							{% if app.user %}
-								<li class="dropdown">
-									<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-										<i class="fa fa-user-circle"></i> Profile <span class="caret"></span>
-									</a>
-									<ul class="dropdown-menu">
-										<li class="dropdown-header">
-											<i class="fa fa-user"></i> {{ app.user.userIdentifier }}
-										</li>
-										<li role="separator" class="divider"></li>
-										<li><a href="{{ path('app_carriere_application_my_applications') }}">
-											<i class="fa fa-briefcase"></i> My Applications
-										</a></li>
-										<li><a href="{{ path('app_carriere_company_index') }}">
-											<i class="fa fa-building"></i> Companies
-										</a></li>
-										<li role="separator" class="divider"></li>
-										<li><a href="{{ path('app_logout') }}">
-											<i class="fa fa-sign-out"></i> Logout
-										</a></li>
-									</ul>
-								</li>
-							{% else %}
-								<li><a href="{{ path('app_login') }}">
-									<i class="fa fa-sign-in"></i> Login
-								</a></li>
-							{% endif %}
-						</ul>
+        <li><a href="{{ path('app_home') }}">Home</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Courses</a></li>
+        <li><a href="#">Rooms</a></li>
+        <li><a href="#">Careers Center</a></li>
+        <li><a href="#">Leader Board</a></li>
+        <li><a href="{{ path('app_blog') }}">Blog</a></li>
+        <li><a href="{{ path('app_contact') }}">Contact</a></li>
+        <li>
+    <a href="{{ path('app_quotes') }}">
+        <i class="fa fa-quote-left"></i> Quotes
+    </a>
+	
+</li>
+
+        {% if app.user %}
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-user-circle"></i> Profile <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li class="dropdown-header">
+                        <i class="fa fa-user"></i> {{ app.user.email }}
+                    </li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="{{ path('app_profile_view') }}">
+                        <i class="fa fa-id-card"></i> View Profile
+                    </a></li>
+                    <li><a href="{{ path('app_profile_edit') }}">
+                        <i class="fa fa-edit"></i> Edit Profile
+                    </a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="{{ path('app_request_status') }}">
+                        <i class="fa fa-list-alt"></i> My Requests
+                    </a></li>
+                    <li><a href="{{ path('app_request_student_plus') }}">
+                        <i class="fa fa-star"></i> Request Student+
+                    </a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="{{ path('app_logout') }}">
+                        <i class="fa fa-sign-out"></i> Logout
+                    </a></li>
+                </ul>
+            </li>
+        {% else %}
+            <li><a href="{{ path('app_login') }}">
+                <i class="fa fa-sign-in"></i> Login
+            </a></li>
+           
+        {% endif %}
+    </ul>
 </nav>
 
 				<!-- /Navigation -->
@@ -146,9 +161,9 @@
 				<div class="container">
 					<div class="row">
 						<div class="col-md-8">
-							<h1 class="white-text">Edusite Free Online Training Courses</h1>
-							<p class="lead white-text">Libris vivendo eloquentiam ex ius, nec id splendide abhorreant, eu pro alii error homero.</p>
-							<a class="main-button icon-button" href="#">Get Started!</a>
+							<h1 class="white-text">MindForge</h1>
+							<p class="lead white-text">From chaos to focus.</p>
+							<a class="main-button icon-button" href="#">Get Started</a>
 						</div>
 					</div>
 				</div>
@@ -168,8 +183,8 @@
 
 					<div class="col-md-6">
 						<div class="section-header">
-							<h2>Welcome to Edusite</h2>
-							<p class="lead">Libris vivendo eloquentiam ex ius, nec id splendide abhorreant.</p>
+							<h2>Welcome to MindForge</h2>
+							<p class="lead">Turn focus into progress with guided learning spaces.</p>
 						</div>
 
 						<!-- feature -->
@@ -405,9 +420,9 @@
 				<div class="row">
 
 					<div class="col-md-6">
-						<h2 class="white-text">Ceteros fuisset mei no, soleat epicurei adipiscing ne vis.</h2>
-						<p class="lead white-text">Ceteros fuisset mei no, soleat epicurei adipiscing ne vis. Et his suas veniam nominati.</p>
-						<a class="main-button icon-button" href="#">Get Started!</a>
+						<h2 class="white-text">Build momentum with MindForge.</h2>
+						<p class="lead white-text">Join focused rooms, share resources, and grow with your community.</p>
+						<a class="main-button icon-button" href="#">Get Started</a>
 					</div>
 
 				</div>
@@ -428,8 +443,8 @@
 				<!-- row -->
 				<div class="row">
 					<div class="section-header text-center">
-						<h2>Why Edusite</h2>
-						<p class="lead">Libris vivendo eloquentiam ex ius, nec id splendide abhorreant.</p>
+						<h2>Why MindForge</h2>
+						<p class="lead">A calmer space to learn, collaborate, and stay on track.</p>
 					</div>
 
 					<!-- feature -->
@@ -551,38 +566,11 @@
 							<li><a href="{{ path('app_home') }}">Home</a></li>
 							<li><a href="#">About</a></li>
 							<li><a href="#">Courses</a></li>
-							<li><a href="#">Rooms</a></li>
-							<li><a href="{{ path('app_carriere_opportunity_index') }}">Careers Center</a></li>
-							<li><a href="#">Leader Board</a></li>
+							<li><a href="#">rommes</a></li>
+							<li><a href="#">careers center</a></li>
+							<li><a href="#">leader board</a></li>
 							<li><a href="{{ path('app_blog') }}">Blog</a></li>
 							<li><a href="{{ path('app_contact') }}">Contact</a></li>
-							{% if app.user %}
-								<li class="dropdown">
-									<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-										<i class="fa fa-user-circle"></i> Profile <span class="caret"></span>
-									</a>
-									<ul class="dropdown-menu">
-										<li class="dropdown-header">
-											<i class="fa fa-user"></i> {{ app.user.userIdentifier }}
-										</li>
-										<li role="separator" class="divider"></li>
-										<li><a href="{{ path('app_carriere_application_my_applications') }}">
-											<i class="fa fa-briefcase"></i> My Applications
-										</a></li>
-										<li><a href="{{ path('app_carriere_company_index') }}">
-											<i class="fa fa-building"></i> Companies
-										</a></li>
-										<li role="separator" class="divider"></li>
-										<li><a href="{{ path('app_logout') }}">
-											<i class="fa fa-sign-out"></i> Logout
-										</a></li>
-									</ul>
-								</li>
-							{% else %}
-								<li><a href="{{ path('app_login') }}">
-									<i class="fa fa-sign-in"></i> Login
-								</a></li>
-							{% endif %}
 						</ul>
 					</div>
 					<!-- /footer nav -->

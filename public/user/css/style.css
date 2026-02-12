@@ -30,6 +30,29 @@ Table OF Contents
 /*------------------------------------*\
 	General
 \*------------------------------------*/
+/* --- MindForge Brand Tokens --- */
+:root {
+	--color-primary: #6840d6;
+	--color-secondary: #2e65d9;
+	--color-accent: #af17c2;
+
+	--color-primary-hover: #5530b5;
+	--color-secondary-hover: #1e50bc;
+
+	--bg-app: #0f172a;
+	--bg-card: #1e293b;
+	--bg-input: #334155;
+
+	--text-main: #f8fafc;
+	--text-muted: #94a3b8;
+
+	--gradient-brand: linear-gradient(135deg, #6840d6 0%, #af17c2 100%);
+	--gradient-focus: linear-gradient(90deg, #6840d6 0%, #2e65d9 100%);
+
+	--radius-sm: 8px;
+	--radius-md: 12px;
+	--radius-lg: 20px;
+}
 /* --- typography --- */
 body {
     font-family: 'Montserrat', sans-serif;

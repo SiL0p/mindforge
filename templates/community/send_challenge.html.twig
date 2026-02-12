@@ -1,0 +1,128 @@
+{# templates/community/send_challenge.html.twig #}
+{% extends "base.html.twig" %}
+
+{% block title %}Send Challenge | MindForge Community{% endblock %}
+
+{% block body %}
+<div style="min-height: 100vh; background: linear-gradient(135deg, #f8f9fa 0%, #e8eaed 100%); padding: 3rem 1rem;">
+    <div class="container" style="max-width: 600px;">
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h1 style="color: #2d3436; margin-bottom: 0.5rem;">🎯 Send a Challenge</h1>
+            <p style="color: #636e72; font-size: 1.05rem;">Motivate your friends with an academic challenge</p>
+        </div>
+
+        <!-- Main Card -->
+        <div class="card" style="border: none; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);">
+            <div class="card-body" style="padding: 2rem;">
+                <!-- Flash Messages -->
+                {% if app.flashes %}
+                    {% for type, messages in app.flashes %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ type == 'error' ? 'danger' : 'success' }}" style="margin-bottom: 1.5rem;">
+                                <i class="fa fa-{{ type == 'error' ? 'exclamation-circle' : 'check-circle' }}"></i>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Form -->
+                <form method="POST">
+                    <!-- Recipient Field -->
+                    <div class="form-group">
+                        <label for="shared_with_id" style="font-weight: 600; color: #2d3436; margin-bottom: 0.5rem;">
+                            <i class="fa fa-user"></i> Recipient
+                        </label>
+                        <select 
+                            name="shared_with_id" 
+                            id="shared_with_id" 
+                            class="form-control" 
+                            style="border-radius: 8px; font-size: 1rem;"
+                            required
+                        >
+                            <option value="">-- Choose a classmate --</option>
+                            {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.email }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Title Field -->
+                    <div class="form-group">
+                        <label for="title" style="font-weight: 600; color: #2d3436; margin-bottom: 0.5rem;">
+                            <i class="fa fa-heading"></i> Title
+                        </label>
+                        <input 
+                            type="text" 
+                            name="title" 
+                            id="title" 
+                            class="form-control" 
+                            style="border-radius: 8px; font-size: 1rem;"
+                            placeholder="e.g., Solve 5 Calculus Problems"
+                            maxlength="255"
+                            required
+                        >
+                        <small style="color: #95a5a6; margin-top: 0.25rem; display: block;">3-255 characters</small>
+                    </div>
+
+                    <!-- Description Field -->
+                    <div class="form-group">
+                        <label for="description" style="font-weight: 600; color: #2d3436; margin-bottom: 0.5rem;">
+                            <i class="fa fa-file-text"></i> Description
+                        </label>
+                        <textarea 
+                            name="description" 
+                            id="description" 
+                            class="form-control" 
+                            rows="5"
+                            style="border-radius: 8px; font-size: 1rem; resize: vertical; min-height: 120px;"
+                            placeholder="Describe the challenge in detail..."
+                            maxlength="2000"
+                        ></textarea>
+                        <small style="color: #95a5a6; margin-top: 0.25rem; display: block;">Max 2000 characters</small>
+                    </div>
+
+                    <!-- Actions -->
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button 
+                            type="submit" 
+                            class="btn btn-primary" 
+                            style="flex: 1; padding: 12px 24px; font-weight: 600; border-radius: 8px; box-shadow: 0 4px 12px rgba(109, 92, 231, 0.3);"
+                        >
+                            <i class="fa fa-paper-plane"></i> Send Challenge
+                        </button>
+                        <a 
+                            href="{{ path('community_index') }}" 
+                            class="btn btn-secondary" 
+                            style="flex: 1; padding: 12px 24px; font-weight: 600; border-radius: 8px; text-align: center;"
+                        >
+                            <i class="fa fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div style="margin-top: 2rem; padding: 1.5rem; background-color: rgba(109, 92, 231, 0.08); border-radius: 8px; border-left: 4px solid #6d5ce7;">
+            <h5 style="color: #6d5ce7; margin-bottom: 0.5rem; font-weight: 600;">
+                <i class="fa fa-lightbulb-o"></i> Challenge Tips
+            </h5>
+            <ul style="color: #636e72; margin-bottom: 0; padding-left: 1.5rem;">
+                <li>Make your challenge specific and achievable</li>
+                <li>Include clear instructions or resources</li>
+                <li>Set a deadline for completion</li>
+                <li>Encourage collaboration and feedback</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
