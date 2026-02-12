@@ -39,7 +39,7 @@ class MentorshipNoteType extends AbstractType
     {
         $resolver->setDefaults([
             // No data_class since content is not mapped
-            'attr' => ['novalidate' => 'novalidate'], // Disable HTML5 validation, use PHP validation only
+            'attr' => ['novalidate' => 'novalidate'],
         ]);
     }
 }

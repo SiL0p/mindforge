@@ -82,7 +82,7 @@ class CareerOpportunityType extends AbstractType
         $resolver->setDefaults([
             'data_class' => CareerOpportunity::class,
             'user_companies' => [],
-            'attr' => ['novalidate' => 'novalidate'], // Disable HTML5 validation, use PHP validation only
+            'attr' => ['novalidate' => 'novalidate'],
         ]);
     }
 }
