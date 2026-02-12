@@ -89,10 +89,60 @@
 						<li><a href="#">About</a></li>
 						<li><a href="#">Courses</a></li>
 						<li><a href="#">Rooms</a></li>
-						<li><a href="{{ path('app_carriere_opportunity_index') }}">Careers Center</a></li>
+
+						{# Careers Center Dropdown #}
+						{% if app.user %}
+							<li class="dropdown">
+								<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+									<i class="fa fa-briefcase"></i> Careers Center <span class="caret"></span>
+								</a>
+								<ul class="dropdown-menu">
+									{# Common options for all users #}
+									<li><a href="{{ path('app_carriere_opportunity_index') }}">
+										<i class="fa fa-search"></i> Browse Opportunities
+									</a></li>
+									<li><a href="{{ path('app_carriere_company_index') }}">
+										<i class="fa fa-building"></i> Companies
+									</a></li>
+									<li role="separator" class="divider"></li>
+
+									{# User/Student specific options #}
+									{% if 'ROLE_COMPANY' not in app.user.roles %}
+										<li><a href="{{ path('app_carriere_application_my_applications') }}">
+											<i class="fa fa-file-text"></i> My Applications
+										</a></li>
+										<li><a href="{{ path('app_carriere_mentorship_index') }}">
+											<i class="fa fa-graduation-cap"></i> My Mentorships
+										</a></li>
+									{% endif %}
+
+									{# Company specific options #}
+									{% if 'ROLE_COMPANY' in app.user.roles %}
+										<li><a href="{{ path('app_carriere_opportunity_new') }}">
+											<i class="fa fa-plus-circle"></i> Post New Opportunity
+										</a></li>
+										<li><a href="{{ path('app_carriere_opportunity_my_opportunities') }}">
+											<i class="fa fa-list"></i> My Job Postings
+										</a></li>
+										<li role="separator" class="divider"></li>
+										<li><a href="{{ path('app_carriere_application_my_company_applications') }}">
+											<i class="fa fa-inbox"></i> Applications Received
+										</a></li>
+										<li><a href="{{ path('app_carriere_mentorship_my_company_mentorships') }}">
+											<i class="fa fa-handshake-o"></i> Company Mentorships
+										</a></li>
+									{% endif %}
+								</ul>
+							</li>
+						{% else %}
+							<li><a href="{{ path('app_carriere_opportunity_index') }}">Careers Center</a></li>
+						{% endif %}
+
 						<li><a href="#">Leader Board</a></li>
 						<li><a href="{{ path('app_blog') }}">Blog</a></li>
 						<li><a href="{{ path('app_contact') }}">Contact</a></li>
+
+						{# Profile Dropdown #}
 						{% if app.user %}
 							<li class="dropdown">
 								<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
@@ -103,14 +153,8 @@
 										<i class="fa fa-user"></i> {{ app.user.userIdentifier }}
 									</li>
 									<li role="separator" class="divider"></li>
-									<li><a href="{{ path('app_carriere_application_my_applications') }}">
-										<i class="fa fa-briefcase"></i> My Applications
-									</a></li>
-									<li><a href="{{ path('app_carriere_company_index') }}">
-										<i class="fa fa-building"></i> Companies
-									</a></li>
-									<li><a href="{{ path('app_carriere_mentorship_index') }}">
-										<i class="fa fa-users"></i> My Mentorships
+									<li><a href="#">
+										<i class="fa fa-cog"></i> Settings
 									</a></li>
 									<li role="separator" class="divider"></li>
 									<li><a href="{{ path('app_logout') }}">

@@ -41,6 +41,36 @@ class CareerOpportunityController extends AbstractController
         ]);
     }
 
+    #[Route('/my-opportunities', name: 'app_carriere_opportunity_my_opportunities')]
+    #[IsGranted('ROLE_COMPANY')]
+    public function myOpportunities(CareerOpportunityRepository $opportunityRepository): Response
+    {
+        $user = $this->getUser();
+        $userCompanies = $user->getCompanies();
+
+        if ($userCompanies->isEmpty()) {
+            $this->addFlash('info', 'You are not assigned to any companies yet.');
+            return $this->redirectToRoute('app_carriere_opportunity_index');
+        }
+
+        // Fetch opportunities from all user's companies
+        $opportunities = [];
+        foreach ($userCompanies as $company) {
+            $companyOpportunities = $opportunityRepository->findBy(['company' => $company], ['createdAt' => 'DESC']);
+            $opportunities = array_merge($opportunities, $companyOpportunities);
+        }
+
+        // Sort by created date (most recent first)
+        usort($opportunities, function($a, $b) {
+            return $b->getCreatedAt() <=> $a->getCreatedAt();
+        });
+
+        return $this->render('carriere/opportunity/my_opportunities.html.twig', [
+            'opportunities' => $opportunities,
+            'companies' => $userCompanies,
+        ]);
+    }
+
     #[Route('/new', name: 'app_carriere_opportunity_new')]
     #[IsGranted('ROLE_COMPANY')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
