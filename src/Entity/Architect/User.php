@@ -8,6 +8,9 @@ use App\Entity\Community\Claim;
 use App\Entity\Community\SharedTask;
 use App\Entity\Guardian\VirtualRoom;
 use App\Entity\Guardian\Resource;
+use App\Entity\Carriere\Application;
+use App\Entity\Carriere\Mentorship;
+use App\Entity\Carriere\Company;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -79,6 +82,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     // One-to-Many: User uploads many Resources (only Student+)
     #[ORM\OneToMany(targetEntity: Resource::class, mappedBy: 'uploader', orphanRemoval: true)]
     private Collection $uploadedResources;
+
+    // RELATIONSHIPS: Career Module
+    // One-to-Many: User submits many Applications
+    #[ORM\OneToMany(targetEntity: Application::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $applications;
+
+    // One-to-Many: User has many Mentorships as student
+    #[ORM\OneToMany(targetEntity: Mentorship::class, mappedBy: 'student', orphanRemoval: true)]
+    private Collection $mentorshipsAsStudent;
+
+    // One-to-Many: User has many Mentorships as mentor
+    #[ORM\OneToMany(targetEntity: Mentorship::class, mappedBy: 'mentor', orphanRemoval: true)]
+    private Collection $mentorshipsAsMentor;
+
+    // Many-to-Many: User can manage many Companies
+    #[ORM\ManyToMany(targetEntity: Company::class, mappedBy: 'users')]
+    private Collection $companies;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -91,6 +112,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdRooms = new ArrayCollection();
         $this->joinedRooms = new ArrayCollection();
         $this->uploadedResources = new ArrayCollection();
+        $this->applications = new ArrayCollection();
+        $this->mentorshipsAsStudent = new ArrayCollection();
+        $this->mentorshipsAsMentor = new ArrayCollection();
+        $this->companies = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -354,6 +379,92 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
         return $this;
     }
+
+    // ========================================
+    // CAREER MODULE GETTERS/SETTERS
+    // ========================================
+
+    /**
+     * @return Collection<int, Application>
+     */
+    public function getApplications(): Collection
+    {
+        return $this->applications;
+    }
+
+    public function addApplication(Application $application): self
+    {
+        if (!$this->applications->contains($application)) {
+            $this->applications->add($application);
+            $application->setUser($this);
+        }
+        return $this;
+    }
+
+    public function removeApplication(Application $application): self
+    {
+        if ($this->applications->removeElement($application)) {
+            if ($application->getUser() === $this) {
+                $application->setUser(null);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Mentorship>
+     */
+    public function getMentorshipsAsStudent(): Collection
+    {
+        return $this->mentorshipsAsStudent;
+    }
+
+    public function addMentorshipAsStudent(Mentorship $mentorship): self
+    {
+        if (!$this->mentorshipsAsStudent->contains($mentorship)) {
+            $this->mentorshipsAsStudent->add($mentorship);
+            $mentorship->setStudent($this);
+        }
+        return $this;
+    }
+
+    public function removeMentorshipAsStudent(Mentorship $mentorship): self
+    {
+        if ($this->mentorshipsAsStudent->removeElement($mentorship)) {
+            if ($mentorship->getStudent() === $this) {
+                $mentorship->setStudent(null);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Mentorship>
+     */
+    public function getMentorshipsAsMentor(): Collection
+    {
+        return $this->mentorshipsAsMentor;
+    }
+
+    public function addMentorshipAsMentor(Mentorship $mentorship): self
+    {
+        if (!$this->mentorshipsAsMentor->contains($mentorship)) {
+            $this->mentorshipsAsMentor->add($mentorship);
+            $mentorship->setMentor($this);
+        }
+        return $this;
+    }
+
+    public function removeMentorshipAsMentor(Mentorship $mentorship): self
+    {
+        if ($this->mentorshipsAsMentor->removeElement($mentorship)) {
+            if ($mentorship->getMentor() === $this) {
+                $mentorship->setMentor(null);
+            }
+        }
+        return $this;
+    }
+
     public function setPassword(string $password): self
     {
         $this->password = $password;
@@ -412,5 +523,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Company>
+     */
+    public function getCompanies(): Collection
+    {
+        return $this->companies;
+    }
+
+    public function addCompany(Company $company): self
+    {
+        if (!$this->companies->contains($company)) {
+            $this->companies->add($company);
+            $company->addUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCompany(Company $company): self
+    {
+        if ($this->companies->removeElement($company)) {
+            $company->removeUser($this);
+        }
+
+        return $this;
+    }
+
+    public function hasCompany(Company $company): bool
+    {
+        return $this->companies->contains($company);
     }
 }

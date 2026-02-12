@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit {{ opportunity.title }}{% endblock %}
+
+{% block hero %}
+<div class="hero-area section">
+	<div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/page-background.jpg') }})"></div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-10 col-md-offset-1 text-center">
+				<ul class="hero-area-tree">
+					<li><a href="{{ path('app_home') }}">Home</a></li>
+					<li><a href="{{ path('app_carriere_opportunity_index') }}">Careers</a></li>
+					<li>Edit Opportunity</li>
+				</ul>
+				<h1 class="white-text">Edit Opportunity</h1>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="section">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-8 col-md-offset-2">
+				<div class="contact-form">
+					<h3 style="margin-bottom: 30px;">Edit: {{ opportunity.title }}</h3>
+
+					{{ form_start(form) }}
+						<div class="form-group">
+							{{ form_label(form.title) }}
+							{{ form_widget(form.title, {'attr': {'class': 'input'}}) }}
+							{{ form_errors(form.title) }}
+						</div>
+
+						<div class="form-group">
+							{{ form_label(form.description) }}
+							{{ form_widget(form.description, {'attr': {'class': 'input'}}) }}
+							{{ form_errors(form.description) }}
+						</div>
+
+						<div class="row">
+							<div class="col-md-6">
+								<div class="form-group">
+									{{ form_label(form.type) }}
+									{{ form_widget(form.type, {'attr': {'class': 'input'}}) }}
+									{{ form_errors(form.type) }}
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									{{ form_label(form.location) }}
+									{{ form_widget(form.location, {'attr': {'class': 'input'}}) }}
+									{{ form_errors(form.location) }}
+								</div>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-md-6">
+								<div class="form-group">
+									{{ form_label(form.duration) }}
+									{{ form_widget(form.duration, {'attr': {'class': 'input'}}) }}
+									{{ form_errors(form.duration) }}
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									{{ form_label(form.deadline) }}
+									{{ form_widget(form.deadline, {'attr': {'class': 'input'}}) }}
+									{{ form_errors(form.deadline) }}
+								</div>
+							</div>
+						</div>
+
+						<div class="form-group">
+							{{ form_label(form.company) }}
+							{{ form_widget(form.company, {'attr': {'class': 'input'}}) }}
+							{{ form_errors(form.company) }}
+						</div>
+
+						<div class="form-group" style="margin-top: 20px;">
+							<button type="submit" class="main-button icon-button">
+								<i class="fa fa-save"></i> Save Changes
+							</button>
+							<a href="{{ path('app_carriere_opportunity_show', {id: opportunity.id}) }}" style="color: #6C3BAA; margin-left: 15px;">Cancel</a>
+						</div>
+					{{ form_end(form) }}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
