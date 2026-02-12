@@ -25,10 +25,9 @@ class ApplicationController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         $user = $this->getUser();
-        $userEmail = $user->getUserIdentifier();
 
         // Check if already applied
-        if ($applicationRepository->hasUserApplied($userEmail, $opportunity->getId())) {
+        if ($applicationRepository->hasUserApplied($user->getId(), $opportunity->getId())) {
             $this->addFlash('warning', 'You have already applied to this opportunity.');
             return $this->redirectToRoute('app_carriere_opportunity_show', ['id' => $opportunity->getId()]);
         }
@@ -46,7 +45,7 @@ class ApplicationController extends AbstractController
         }
 
         $application = new Application();
-        $application->setUserEmail($userEmail);
+        $application->setUser($user);
         $application->setOpportunity($opportunity);
 
         $form = $this->createForm(ApplicationType::class, $application);
@@ -72,7 +71,7 @@ class ApplicationController extends AbstractController
     public function myApplications(ApplicationRepository $applicationRepository): Response
     {
         $user = $this->getUser();
-        $applications = $applicationRepository->findByUserEmail($user->getUserIdentifier());
+        $applications = $applicationRepository->findByUser($user->getId());
 
         return $this->render('carriere/application/my_applications.html.twig', [
             'applications' => $applications,
@@ -85,7 +84,7 @@ class ApplicationController extends AbstractController
     {
         // Check if the logged-in user owns this application
         $user = $this->getUser();
-        if ($application->getUserEmail() !== $user->getUserIdentifier()) {
+        if ($application->getUser()->getId() !== $user->getId()) {
             throw $this->createAccessDeniedException('You can only view your own applications.');
         }
 
@@ -103,7 +102,7 @@ class ApplicationController extends AbstractController
     ): Response {
         // Check if the logged-in user owns this application
         $user = $this->getUser();
-        if ($application->getUserEmail() !== $user->getUserIdentifier()) {
+        if ($application->getUser()->getId() !== $user->getId()) {
             throw $this->createAccessDeniedException('You can only withdraw your own applications.');
         }
 

@@ -21,13 +21,12 @@ class MentorshipController extends AbstractController
     public function index(MentorshipRepository $mentorshipRepository): Response
     {
         $user = $this->getUser();
-        $userEmail = $user->getUserIdentifier();
 
         // Find mentorships where user is student
-        $mentorshipsAsStudent = $mentorshipRepository->findByStudentEmail($userEmail);
+        $mentorshipsAsStudent = $mentorshipRepository->findByStudent($user->getId());
 
         // Find mentorships where user is mentor
-        $mentorshipsAsMentor = $mentorshipRepository->findByMentorEmail($userEmail);
+        $mentorshipsAsMentor = $mentorshipRepository->findByMentor($user->getId());
 
         return $this->render('carriere/mentorship/index.html.twig', [
             'mentorships_as_student' => $mentorshipsAsStudent,
@@ -43,23 +42,22 @@ class MentorshipController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         $user = $this->getUser();
-        $userEmail = $user->getUserIdentifier();
 
         $mentorship = new Mentorship();
-        $mentorship->setStudentEmail($userEmail);
+        $mentorship->setStudent($user);
 
         $form = $this->createForm(MentorshipType::class, $mentorship);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Check if mentor email is different from student email
-            if ($mentorship->getMentorEmail() === $userEmail) {
+            // Check if mentor is different from student
+            if ($mentorship->getMentor()->getId() === $user->getId()) {
                 $this->addFlash('error', 'You cannot request mentorship from yourself.');
                 return $this->redirectToRoute('app_carriere_mentorship_new');
             }
 
             // Check if active mentorship already exists between student and mentor
-            if ($mentorshipRepository->hasActiveMentorship($userEmail, $mentorship->getMentorEmail())) {
+            if ($mentorshipRepository->hasActiveMentorship($user->getId(), $mentorship->getMentor()->getId())) {
                 $this->addFlash('warning', 'You already have an active mentorship request with this mentor.');
                 return $this->redirectToRoute('app_carriere_mentorship_index');
             }
@@ -84,10 +82,9 @@ class MentorshipController extends AbstractController
         Request $request
     ): Response {
         $user = $this->getUser();
-        $userEmail = $user->getUserIdentifier();
 
         // Check if the logged-in user is a participant
-        if (!$mentorship->isParticipant($userEmail)) {
+        if (!$mentorship->isParticipant($user)) {
             throw $this->createAccessDeniedException('You can only view mentorships you are participating in.');
         }
 
@@ -111,10 +108,9 @@ class MentorshipController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         $user = $this->getUser();
-        $userEmail = $user->getUserIdentifier();
 
         // Check if the logged-in user is a participant
-        if (!$mentorship->isParticipant($userEmail)) {
+        if (!$mentorship->isParticipant($user)) {
             throw $this->createAccessDeniedException('You can only add notes to mentorships you are participating in.');
         }
 
@@ -129,7 +125,7 @@ class MentorshipController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $content = $form->get('content')->getData();
-            $mentorship->addNote($userEmail, $content);
+            $mentorship->addNote($user, $content);
 
             $entityManager->flush();
 
@@ -149,10 +145,9 @@ class MentorshipController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         $user = $this->getUser();
-        $userEmail = $user->getUserIdentifier();
 
         // Check if the logged-in user is the mentor
-        if (!$mentorship->isMentor($userEmail)) {
+        if (!$mentorship->isMentor($user)) {
             throw $this->createAccessDeniedException('Only the mentor can accept a mentorship request.');
         }
 
@@ -185,10 +180,9 @@ class MentorshipController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         $user = $this->getUser();
-        $userEmail = $user->getUserIdentifier();
 
         // Check if the logged-in user is a participant
-        if (!$mentorship->isParticipant($userEmail)) {
+        if (!$mentorship->isParticipant($user)) {
             throw $this->createAccessDeniedException('You can only complete mentorships you are participating in.');
         }
 
@@ -221,10 +215,9 @@ class MentorshipController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         $user = $this->getUser();
-        $userEmail = $user->getUserIdentifier();
 
         // Check if the logged-in user is a participant
-        if (!$mentorship->isParticipant($userEmail)) {
+        if (!$mentorship->isParticipant($user)) {
             throw $this->createAccessDeniedException('You can only cancel mentorships you are participating in.');
         }
 
