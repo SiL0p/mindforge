@@ -1,0 +1,146 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Mentorships - MindForge{% endblock %}
+
+{% block hero %}
+<div class="hero-area section">
+	<div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/page-background.jpg') }})"></div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-10 col-md-offset-1 text-center">
+				<ul class="hero-area-tree">
+					<li><a href="{{ path('app_home') }}">Home</a></li>
+					<li>My Mentorships</li>
+				</ul>
+				<h1 class="white-text">My Mentorships</h1>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="section">
+	<div class="container">
+
+		<div style="margin-bottom: 30px; text-align: right;">
+			<a href="{{ path('app_carriere_mentorship_new') }}" class="main-button icon-button">
+				<i class="fa fa-plus"></i> Request Mentorship
+			</a>
+		</div>
+
+		<!-- As Student Section -->
+		<div style="margin-bottom: 40px;">
+			<h3 style="margin-bottom: 20px;">As Student</h3>
+			{% if mentorshipsAsStudent|length > 0 %}
+				<div class="table-responsive" style="background: #fff; padding: 20px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Mentor Email</th>
+								<th>Company</th>
+								<th>Status</th>
+								<th>Started Date</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for mentorship in mentorshipsAsStudent %}
+							<tr>
+								<td>{{ mentorship.mentorEmail }}</td>
+								<td>
+									{% if mentorship.company %}
+										{{ mentorship.company }}
+									{% else %}
+										<em class="text-muted">Not specified</em>
+									{% endif %}
+								</td>
+								<td>
+									{% if mentorship.status == 'pending' %}
+										<span class="label label-warning">Pending</span>
+									{% elseif mentorship.status == 'active' %}
+										<span class="label label-success">Active</span>
+									{% elseif mentorship.status == 'completed' %}
+										<span class="label label-info">Completed</span>
+									{% elseif mentorship.status == 'cancelled' %}
+										<span class="label label-danger">Cancelled</span>
+									{% endif %}
+								</td>
+								<td>{{ mentorship.startedAt|date('M d, Y') }}</td>
+								<td>
+									<a href="{{ path('app_carriere_mentorship_show', {id: mentorship.id}) }}" class="main-button icon-button" style="padding: 6px 15px; font-size: 12px;">
+										<i class="fa fa-eye"></i> View
+									</a>
+								</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			{% else %}
+				<div class="text-center" style="padding: 40px 0; background: #f9f9f9; border-radius: 4px;">
+					<i class="fa fa-graduation-cap" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
+					<p class="text-muted">No mentorships as student yet.</p>
+				</div>
+			{% endif %}
+		</div>
+
+		<!-- As Mentor Section -->
+		<div>
+			<h3 style="margin-bottom: 20px;">As Mentor</h3>
+			{% if mentorshipsAsMentor|length > 0 %}
+				<div class="table-responsive" style="background: #fff; padding: 20px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Student Email</th>
+								<th>Company</th>
+								<th>Status</th>
+								<th>Started Date</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for mentorship in mentorshipsAsMentor %}
+							<tr>
+								<td>{{ mentorship.student.userIdentifier }}</td>
+								<td>
+									{% if mentorship.company %}
+										{{ mentorship.company }}
+									{% else %}
+										<em class="text-muted">Not specified</em>
+									{% endif %}
+								</td>
+								<td>
+									{% if mentorship.status == 'pending' %}
+										<span class="label label-warning">Pending</span>
+									{% elseif mentorship.status == 'active' %}
+										<span class="label label-success">Active</span>
+									{% elseif mentorship.status == 'completed' %}
+										<span class="label label-info">Completed</span>
+									{% elseif mentorship.status == 'cancelled' %}
+										<span class="label label-danger">Cancelled</span>
+									{% endif %}
+								</td>
+								<td>{{ mentorship.startedAt|date('M d, Y') }}</td>
+								<td>
+									<a href="{{ path('app_carriere_mentorship_show', {id: mentorship.id}) }}" class="main-button icon-button" style="padding: 6px 15px; font-size: 12px;">
+										<i class="fa fa-eye"></i> View
+									</a>
+								</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			{% else %}
+				<div class="text-center" style="padding: 40px 0; background: #f9f9f9; border-radius: 4px;">
+					<i class="fa fa-users" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
+					<p class="text-muted">No mentorships as mentor yet.</p>
+				</div>
+			{% endif %}
+		</div>
+
+	</div>
+</div>
+{% endblock %}

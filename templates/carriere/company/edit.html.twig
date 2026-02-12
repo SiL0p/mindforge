@@ -2,67 +2,84 @@
 
 {% block title %}Edit {{ company.name }}{% endblock %}
 
-{% block body %}
-<div class="container" style="margin-top: 80px;">
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3>Edit Company Profile</h3>
-                </div>
-                <div class="panel-body">
-                    {{ form_start(form) }}
-                        <div class="form-group">
-                            {{ form_label(form.name) }}
-                            {{ form_widget(form.name) }}
-                            {{ form_errors(form.name) }}
-                        </div>
+{% block hero %}
+<div class="hero-area section">
+	<div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/page-background.jpg') }})"></div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-10 col-md-offset-1 text-center">
+				<ul class="hero-area-tree">
+					<li><a href="{{ path('app_home') }}">Home</a></li>
+					<li><a href="{{ path('app_carriere_company_index') }}">Companies</a></li>
+					<li>Edit</li>
+				</ul>
+				<h1 class="white-text">Edit Company Profile</h1>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
 
-                        <div class="form-group">
-                            {{ form_label(form.description) }}
-                            {{ form_widget(form.description) }}
-                            {{ form_errors(form.description) }}
-                        </div>
+{% block content %}
+<div class="section">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-8 col-md-offset-2">
+				<div class="contact-form">
+					<h3 style="margin-bottom: 30px;">Edit: {{ company.name }}</h3>
 
-                        <div class="form-group">
-                            {{ form_label(form.industry) }}
-                            {{ form_widget(form.industry) }}
-                            {{ form_errors(form.industry) }}
-                        </div>
+					{{ form_start(form) }}
+						<div class="form-group">
+							{{ form_label(form.name) }}
+							{{ form_widget(form.name, {'attr': {'class': 'input'}}) }}
+							{{ form_errors(form.name) }}
+						</div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form_label(form.contactEmail) }}
-                                    {{ form_widget(form.contactEmail) }}
-                                    {{ form_errors(form.contactEmail) }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form_label(form.contactPhone) }}
-                                    {{ form_widget(form.contactPhone) }}
-                                    {{ form_errors(form.contactPhone) }}
-                                </div>
-                            </div>
-                        </div>
+						<div class="form-group">
+							{{ form_label(form.description) }}
+							{{ form_widget(form.description, {'attr': {'class': 'input'}}) }}
+							{{ form_errors(form.description) }}
+						</div>
 
-                        <div class="form-group">
-                            {{ form_label(form.website) }}
-                            {{ form_widget(form.website) }}
-                            {{ form_errors(form.website) }}
-                        </div>
+						<div class="form-group">
+							{{ form_label(form.industry) }}
+							{{ form_widget(form.industry, {'attr': {'class': 'input'}}) }}
+							{{ form_errors(form.industry) }}
+						</div>
 
-                        <div class="form-group">
-                            <button type="submit" class="main-button">
-                                <i class="fa fa-save"></i> Save Changes
-                            </button>
-                            <a href="{{ path('app_carriere_company_show', {id: company.id}) }}" class="btn btn-default">Cancel</a>
-                        </div>
-                    {{ form_end(form) }}
-                </div>
-            </div>
-        </div>
-    </div>
+						<div class="row">
+							<div class="col-md-6">
+								<div class="form-group">
+									{{ form_label(form.contactEmail) }}
+									{{ form_widget(form.contactEmail, {'attr': {'class': 'input'}}) }}
+									{{ form_errors(form.contactEmail) }}
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									{{ form_label(form.contactPhone) }}
+									{{ form_widget(form.contactPhone, {'attr': {'class': 'input'}}) }}
+									{{ form_errors(form.contactPhone) }}
+								</div>
+							</div>
+						</div>
+
+						<div class="form-group">
+							{{ form_label(form.website) }}
+							{{ form_widget(form.website, {'attr': {'class': 'input'}}) }}
+							{{ form_errors(form.website) }}
+						</div>
+
+						<div class="form-group" style="margin-top: 20px;">
+							<button type="submit" class="main-button icon-button">
+								<i class="fa fa-save"></i> Save Changes
+							</button>
+							<a href="{{ path('app_carriere_company_show', {id: company.id}) }}" style="color: #6C3BAA; margin-left: 15px;">Cancel</a>
+						</div>
+					{{ form_end(form) }}
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 {% endblock %}

@@ -56,6 +56,9 @@ class Company
     #[ORM\OneToMany(targetEntity: CareerOpportunity::class, mappedBy: 'company')]
     private Collection $opportunities;
 
+    #[ORM\OneToMany(targetEntity: Mentorship::class, mappedBy: 'company')]
+    private Collection $mentorships;
+
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
@@ -65,6 +68,7 @@ class Company
     public function __construct()
     {
         $this->opportunities = new ArrayCollection();
+        $this->mentorships = new ArrayCollection();
     }
 
     // Getters and setters
@@ -169,6 +173,36 @@ class Company
             // set the owning side to null (unless already changed)
             if ($opportunity->getCompany() === $this) {
                 $opportunity->setCompany(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Mentorship>
+     */
+    public function getMentorships(): Collection
+    {
+        return $this->mentorships;
+    }
+
+    public function addMentorship(Mentorship $mentorship): static
+    {
+        if (!$this->mentorships->contains($mentorship)) {
+            $this->mentorships->add($mentorship);
+            $mentorship->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMentorship(Mentorship $mentorship): static
+    {
+        if ($this->mentorships->removeElement($mentorship)) {
+            // set the owning side to null (unless already changed)
+            if ($mentorship->getCompany() === $this) {
+                $mentorship->setCompany(null);
             }
         }
 
