@@ -1,6 +1,6 @@
 <?php
 // src/Entity/Task.php
-namespace App\Entity;
+namespace App\Entity\Planner;
 
 use App\Repository\Planner\TaskRepository;
 use Doctrine\DBAL\Types\Types;

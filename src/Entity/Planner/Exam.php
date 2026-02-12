@@ -1,6 +1,7 @@
 <?php
 // src/Entity/Exam.php
-namespace App\Entity;
+namespace App\Entity\Planner;
+
 
 use App\Repository\Planner\ExamRepository;
 use Doctrine\DBAL\Types\Types;
