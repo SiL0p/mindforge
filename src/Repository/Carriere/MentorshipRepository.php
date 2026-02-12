@@ -14,28 +14,26 @@ class MentorshipRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all mentorships for a student (by email)
-     * Order by startedAt DESC
+     * Find all mentorships for a student (by user ID)
      */
-    public function findByStudentEmail(string $email): array
+    public function findByStudent(int $studentId): array
     {
         return $this->createQueryBuilder('m')
-            ->where('m.studentEmail = :email')
-            ->setParameter('email', $email)
+            ->where('m.student = :studentId')
+            ->setParameter('studentId', $studentId)
             ->orderBy('m.startedAt', 'DESC')
             ->getQuery()
             ->getResult();
     }
 
     /**
-     * Find all mentorships for a mentor (by email)
-     * Order by startedAt DESC
+     * Find all mentorships for a mentor (by user ID)
      */
-    public function findByMentorEmail(string $email): array
+    public function findByMentor(int $mentorId): array
     {
         return $this->createQueryBuilder('m')
-            ->where('m.mentorEmail = :email')
-            ->setParameter('email', $email)
+            ->where('m.mentor = :mentorId')
+            ->setParameter('mentorId', $mentorId)
             ->orderBy('m.startedAt', 'DESC')
             ->getQuery()
             ->getResult();
@@ -43,31 +41,29 @@ class MentorshipRepository extends ServiceEntityRepository
 
     /**
      * Find all mentorships where user is participant (student OR mentor)
-     * Order by startedAt DESC
      */
-    public function findByParticipant(string $email): array
+    public function findByParticipant(int $userId): array
     {
         return $this->createQueryBuilder('m')
-            ->where('m.studentEmail = :email OR m.mentorEmail = :email')
-            ->setParameter('email', $email)
+            ->where('m.student = :userId OR m.mentor = :userId')
+            ->setParameter('userId', $userId)
             ->orderBy('m.startedAt', 'DESC')
             ->getQuery()
             ->getResult();
     }
 
     /**
-     * Check if mentorship already exists between student and mentor
-     * (excludes cancelled status)
+     * Check if mentorship already exists between student and mentor (excludes cancelled status)
      */
-    public function hasActiveMentorship(string $studentEmail, string $mentorEmail): bool
+    public function hasActiveMentorship(int $studentId, int $mentorId): bool
     {
         $count = $this->createQueryBuilder('m')
             ->select('COUNT(m.id)')
-            ->where('m.studentEmail = :studentEmail')
-            ->andWhere('m.mentorEmail = :mentorEmail')
+            ->where('m.student = :studentId')
+            ->andWhere('m.mentor = :mentorId')
             ->andWhere('m.status != :cancelled')
-            ->setParameter('studentEmail', $studentEmail)
-            ->setParameter('mentorEmail', $mentorEmail)
+            ->setParameter('studentId', $studentId)
+            ->setParameter('mentorId', $mentorId)
             ->setParameter('cancelled', 'cancelled')
             ->getQuery()
             ->getSingleScalarResult();
@@ -78,12 +74,12 @@ class MentorshipRepository extends ServiceEntityRepository
     /**
      * Find pending mentorship requests for a mentor
      */
-    public function findPendingByMentor(string $mentorEmail): array
+    public function findPendingByMentor(int $mentorId): array
     {
         return $this->createQueryBuilder('m')
-            ->where('m.mentorEmail = :email')
+            ->where('m.mentor = :mentorId')
             ->andWhere('m.status = :status')
-            ->setParameter('email', $mentorEmail)
+            ->setParameter('mentorId', $mentorId)
             ->setParameter('status', 'pending')
             ->orderBy('m.startedAt', 'DESC')
             ->getQuery()
@@ -93,12 +89,12 @@ class MentorshipRepository extends ServiceEntityRepository
     /**
      * Find active mentorships for a student
      */
-    public function findActiveByStudent(string $studentEmail): array
+    public function findActiveByStudent(int $studentId): array
     {
         return $this->createQueryBuilder('m')
-            ->where('m.studentEmail = :email')
+            ->where('m.student = :studentId')
             ->andWhere('m.status = :status')
-            ->setParameter('email', $studentEmail)
+            ->setParameter('studentId', $studentId)
             ->setParameter('status', 'active')
             ->orderBy('m.startedAt', 'DESC')
             ->getQuery()
@@ -134,12 +130,12 @@ class MentorshipRepository extends ServiceEntityRepository
     /**
      * Count mentorships for a user (as student or mentor)
      */
-    public function countByParticipant(string $email): int
+    public function countByParticipant(int $userId): int
     {
         return (int) $this->createQueryBuilder('m')
             ->select('COUNT(m.id)')
-            ->where('m.studentEmail = :email OR m.mentorEmail = :email')
-            ->setParameter('email', $email)
+            ->where('m.student = :userId OR m.mentor = :userId')
+            ->setParameter('userId', $userId)
             ->getQuery()
             ->getSingleScalarResult();
     }

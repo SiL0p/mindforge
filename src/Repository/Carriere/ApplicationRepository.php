@@ -17,16 +17,16 @@ class ApplicationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all applications by user email
+     * Find all applications by user ID
      *
-     * @param string $email
+     * @param int $userId
      * @return Application[]
      */
-    public function findByUserEmail(string $email): array
+    public function findByUser(int $userId): array
     {
         return $this->createQueryBuilder('a')
-            ->where('a.userEmail = :email')
-            ->setParameter('email', $email)
+            ->where('a.user = :userId')
+            ->setParameter('userId', $userId)
             ->orderBy('a.appliedAt', 'DESC')
             ->getQuery()
             ->getResult();
@@ -51,18 +51,18 @@ class ApplicationRepository extends ServiceEntityRepository
     /**
      * Check if user has already applied to an opportunity
      *
-     * @param string $email
+     * @param int $userId
      * @param int $opportunityId
      * @return bool
      */
-    public function hasUserApplied(string $email, int $opportunityId): bool
+    public function hasUserApplied(int $userId, int $opportunityId): bool
     {
         $count = $this->createQueryBuilder('a')
             ->select('COUNT(a.id)')
-            ->where('a.userEmail = :email')
+            ->where('a.user = :userId')
             ->andWhere('a.opportunity = :opportunityId')
             ->andWhere('a.status != :withdrawn')
-            ->setParameter('email', $email)
+            ->setParameter('userId', $userId)
             ->setParameter('opportunityId', $opportunityId)
             ->setParameter('withdrawn', 'withdrawn')
             ->getQuery()
@@ -90,15 +90,15 @@ class ApplicationRepository extends ServiceEntityRepository
     /**
      * Find pending applications for a user
      *
-     * @param string $email
+     * @param int $userId
      * @return Application[]
      */
-    public function findPendingByUser(string $email): array
+    public function findPendingByUser(int $userId): array
     {
         return $this->createQueryBuilder('a')
-            ->where('a.userEmail = :email')
+            ->where('a.user = :userId')
             ->andWhere('a.status = :status')
-            ->setParameter('email', $email)
+            ->setParameter('userId', $userId)
             ->setParameter('status', 'pending')
             ->orderBy('a.appliedAt', 'DESC')
             ->getQuery()
