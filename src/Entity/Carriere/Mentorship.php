@@ -2,6 +2,7 @@
 
 namespace App\Entity\Carriere;
 
+use App\Entity\Architect\User;
 use App\Repository\Carriere\MentorshipRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -16,15 +17,17 @@ class Mentorship
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180)]
-    #[Assert\NotBlank(message: 'Student email is required.')]
-    #[Assert\Email(message: 'Please enter a valid student email address.')]
-    private ?string $studentEmail = null;
+    // Student relationship (using real User entity)
+    #[ORM\ManyToOne(inversedBy: 'mentorshipsAsStudent')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'Student is required.')]
+    private ?User $student = null;
 
-    #[ORM\Column(length: 180)]
-    #[Assert\NotBlank(message: 'Mentor email is required.')]
-    #[Assert\Email(message: 'Please enter a valid mentor email address.')]
-    private ?string $mentorEmail = null;
+    // Mentor relationship (using real User entity)
+    #[ORM\ManyToOne(inversedBy: 'mentorshipsAsMentor')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'Mentor is required.')]
+    private ?User $mentor = null;
 
     #[ORM\ManyToOne(inversedBy: 'mentorships')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
@@ -66,25 +69,25 @@ class Mentorship
         return $this->id;
     }
 
-    public function getStudentEmail(): ?string
+    public function getStudent(): ?User
     {
-        return $this->studentEmail;
+        return $this->student;
     }
 
-    public function setStudentEmail(string $studentEmail): static
+    public function setStudent(?User $student): static
     {
-        $this->studentEmail = $studentEmail;
+        $this->student = $student;
         return $this;
     }
 
-    public function getMentorEmail(): ?string
+    public function getMentor(): ?User
     {
-        return $this->mentorEmail;
+        return $this->mentor;
     }
 
-    public function setMentorEmail(string $mentorEmail): static
+    public function setMentor(?User $mentor): static
     {
-        $this->mentorEmail = $mentorEmail;
+        $this->mentor = $mentor;
         return $this;
     }
 
@@ -167,19 +170,19 @@ class Mentorship
 
     // Participant check methods
 
-    public function isStudent(string $email): bool
+    public function isStudent(User $user): bool
     {
-        return $this->studentEmail === $email;
+        return $this->student && $this->student->getId() === $user->getId();
     }
 
-    public function isMentor(string $email): bool
+    public function isMentor(User $user): bool
     {
-        return $this->mentorEmail === $email;
+        return $this->mentor && $this->mentor->getId() === $user->getId();
     }
 
-    public function isParticipant(string $email): bool
+    public function isParticipant(User $user): bool
     {
-        return $this->isStudent($email) || $this->isMentor($email);
+        return $this->isStudent($user) || $this->isMentor($user);
     }
 
     // Status transition methods
@@ -215,12 +218,12 @@ class Mentorship
 
     // Notes management methods
 
-    public function addNote(string $authorEmail, string $content): static
+    public function addNote(User $author, string $content): static
     {
         $notesArray = $this->getNotesArray();
 
         $notesArray[] = [
-            'author' => $authorEmail,
+            'author' => $author->getEmail(),
             'content' => $content,
             'timestamp' => (new \DateTimeImmutable())->format('Y-m-d H:i:s')
         ];
