@@ -2,6 +2,7 @@
 
 namespace App\Entity\Carriere;
 
+use App\Entity\Architect\User;
 use App\Repository\Carriere\ApplicationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -16,11 +17,11 @@ class Application
     #[ORM\Column]
     private ?int $id = null;
 
-    // User email (since we're using static users without database persistence)
-    #[ORM\Column(length: 180)]
-    #[Assert\NotBlank(message: 'User email is required.')]
-    #[Assert\Email(message: 'Please enter a valid email address.')]
-    private ?string $userEmail = null;
+    // User relationship (using real User entity)
+    #[ORM\ManyToOne(inversedBy: 'applications')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'User is required.')]
+    private ?User $user = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
@@ -88,14 +89,14 @@ class Application
         return $this->id;
     }
 
-    public function getUserEmail(): ?string
+    public function getUser(): ?User
     {
-        return $this->userEmail;
+        return $this->user;
     }
 
-    public function setUserEmail(string $userEmail): static
+    public function setUser(?User $user): static
     {
-        $this->userEmail = $userEmail;
+        $this->user = $user;
         return $this;
     }
 
