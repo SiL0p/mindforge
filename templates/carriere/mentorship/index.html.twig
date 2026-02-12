@@ -47,10 +47,10 @@
 						<tbody>
 							{% for mentorship in mentorshipsAsStudent %}
 							<tr>
-								<td>{{ mentorship.mentorEmail }}</td>
+								<td>{{ mentorship.mentor.email }}</td>
 								<td>
 									{% if mentorship.company %}
-										{{ mentorship.company }}
+										{{ mentorship.company.name }}
 									{% else %}
 										<em class="text-muted">Not specified</em>
 									{% endif %}
@@ -103,10 +103,10 @@
 						<tbody>
 							{% for mentorship in mentorshipsAsMentor %}
 							<tr>
-								<td>{{ mentorship.student.userIdentifier }}</td>
+								<td>{{ mentorship.student.email }}</td>
 								<td>
 									{% if mentorship.company %}
-										{{ mentorship.company }}
+										{{ mentorship.company.name }}
 									{% else %}
 										<em class="text-muted">Not specified</em>
 									{% endif %}

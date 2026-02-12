@@ -120,4 +120,21 @@ class ApplicationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * Find all applications to opportunities belonging to a company
+     *
+     * @param int $companyId
+     * @return Application[]
+     */
+    public function findByCompany(int $companyId): array
+    {
+        return $this->createQueryBuilder('a')
+            ->join('a.opportunity', 'o')
+            ->where('o.company = :companyId')
+            ->setParameter('companyId', $companyId)
+            ->orderBy('a.appliedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

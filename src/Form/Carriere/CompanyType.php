@@ -70,6 +70,7 @@ class CompanyType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Company::class,
+            'attr' => ['novalidate' => 'novalidate'], // Disable HTML5 validation, use PHP validation only
         ]);
     }
 }

@@ -10,7 +10,11 @@
 			<div class="col-md-10 col-md-offset-1 text-center">
 				<ul class="hero-area-tree">
 					<li><a href="{{ path('app_home') }}">Home</a></li>
-					<li><a href="{{ path('app_carriere_application_my_applications') }}">My Applications</a></li>
+					{% if isCompanyView %}
+						<li><a href="{{ path('app_carriere_application_my_company_applications') }}">Company Applications</a></li>
+					{% else %}
+						<li><a href="{{ path('app_carriere_application_my_applications') }}">My Applications</a></li>
+					{% endif %}
 					<li>Details</li>
 				</ul>
 				<h1 class="white-text">Application Details</h1>
@@ -34,6 +38,22 @@
 							<i class="fa fa-building"></i> <strong>{{ application.opportunity.company.name }}</strong>
 						{% endif %}
 					</p>
+
+					{% if isCompanyView and application.user %}
+						<div style="background: #f5f5f5; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+							<h4 style="margin-top: 0; margin-bottom: 10px;"><i class="fa fa-user"></i> Applicant Information</h4>
+							<p style="margin-bottom: 5px;"><strong>Email:</strong> {{ application.user.email }}</p>
+							{% if application.user.profile %}
+								{% set profile = application.user.profile %}
+								{% if profile.firstName or profile.lastName %}
+									<p style="margin-bottom: 5px;"><strong>Name:</strong> {{ profile.firstName }} {{ profile.lastName }}</p>
+								{% endif %}
+								{% if profile.phone %}
+									<p style="margin-bottom: 5px;"><strong>Phone:</strong> {{ profile.phone }}</p>
+								{% endif %}
+							{% endif %}
+						</div>
+					{% endif %}
 
 					<div style="margin-bottom: 15px;">
 						<strong>Status:</strong>
@@ -63,22 +83,33 @@
 
 					<!-- Action Buttons -->
 					<div>
-						<a href="{{ path('app_carriere_opportunity_show', {id: application.opportunity.id}) }}" class="main-button icon-button">
-							<i class="fa fa-briefcase"></i> View Opportunity
-						</a>
-						<a href="{{ path('app_carriere_application_my_applications') }}" style="color: #6C3BAA; margin-left: 15px;">
-							<i class="fa fa-arrow-left"></i> Back to My Applications
-						</a>
+						{% if isCompanyView %}
+							{# Company View - Show company-specific actions #}
+							<a href="{{ path('app_carriere_opportunity_show', {id: application.opportunity.id}) }}" class="main-button icon-button">
+								<i class="fa fa-briefcase"></i> View Job Posting
+							</a>
+							<a href="{{ path('app_carriere_application_my_company_applications') }}" style="color: #6C3BAA; margin-left: 15px;">
+								<i class="fa fa-arrow-left"></i> Back to Company Applications
+							</a>
+						{% else %}
+							{# Applicant View - Show applicant-specific actions #}
+							<a href="{{ path('app_carriere_opportunity_show', {id: application.opportunity.id}) }}" class="main-button icon-button">
+								<i class="fa fa-briefcase"></i> View Opportunity
+							</a>
+							<a href="{{ path('app_carriere_application_my_applications') }}" style="color: #6C3BAA; margin-left: 15px;">
+								<i class="fa fa-arrow-left"></i> Back to My Applications
+							</a>
 
-						{% if application.isPending %}
-							<form method="post" action="{{ path('app_carriere_application_withdraw', {id: application.id}) }}"
-								  style="display: inline; margin-left: 15px;"
-								  onsubmit="return confirm('Are you sure you want to withdraw this application?');">
-								<input type="hidden" name="_token" value="{{ csrf_token('withdraw' ~ application.id) }}">
-								<button type="submit" class="main-button icon-button" style="background: #f0ad4e;">
-									<i class="fa fa-times"></i> Withdraw Application
-								</button>
-							</form>
+							{% if application.isPending %}
+								<form method="post" action="{{ path('app_carriere_application_withdraw', {id: application.id}) }}"
+									  style="display: inline; margin-left: 15px;"
+									  onsubmit="return confirm('Are you sure you want to withdraw this application?');">
+									<input type="hidden" name="_token" value="{{ csrf_token('withdraw' ~ application.id) }}">
+									<button type="submit" class="main-button icon-button" style="background: #f0ad4e;">
+										<i class="fa fa-times"></i> Withdraw Application
+									</button>
+								</form>
+							{% endif %}
 						{% endif %}
 					</div>
 				</div>

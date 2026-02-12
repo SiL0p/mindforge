@@ -45,11 +45,28 @@ class CareerOpportunityController extends AbstractController
     #[IsGranted('ROLE_COMPANY')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
+        $user = $this->getUser();
+        $userCompanies = $user->getCompanies();
+
+        if ($userCompanies->isEmpty()) {
+            $this->addFlash('error', 'You must be assigned to a company to create opportunities.');
+            return $this->redirectToRoute('app_carriere_opportunity_index');
+        }
+
         $opportunity = new CareerOpportunity();
-        $form = $this->createForm(CareerOpportunityType::class, $opportunity);
+        $form = $this->createForm(CareerOpportunityType::class, $opportunity, [
+            'user_companies' => $userCompanies
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Verify the selected company belongs to the user
+            $company = $opportunity->getCompany();
+            if ($company && !$user->hasCompany($company)) {
+                $this->addFlash('error', 'You do not have access to the selected company.');
+                return $this->redirectToRoute('app_carriere_opportunity_new');
+            }
+
             $entityManager->persist($opportunity);
             $entityManager->flush();
 
@@ -74,7 +91,7 @@ class CareerOpportunityController extends AbstractController
 
         if ($user) {
             $hasApplied = $applicationRepository->hasUserApplied(
-                $user->getUserIdentifier(),
+                $user->getId(),
                 $opportunity->getId()
             );
         }
@@ -92,10 +109,28 @@ class CareerOpportunityController extends AbstractController
         CareerOpportunity $opportunity,
         EntityManagerInterface $entityManager
     ): Response {
-        $form = $this->createForm(CareerOpportunityType::class, $opportunity);
+        $user = $this->getUser();
+        $company = $opportunity->getCompany();
+
+        // Check if user has access to this opportunity's company
+        if (!$company || !$user->hasCompany($company)) {
+            throw $this->createAccessDeniedException('You do not have access to edit this opportunity.');
+        }
+
+        $userCompanies = $user->getCompanies();
+        $form = $this->createForm(CareerOpportunityType::class, $opportunity, [
+            'user_companies' => $userCompanies
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Verify the selected company still belongs to the user
+            $newCompany = $opportunity->getCompany();
+            if ($newCompany && !$user->hasCompany($newCompany)) {
+                $this->addFlash('error', 'You do not have access to the selected company.');
+                return $this->redirectToRoute('app_carriere_opportunity_edit', ['id' => $opportunity->getId()]);
+            }
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Job opportunity updated successfully!');
@@ -116,6 +151,14 @@ class CareerOpportunityController extends AbstractController
         CareerOpportunity $opportunity,
         EntityManagerInterface $entityManager
     ): Response {
+        $user = $this->getUser();
+        $company = $opportunity->getCompany();
+
+        // Check if user has access to this opportunity's company
+        if (!$company || !$user->hasCompany($company)) {
+            throw $this->createAccessDeniedException('You do not have access to delete this opportunity.');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$opportunity->getId(), $request->request->get('_token'))) {
             $entityManager->remove($opportunity);
             $entityManager->flush();

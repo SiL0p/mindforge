@@ -2,6 +2,7 @@
 
 namespace App\Entity\Carriere;
 
+use App\Entity\Architect\User;
 use App\Repository\Carriere\CompanyRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -59,6 +60,11 @@ class Company
     #[ORM\OneToMany(targetEntity: Mentorship::class, mappedBy: 'company')]
     private Collection $mentorships;
 
+    // Many-to-Many: Company can have many Users who manage it
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'companies')]
+    #[ORM\JoinTable(name: 'company_user')]
+    private Collection $users;
+
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
@@ -69,6 +75,7 @@ class Company
     {
         $this->opportunities = new ArrayCollection();
         $this->mentorships = new ArrayCollection();
+        $this->users = new ArrayCollection();
     }
 
     // Getters and setters
@@ -207,5 +214,34 @@ class Company
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function addUser(User $user): static
+    {
+        if (!$this->users->contains($user)) {
+            $this->users->add($user);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(User $user): static
+    {
+        $this->users->removeElement($user);
+
+        return $this;
+    }
+
+    public function hasUser(User $user): bool
+    {
+        return $this->users->contains($user);
     }
 }
