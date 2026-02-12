@@ -1,6 +1,6 @@
 <?php
 // src/Entity/Subject.php
-namespace App\Entity;
+namespace App\Entity\Planner;
 
 use App\Repository\Planner\SubjectRepository;
 use Doctrine\Common\Collections\ArrayCollection;
