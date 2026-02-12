@@ -1,96 +1,112 @@
 {% extends 'base.html.twig' %}
+
 {% block title %}Login{% endblock %}
+
 {% block body %}
+
 <!-- Header -->
 <header id="header" class="transparent-nav">
-    <div class="container">
-        <div class="navbar-header">
-            <div class="navbar-brand">
-                <a class="logo" href="{{ path('app_home') }}">
-                    <img src="{{ asset('user/img/logo-alt.png') }}" alt="logo">
-                </a>
-            </div>
-            <button class="navbar-toggle">
-                <span></span>
-            </button>
-        </div>
-        <nav id="nav">
-            <ul class="main-menu nav navbar-nav navbar-right">
-                <li><a href="{{ path('app_home') }}">Home</a></li>
-                <li><a href="{{ path('app_blog') }}">Blog</a></li>
-                <li><a href="{{ path('app_contact') }}">Contact</a></li>
-            </ul>
-        </nav>
-    </div>
+	<div class="container">
+		<div class="navbar-header">
+			<div class="navbar-brand">
+				<a class="logo" href="{{ path('app_home') }}">
+					<img src="{{ asset('user/img/logo-alt.png') }}" alt="logo">
+				</a>
+			</div>
+			<button class="navbar-toggle">
+				<span></span>
+			</button>
+		</div>
+
+		<nav id="nav">
+			<ul class="main-menu nav navbar-nav navbar-right">
+				<li><a href="{{ path('app_home') }}">Home</a></li>
+				<li><a href="#">About</a></li>
+				<li><a href="#">Courses</a></li>
+				<li><a href="#">Rooms</a></li>
+				<li><a href="{{ path('app_carriere_opportunity_index') }}">Careers Center</a></li>
+				<li><a href="#">Leader Board</a></li>
+				<li><a href="{{ path('app_blog') }}">Blog</a></li>
+				<li><a href="{{ path('app_contact') }}">Contact</a></li>
+			</ul>
+		</nav>
+	</div>
 </header>
 <!-- /Header -->
+
 <!-- Hero -->
 <div id="home" class="hero-area">
-    <div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/home-background.jpg') }})"></div>
-    <div class="home-wrapper">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 col-md-offset-4">
-                    <div class="panel panel-default" style="margin-top:50px;">
-                        <div class="panel-heading text-center">
-                            <h3>Login</h3>
-                        </div>
-                        <div class="panel-body">
-                            {# ✅ Display authentication errors #}
-                            {% if error %}
-                                <div class="alert alert-danger">
-                                    <strong>Login Failed</strong><br>
-                                    {{ error.messageKey|trans(error.messageData, 'security') }}
-                                </div>
-                            {% endif %}
-                            
-                            {# ✅ Display flash messages for success #}
-                            {% for message in app.flashes('success') %}
-                                <div class="alert alert-success">
-                                    {{ message }}
-                                </div>
-                            {% endfor %}
-                            
-                            <form method="post" action="{{ path('app_login') }}">
-                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-                                <div class="form-group">
-                                    <label for="inputEmail">Email</label>
-                                    <input 
-                                        type="email" 
-                                        name="_username" 
-                                        id="inputEmail" 
-                                        class="form-control" 
-                                        value="{{ last_username|default('') }}" 
-                                        required 
-                                        autofocus
-                                        placeholder="Enter your email">
-                                </div>
-                                <div class="form-group">
-                                    <label for="inputPassword">Password</label>
-                                    <input 
-                                        type="password" 
-                                        name="_password" 
-                                        id="inputPassword" 
-                                        class="form-control" 
-                                        required
-                                        placeholder="Enter your password">
-                                </div>
-                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-                                <button class="main-button btn-block" type="submit">
-                                    <i class="fa fa-sign-in"></i> Login
-                                </button>
-                            </form>
-                            <hr>
-                            <p class="text-center">
-                                <a href="#">Forgot password?</a><br>
-                                <a href="{{ path('app_signup') }}">Create an account</a> {# ✅ Fixed link #}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+	<div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/home-background.jpg') }})"></div>
+
+	<div class="home-wrapper">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-4 col-md-offset-4">
+
+					<div class="panel panel-default" style="margin-top:50px;">
+						<div class="panel-heading text-center">
+							<h3>Login</h3>
+						</div>
+
+						<div class="panel-body">
+
+							{% if error %}
+								<div class="alert alert-danger">
+									{{ error.messageKey|trans(error.messageData, 'security') }}
+								</div>
+							{% endif %}
+
+							<form method="post" action="{{ path('app_login') }}">
+
+								<div class="form-group">
+									<label for="inputEmail">Email</label>
+									<input 
+										type="email" 
+										name="_username" 
+										id="inputEmail" 
+										class="form-control" 
+										value="{{ last_username }}" 
+										required 
+										autofocus
+										placeholder="Enter your email">
+								</div>
+
+								<div class="form-group">
+									<label for="inputPassword">Password</label>
+									<input 
+										type="password" 
+										name="_password" 
+										id="inputPassword" 
+										class="form-control" 
+										required
+										placeholder="Enter your password">
+								</div>
+
+								<input type="hidden" name="_csrf_token"
+									   value="{{ csrf_token('authenticate') }}"
+								>
+
+								<button class="main-button btn-block" type="submit">
+									<i class="fa fa-sign-in"></i> Login
+								</button>
+
+							</form>
+
+							<hr>
+
+							<p class="text-center">
+								<a href="#">Forgot password?</a><br>
+								<a href="#">Create an account</a>
+							</p>
+
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 <!-- /Hero -->
+
 {% endblock %}
