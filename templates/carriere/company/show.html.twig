@@ -2,92 +2,137 @@
 
 {% block title %}{{ company.name }}{% endblock %}
 
-{% block body %}
-<div class="container" style="margin-top: 80px;">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="panel panel-default">
-                <div class="panel-body">
-                    <h2>{{ company.name }}</h2>
-                    {% if company.industry %}
-                        <p class="text-muted"><i class="fa fa-industry"></i> {{ company.industry }}</p>
-                    {% endif %}
+{% block hero %}
+<div class="hero-area section">
+	<div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/page-background.jpg') }})"></div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-10 col-md-offset-1 text-center">
+				<ul class="hero-area-tree">
+					<li><a href="{{ path('app_home') }}">Home</a></li>
+					<li><a href="{{ path('app_carriere_company_index') }}">Companies</a></li>
+					<li>{{ company.name }}</li>
+				</ul>
+				<h1 class="white-text">{{ company.name }}</h1>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
 
-                    {% if company.website %}
-                        <p><a href="{{ company.website }}" target="_blank"><i class="fa fa-external-link"></i> Visit Website</a></p>
-                    {% endif %}
+{% block content %}
+<div class="section">
+	<div class="container">
+		<div class="row">
 
-                    {% if company.contactEmail or company.contactPhone %}
-                        <p>
-                            {% if company.contactEmail %}
-                                <i class="fa fa-envelope"></i> {{ company.contactEmail }}
-                            {% endif %}
-                            {% if company.contactPhone %}
-                                <i class="fa fa-phone"></i> {{ company.contactPhone }}
-                            {% endif %}
-                        </p>
-                    {% endif %}
+			<!-- Main Content -->
+			<div class="col-md-8">
+				<div style="background: #fff; padding: 30px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+					<h2 style="margin-top: 0;">{{ company.name }}</h2>
+					{% if company.industry %}
+						<p style="font-size: 16px; color: #6C3BAA;"><i class="fa fa-industry"></i> {{ company.industry }}</p>
+					{% endif %}
 
-                    <hr>
+					{% if company.website %}
+						<p><a href="{{ company.website }}" target="_blank" style="color: #6C3BAA;"><i class="fa fa-external-link"></i> Visit Website</a></p>
+					{% endif %}
 
-                    {% if company.description %}
-                        <h4>About Us</h4>
-                        <p style="white-space: pre-line;">{{ company.description }}</p>
-                        <hr>
-                    {% endif %}
+					{% if company.contactEmail or company.contactPhone %}
+						<div style="margin-bottom: 15px;">
+							{% if company.contactEmail %}
+								<p><i class="fa fa-envelope"></i> {{ company.contactEmail }}</p>
+							{% endif %}
+							{% if company.contactPhone %}
+								<p><i class="fa fa-phone"></i> {{ company.contactPhone }}</p>
+							{% endif %}
+						</div>
+					{% endif %}
 
-                    {% if is_granted('ROLE_COMPANY') %}
-                        <div style="margin-bottom: 20px;">
-                            <a href="{{ path('app_carriere_company_edit', {id: company.id}) }}" class="btn btn-warning">
-                                <i class="fa fa-edit"></i> Edit Profile
-                            </a>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+					{% if company.description %}
+						<hr>
+						<h4>About Us</h4>
+						<div style="white-space: pre-line; line-height: 1.8;">{{ company.description }}</div>
+					{% endif %}
 
-            <h3>Posted Opportunities ({{ opportunities|length }})</h3>
-            {% if opportunities|length > 0 %}
-                {% for opportunity in opportunities %}
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                        <h4>
-                            <a href="{{ path('app_carriere_opportunity_show', {id: opportunity.id}) }}">
-                                {{ opportunity.title }}
-                            </a>
-                        </h4>
-                        <p>
-                            <span class="label label-primary">{{ opportunity.type|capitalize }}</span>
-                            {% if opportunity.location %}
-                                <span class="label label-default"><i class="fa fa-map-marker"></i> {{ opportunity.location }}</span>
-                            {% endif %}
-                            {% if opportunity.duration %}
-                                <span class="label label-info">{{ opportunity.duration }}</span>
-                            {% endif %}
-                        </p>
-                        <p class="text-muted">
-                            {{ opportunity.description|length > 150 ? opportunity.description|slice(0, 150) ~ '...' : opportunity.description }}
-                        </p>
-                        <a href="{{ path('app_carriere_opportunity_show', {id: opportunity.id}) }}" class="btn btn-primary btn-sm">
-                            View Details
-                        </a>
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="panel panel-default">
-                    <div class="panel-body text-center">
-                        <p>This company has not posted any opportunities yet.</p>
-                    </div>
-                </div>
-            {% endif %}
+					{% if is_granted('ROLE_COMPANY') %}
+						<hr>
+						<a href="{{ path('app_carriere_company_edit', {id: company.id}) }}" class="main-button icon-button">
+							<i class="fa fa-edit"></i> Edit Profile
+						</a>
+					{% endif %}
+				</div>
 
-            <div style="margin-top: 20px;">
-                <a href="{{ path('app_carriere_company_index') }}" class="btn btn-default">
-                    <i class="fa fa-arrow-left"></i> Back to Companies
-                </a>
-            </div>
-        </div>
-    </div>
+				<!-- Posted Opportunities -->
+				<div style="margin-top: 40px;">
+					<h3>Posted Opportunities ({{ opportunities|length }})</h3>
+
+					{% if opportunities|length > 0 %}
+						{% for opportunity in opportunities %}
+						<div class="single-blog" style="margin-bottom: 20px;">
+							<div class="blog-content" style="padding: 20px; background: #fff; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+								<h4 style="margin-top: 0;">
+									<a href="{{ path('app_carriere_opportunity_show', {id: opportunity.id}) }}" style="color: #374050;">
+										{{ opportunity.title }}
+									</a>
+								</h4>
+								<div style="margin-bottom: 10px;">
+									<span class="label label-primary">{{ opportunity.type|capitalize }}</span>
+									{% if opportunity.location %}
+										<span class="label label-default"><i class="fa fa-map-marker"></i> {{ opportunity.location }}</span>
+									{% endif %}
+									{% if opportunity.duration %}
+										<span class="label label-info">{{ opportunity.duration }}</span>
+									{% endif %}
+								</div>
+								<p class="text-muted">
+									{{ opportunity.description|length > 150 ? opportunity.description|slice(0, 150) ~ '...' : opportunity.description }}
+								</p>
+								<a href="{{ path('app_carriere_opportunity_show', {id: opportunity.id}) }}" class="main-button icon-button">
+									View Details <i class="fa fa-arrow-right"></i>
+								</a>
+							</div>
+						</div>
+						{% endfor %}
+					{% else %}
+						<div class="text-center" style="padding: 40px; background: #fff; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+							<p class="text-muted">This company has not posted any opportunities yet.</p>
+						</div>
+					{% endif %}
+				</div>
+
+				<!-- Back Link -->
+				<div style="margin-top: 30px;">
+					<a href="{{ path('app_carriere_company_index') }}" style="color: #6C3BAA;">
+						<i class="fa fa-arrow-left"></i> Back to Companies
+					</a>
+				</div>
+			</div>
+
+			<!-- Sidebar -->
+			<div class="col-md-4">
+				<div class="widget">
+					<h4 class="widget-title">Quick Info</h4>
+					<ul class="list-unstyled" style="line-height: 2.2;">
+						<li><i class="fa fa-building" style="width: 20px;"></i> <strong>{{ company.name }}</strong></li>
+						{% if company.industry %}
+							<li><i class="fa fa-industry" style="width: 20px;"></i> {{ company.industry }}</li>
+						{% endif %}
+						{% if company.contactEmail %}
+							<li><i class="fa fa-envelope" style="width: 20px;"></i> {{ company.contactEmail }}</li>
+						{% endif %}
+						{% if company.contactPhone %}
+							<li><i class="fa fa-phone" style="width: 20px;"></i> {{ company.contactPhone }}</li>
+						{% endif %}
+						{% if company.website %}
+							<li><i class="fa fa-globe" style="width: 20px;"></i> <a href="{{ company.website }}" target="_blank" style="color: #6C3BAA;">Website</a></li>
+						{% endif %}
+					</ul>
+					<hr>
+					<p class="text-muted"><strong>{{ opportunities|length }}</strong> active {{ opportunities|length == 1 ? 'opportunity' : 'opportunities' }}</p>
+				</div>
+			</div>
+
+		</div>
+	</div>
 </div>
 {% endblock %}

@@ -1,30 +1,235 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}My Site{% endblock %}</title>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    {# BOOTSTRAP #}
-    <link rel="stylesheet" href="{{ asset('user/css/bootstrap.min.css') }}">
+		<title>{% block title %}MindForge{% endblock %}</title>
 
-    {# FONT AWESOME #}
-    <link rel="stylesheet" href="{{ asset('user/css/font-awesome.min.css') }}">
+		<!-- Google font -->
+		<link href="https://fonts.googleapis.com/css?family=Lato:700%7CMontserrat:400,600" rel="stylesheet">
 
-    {# MAIN STYLE #}
-    <link rel="stylesheet" href="{{ asset('user/css/style.css') }}">
+		<!-- Bootstrap -->
+		<link type="text/css" rel="stylesheet" href="{{ asset('user/css/bootstrap.min.css') }}"/>
 
-    {% block stylesheets %}{% endblock %}
-</head>
-<body>
+		<!-- Font Awesome Icon -->
+		<link rel="stylesheet" href="{{ asset('user/css/font-awesome.min.css') }}">
 
-    {% block body %}{% endblock %}
+		<!-- Custom stlylesheet -->
+		<link type="text/css" rel="stylesheet" href="{{ asset('user/css/style.css') }}"/>
 
-    {# JS FILES #}
-    <script src="{{ asset('user/js/jquery.min.js') }}"></script>
-    <script src="{{ asset('user/js/bootstrap.min.js') }}"></script>
-    <script src="{{ asset('user/js/main.js') }}"></script>
+		{% block stylesheets %}{% endblock %}
 
-    {% block javascripts %}{% endblock %}
-</body>
+		<style>
+			/* Dropdown menu styling */
+			.dropdown-menu {
+				background-color: #fff;
+				border: 1px solid #ccc;
+			}
+
+			.dropdown-menu > li > a {
+				color: #333 !important;
+				padding: 10px 20px;
+			}
+
+			.dropdown-menu > li > a:hover,
+			.dropdown-menu > li > a:focus {
+				color: #000 !important;
+				background-color: #f5f5f5;
+			}
+
+			.dropdown-menu > .dropdown-header {
+				color: #333 !important;
+				font-weight: bold;
+				padding: 10px 20px;
+			}
+
+			.dropdown-menu .divider {
+				height: 1px;
+				margin: 9px 0;
+				background-color: #e5e5e5;
+			}
+
+			.dropdown-menu > li > a i {
+				color: #333;
+				margin-right: 8px;
+			}
+		</style>
+
+    </head>
+	<body>
+
+		{% block body %}
+
+		<!-- Header -->
+		<header id="header" class="{% block header_class %}{% endblock %}">
+			<div class="container">
+
+				<div class="navbar-header">
+					<!-- Logo -->
+					<div class="navbar-brand">
+						<a class="logo" href="{{ path('app_home') }}">
+							<img src="{{ asset('user/img/logo.png') }}" alt="logo">
+						</a>
+					</div>
+					<!-- /Logo -->
+
+					<!-- Mobile toggle -->
+					<button class="navbar-toggle">
+						<span></span>
+					</button>
+					<!-- /Mobile toggle -->
+				</div>
+
+				<!-- Navigation -->
+				<nav id="nav">
+					<ul class="main-menu nav navbar-nav navbar-right">
+						<li><a href="{{ path('app_home') }}">Home</a></li>
+						<li><a href="#">About</a></li>
+						<li><a href="#">Courses</a></li>
+						<li><a href="#">Rooms</a></li>
+						<li><a href="{{ path('app_carriere_opportunity_index') }}">Careers Center</a></li>
+						<li><a href="#">Leader Board</a></li>
+						<li><a href="{{ path('app_blog') }}">Blog</a></li>
+						<li><a href="{{ path('app_contact') }}">Contact</a></li>
+						{% if app.user %}
+							<li class="dropdown">
+								<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+									<i class="fa fa-user-circle"></i> Profile <span class="caret"></span>
+								</a>
+								<ul class="dropdown-menu">
+									<li class="dropdown-header">
+										<i class="fa fa-user"></i> {{ app.user.userIdentifier }}
+									</li>
+									<li role="separator" class="divider"></li>
+									<li><a href="{{ path('app_carriere_application_my_applications') }}">
+										<i class="fa fa-briefcase"></i> My Applications
+									</a></li>
+									<li><a href="{{ path('app_carriere_company_index') }}">
+										<i class="fa fa-building"></i> Companies
+									</a></li>
+									<li><a href="{{ path('app_carriere_mentorship_index') }}">
+										<i class="fa fa-users"></i> My Mentorships
+									</a></li>
+									<li role="separator" class="divider"></li>
+									<li><a href="{{ path('app_logout') }}">
+										<i class="fa fa-sign-out"></i> Logout
+									</a></li>
+								</ul>
+							</li>
+						{% else %}
+							<li><a href="{{ path('app_login') }}">
+								<i class="fa fa-sign-in"></i> Login
+							</a></li>
+						{% endif %}
+					</ul>
+				</nav>
+				<!-- /Navigation -->
+
+			</div>
+		</header>
+		<!-- /Header -->
+
+		{% block hero %}
+		{% endblock %}
+
+		<!-- Flash Messages -->
+		{% for label, messages in app.flashes %}
+			{% for message in messages %}
+				<div class="container" style="margin-top: 20px;">
+					<div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible" role="alert">
+						<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						{{ message }}
+					</div>
+				</div>
+			{% endfor %}
+		{% endfor %}
+
+		{% block content %}
+		{% endblock %}
+
+		<!-- Footer -->
+		<footer id="footer" class="section">
+
+			<!-- container -->
+			<div class="container">
+
+				<!-- row -->
+				<div class="row">
+
+					<!-- footer logo -->
+					<div class="col-md-6">
+						<div class="footer-logo">
+							<a class="logo" href="{{ path('app_home') }}">
+								<img src="{{ asset('user/img/logo.png') }}" alt="logo">
+							</a>
+						</div>
+					</div>
+					<!-- footer logo -->
+
+					<!-- footer nav -->
+					<div class="col-md-6">
+						<ul class="footer-nav">
+							<li><a href="{{ path('app_home') }}">Home</a></li>
+							<li><a href="#">About</a></li>
+							<li><a href="#">Courses</a></li>
+							<li><a href="{{ path('app_carriere_opportunity_index') }}">Careers</a></li>
+							<li><a href="{{ path('app_carriere_company_index') }}">Companies</a></li>
+							<li><a href="{{ path('app_blog') }}">Blog</a></li>
+							<li><a href="{{ path('app_contact') }}">Contact</a></li>
+						</ul>
+					</div>
+					<!-- /footer nav -->
+
+				</div>
+				<!-- /row -->
+
+				<!-- row -->
+				<div id="bottom-footer" class="row">
+
+					<!-- social -->
+					<div class="col-md-4 col-md-push-8">
+						<ul class="footer-social">
+							<li><a href="#" class="facebook"><i class="fa fa-facebook"></i></a></li>
+							<li><a href="#" class="twitter"><i class="fa fa-twitter"></i></a></li>
+							<li><a href="#" class="google-plus"><i class="fa fa-google-plus"></i></a></li>
+							<li><a href="#" class="instagram"><i class="fa fa-instagram"></i></a></li>
+							<li><a href="#" class="youtube"><i class="fa fa-youtube"></i></a></li>
+							<li><a href="#" class="linkedin"><i class="fa fa-linkedin"></i></a></li>
+						</ul>
+					</div>
+					<!-- /social -->
+
+					<!-- copyright -->
+					<div class="col-md-8 col-md-pull-4">
+						<div class="footer-copyright">
+							<span>&copy; Copyright {{ "now"|date("Y") }}. All Rights Reserved. | MindForge Education Platform</span>
+						</div>
+					</div>
+					<!-- /copyright -->
+
+				</div>
+				<!-- row -->
+
+			</div>
+			<!-- /container -->
+
+		</footer>
+		<!-- /Footer -->
+
+		<!-- preloader -->
+		<div id='preloader'><div class='preloader'></div></div>
+		<!-- /preloader -->
+
+		{% endblock %}
+
+		<!-- jQuery Plugins -->
+		<script type="text/javascript" src="{{ asset('user/js/jquery.min.js') }}"></script>
+		<script type="text/javascript" src="{{ asset('user/js/bootstrap.min.js') }}"></script>
+		<script type="text/javascript" src="{{ asset('user/js/main.js') }}"></script>
+
+		{% block javascripts %}{% endblock %}
+
+	</body>
 </html>
