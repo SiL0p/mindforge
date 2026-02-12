@@ -1,0 +1,410 @@
+{# templates/community/room_chat.html.twig #}
+{% extends "base.html.twig" %}
+
+{% block title %}{{ virtualRoom.name }} - Chat | MindForge{% endblock %}
+
+{% block body %}
+<div class="community-chat-container">
+    <div class="chat-header">
+        <h2>{{ virtualRoom.name }}</h2>
+        <p class="room-description">{{ virtualRoom.description }}</p>
+        <span class="participants-count">{{ virtualRoom.participants|length }} participant(s)</span>
+    </div>
+
+    {% if app.flashes %}
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ type == 'error' ? 'danger' : 'success' }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+
+    <div class="messages-container">
+        {% if messages|length == 0 %}
+            <div class="empty-state">
+                <p>No messages yet. Be the first to send one!</p>
+            </div>
+        {% else %}
+            {% for message in messages|reverse %}
+                <div class="message-item {% if message.sender == app.user %}sent{% else %}received{% endif %}">
+                    <div class="message-sender">
+                        <strong>{{ message.sender.email }}</strong>
+                        <span class="message-time">{{ message.createdAt|date('d/m/Y H:i') }}</span>
+                        {% if message.isEdited %}
+                            <span class="badge badge-info">Edited</span>
+                        {% endif %}
+                    </div>
+                    <div class="message-content">
+                        {{ message.content }}
+                    </div>
+                    {% if message.sender == app.user or is_granted('ROLE_ADMIN') %}
+                        <div class="message-actions">
+                            <form method="POST" action="{{ path('community_message_edit', {id: message.id}) }}" style="display:inline;">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="editMessage(this)">
+                                    Edit
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ path('community_message_delete', {id: message.id}) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if totalPages > 1 %}
+        <nav class="pagination-nav">
+            {% if currentPage > 1 %}
+                <a href="{{ path('community_room_chat', {id: virtualRoom.id, page: currentPage - 1}) }}" class="btn btn-sm btn-outline-secondary">
+                    Previous page
+                </a>
+            {% endif %}
+            <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+            {% if currentPage < totalPages %}
+                <a href="{{ path('community_room_chat', {id: virtualRoom.id, page: currentPage + 1}) }}" class="btn btn-sm btn-outline-secondary">
+                    Next page
+                </a>
+            {% endif %}
+        </nav>
+    {% endif %}
+
+    <!-- Message Form -->
+    <div class="message-form-container">
+        <form method="POST" action="{{ path('community_message_send', {id: virtualRoom.id}) }}" class="message-form">
+            <div class="form-group">
+                <textarea 
+                    name="content" 
+                    class="form-control" 
+                    placeholder="Write your message..." 
+                    rows="3" 
+                    required
+                    minlength="1"
+                    maxlength="5000"
+                ></textarea>
+                <small class="form-text text-muted">Max 5000 characters</small>
+            </div>
+            <button type="submit" class="btn btn-primary">Send</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.community-chat-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: linear-gradient(135deg, #0f172a 0%, #1a2940 100%);
+    color: #fff;
+    min-height: 100vh;
+}
+
+.chat-header {
+    background: linear-gradient(135deg, #1a2333 0%, #2d3e52 100%);
+    border: 2px solid #6840d6;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 30px rgba(104, 64, 214, 0.15);
+    text-align: center;
+}
+
+.chat-header h2 {
+    font-size: 2rem;
+    color: #6840d6;
+    margin: 0 0 0.5rem 0;
+    font-weight: 700;
+}
+
+.room-description {
+    color: #bbb;
+    font-size: 1rem;
+    margin: 0.5rem 0 1rem 0;
+}
+
+.participants-count {
+    display: inline-block;
+    background: rgba(104, 64, 214, 0.2);
+    color: #2e65d9;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.alert {
+    padding: 1.2rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    border-left: 5px solid;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.alert-danger {
+    background: rgba(139, 0, 0, 0.2);
+    border-left-color: #ff6b6b;
+    color: #ff8787;
+}
+
+.alert-success {
+    background: rgba(11, 107, 63, 0.2);
+    border-left-color: #51cf66;
+    color: #94d82d;
+}
+
+.messages-container {
+    background: linear-gradient(135deg, #1a2333 0%, #2d3e52 100%);
+    border: 2px solid #2d3e52;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    max-height: 500px;
+    overflow-y: auto;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.message-item {
+    margin-bottom: 1.5rem;
+    padding: 1.2rem;
+    border-radius: 12px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message-item.sent {
+    background: rgba(104, 64, 214, 0.15);
+    border-left: 4px solid #6840d6;
+    margin-left: 2rem;
+}
+
+.message-item.received {
+    background: rgba(46, 101, 217, 0.1);
+    border-left: 4px solid #2e65d9;
+    margin-right: 2rem;
+}
+
+.message-sender {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.message-sender strong {
+    color: #6840d6;
+    font-weight: 600;
+}
+
+.message-time {
+    color: #999;
+    font-size: 0.85rem;
+}
+
+.badge {
+    background: rgba(104, 64, 214, 0.3);
+    color: #94d82d;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.message-content {
+    color: #e0e0e0;
+    line-height: 1.6;
+    word-wrap: break-word;
+    padding: 0.5rem 0;
+}
+
+.message-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.message-item:hover .message-actions {
+    opacity: 1;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    border: 1px solid;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-outline-primary {
+    border-color: #6840d6;
+    color: #6840d6;
+}
+
+.btn-outline-primary:hover {
+    background: rgba(104, 64, 214, 0.2);
+}
+
+.btn-outline-danger {
+    border-color: #ff6b6b;
+    color: #ff8787;
+}
+
+.btn-outline-danger:hover {
+    background: rgba(255, 107, 107, 0.2);
+}
+
+.pagination-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: rgba(104, 64, 214, 0.1);
+    border-radius: 10px;
+}
+
+.page-info {
+    color: #bbb;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.btn-outline-secondary {
+    border-color: #6840d6;
+    color: #6840d6;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s;
+}
+
+.btn-outline-secondary:hover {
+    background: rgba(104, 64, 214, 0.15);
+}
+
+.message-form-container {
+    background: linear-gradient(135deg, #1a2333 0%, #2d3e52 100%);
+    border: 2px solid #6840d6;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 30px rgba(104, 64, 214, 0.15);
+}
+
+.message-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-control {
+    background: #0f172a;
+    border: 2px solid #2d3e52;
+    border-radius: 10px;
+    color: #fff;
+    padding: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: all 0.3s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #6840d6;
+    box-shadow: 0 0 20px rgba(104, 64, 214, 0.3);
+}
+
+.form-control::placeholder {
+    color: #666;
+}
+
+.form-text {
+    font-size: 0.85rem;
+    color: #999;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #6840d6 0%, #af17c2 100%);
+    border: none;
+    color: #fff;
+    padding: 0.75rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(104, 64, 214, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(104, 64, 214, 0.4);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #999;
+    font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+    .chat-header {
+        padding: 1.5rem;
+    }
+
+    .chat-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .messages-container {
+        max-height: 400px;
+        padding: 1rem;
+    }
+
+    .message-item.sent,
+    .message-item.received {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .message-actions {
+        opacity: 1;
+    }
+
+    .message-form {
+        flex-direction: column;
+    }
+
+    .btn-primary {
+        width: 100%;
+    }
+}
+</style>{% endblock %}
