@@ -72,6 +72,7 @@ class CareerOpportunityType extends AbstractType
                 'label' => 'Company',
                 'placeholder' => 'Select a company',
                 'required' => false,
+                'choices' => $options['user_companies'],
                 'attr' => ['class' => 'form-control']
             ]);
     }
@@ -80,6 +81,8 @@ class CareerOpportunityType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => CareerOpportunity::class,
+            'user_companies' => [],
+            'attr' => ['novalidate' => 'novalidate'], // Disable HTML5 validation, use PHP validation only
         ]);
     }
 }

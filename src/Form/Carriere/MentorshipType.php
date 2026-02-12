@@ -38,6 +38,7 @@ class MentorshipType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Mentorship::class,
+            'attr' => ['novalidate' => 'novalidate'], // Disable HTML5 validation, use PHP validation only
         ]);
     }
 }

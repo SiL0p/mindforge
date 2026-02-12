@@ -6,6 +6,7 @@ use App\Entity\Carriere\Mentorship;
 use App\Form\Carriere\MentorshipNoteType;
 use App\Form\Carriere\MentorshipType;
 use App\Repository\Carriere\MentorshipRepository;
+use App\Repository\Carriere\CompanyRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,8 +30,65 @@ class MentorshipController extends AbstractController
         $mentorshipsAsMentor = $mentorshipRepository->findByMentor($user->getId());
 
         return $this->render('carriere/mentorship/index.html.twig', [
-            'mentorships_as_student' => $mentorshipsAsStudent,
-            'mentorships_as_mentor' => $mentorshipsAsMentor,
+            'mentorshipsAsStudent' => $mentorshipsAsStudent,
+            'mentorshipsAsMentor' => $mentorshipsAsMentor,
+        ]);
+    }
+
+    #[Route('/my-company-mentorships', name: 'app_carriere_mentorship_my_company_mentorships')]
+    #[IsGranted('ROLE_COMPANY')]
+    public function myCompanyMentorships(MentorshipRepository $mentorshipRepository): Response
+    {
+        $user = $this->getUser();
+        $userCompanies = $user->getCompanies();
+
+        if ($userCompanies->isEmpty()) {
+            $this->addFlash('info', 'You are not assigned to any companies yet.');
+            return $this->redirectToRoute('app_carriere_mentorship_index');
+        }
+
+        // Fetch mentorships from all user's companies
+        $mentorships = [];
+        foreach ($userCompanies as $company) {
+            $companyMentorships = $mentorshipRepository->findByCompany($company->getId());
+            $mentorships = array_merge($mentorships, $companyMentorships);
+        }
+
+        // Sort by started date (most recent first)
+        usort($mentorships, function($a, $b) {
+            return $b->getStartedAt() <=> $a->getStartedAt();
+        });
+
+        return $this->render('carriere/mentorship/my_company_mentorships.html.twig', [
+            'mentorships' => $mentorships,
+            'companies' => $userCompanies,
+        ]);
+    }
+
+    #[Route('/company/{companyId}', name: 'app_carriere_mentorship_company_mentorships', requirements: ['companyId' => '\d+'])]
+    #[IsGranted('ROLE_COMPANY')]
+    public function companyMentorships(
+        int $companyId,
+        MentorshipRepository $mentorshipRepository,
+        CompanyRepository $companyRepository
+    ): Response {
+        $user = $this->getUser();
+        $company = $companyRepository->find($companyId);
+
+        if (!$company) {
+            throw $this->createNotFoundException('Company not found.');
+        }
+
+        // Check if user has access to this company
+        if (!$company->hasUser($user)) {
+            throw $this->createAccessDeniedException('You do not have access to this company.');
+        }
+
+        $mentorships = $mentorshipRepository->findByCompany($companyId);
+
+        return $this->render('carriere/mentorship/company_mentorships.html.twig', [
+            'mentorships' => $mentorships,
+            'companyId' => $companyId,
         ]);
     }
 

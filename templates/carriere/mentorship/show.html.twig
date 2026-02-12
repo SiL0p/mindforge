@@ -43,27 +43,27 @@
 						{% endif %}
 					</div>
 
-					<p><strong>Student:</strong> {{ mentorship.student.userIdentifier }}</p>
-					<p><strong>Mentor:</strong> {{ mentorship.mentorEmail }}</p>
+					<p><strong>Student:</strong> {{ mentorship.student.email }}</p>
+					<p><strong>Mentor:</strong> {{ mentorship.mentor.email }}</p>
 					{% if mentorship.company %}
-						<p><strong>Company:</strong> {{ mentorship.company }}</p>
+						<p><strong>Company:</strong> {{ mentorship.company.name }}</p>
 					{% endif %}
 					<p class="text-muted"><i class="fa fa-calendar"></i> Started: {{ mentorship.startedAt|date('F d, Y \\a\\t H:i') }}</p>
-					{% if mentorship.completedAt %}
-						<p class="text-muted"><i class="fa fa-calendar-check-o"></i> Completed: {{ mentorship.completedAt|date('F d, Y \\a\\t H:i') }}</p>
+					{% if mentorship.endedAt %}
+						<p class="text-muted"><i class="fa fa-calendar-check-o"></i> Ended: {{ mentorship.endedAt|date('F d, Y \\a\\t H:i') }}</p>
 					{% endif %}
 
 					<hr>
 
 					<!-- Notes Timeline -->
 					<h4>Notes & Updates</h4>
-					{% if mentorship.notes|length > 0 %}
+					{% if mentorship.notesArray|length > 0 %}
 						<div style="margin-top: 20px;">
-							{% for note in mentorship.notes %}
+							{% for note in mentorship.notesArray %}
 								<div style="background: #f9f9f9; padding: 15px; border-radius: 4px; margin-bottom: 15px; border-left: 3px solid #6C3BAA;">
 									<p style="margin: 0; font-size: 13px; color: #666;">
-										<strong>{{ note.author.userIdentifier }}</strong>
-										<span class="text-muted">- {{ note.createdAt|date('M d, Y \\a\\t H:i') }}</span>
+										<strong>{{ note.author }}</strong>
+										<span class="text-muted">- {{ note.timestamp }}</span>
 									</p>
 									<p style="margin: 10px 0 0 0; line-height: 1.6;">{{ note.content }}</p>
 								</div>
@@ -77,15 +77,15 @@
 					{% if mentorship.status == 'active' %}
 						<hr>
 						<h4>Add Note</h4>
-						{{ form_start(noteForm) }}
+						{{ form_start(note_form, {'action': path('app_carriere_mentorship_add_note', {id: mentorship.id}), 'method': 'POST'}) }}
 							<div class="form-group">
-								{{ form_widget(noteForm.content, {'attr': {'class': 'input', 'rows': 4, 'placeholder': 'Write your note here...'}}) }}
-								{{ form_errors(noteForm.content) }}
+								{{ form_widget(note_form.content, {'attr': {'class': 'input', 'rows': 4, 'placeholder': 'Write your note here...'}}) }}
+								{{ form_errors(note_form.content) }}
 							</div>
 							<button type="submit" class="main-button icon-button">
 								<i class="fa fa-plus"></i> Add Note
 							</button>
-						{{ form_end(noteForm) }}
+						{{ form_end(note_form) }}
 					{% endif %}
 
 					<hr>
@@ -96,7 +96,7 @@
 							<i class="fa fa-arrow-left"></i> Back to My Mentorships
 						</a>
 
-						{% if mentorship.status == 'pending' and isMentor %}
+						{% if mentorship.status == 'pending' and mentorship.isMentor(app.user) %}
 							<form method="post" action="{{ path('app_carriere_mentorship_accept', {id: mentorship.id}) }}"
 								  style="display: inline; margin-left: 15px;">
 								<input type="hidden" name="_token" value="{{ csrf_token('accept' ~ mentorship.id) }}">

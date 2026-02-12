@@ -47,9 +47,17 @@ class CareerOpportunity
     private ?string $type = 'internship';
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'Location cannot exceed {{ limit }} characters.'
+    )]
     private ?string $location = null;
 
     #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(
+        max: 100,
+        maxMessage: 'Duration cannot exceed {{ limit }} characters.'
+    )]
     private ?string $duration = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]

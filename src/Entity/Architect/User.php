@@ -10,6 +10,7 @@ use App\Entity\Guardian\VirtualRoom;
 use App\Entity\Guardian\Resource;
 use App\Entity\Carriere\Application;
 use App\Entity\Carriere\Mentorship;
+use App\Entity\Carriere\Company;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -95,6 +96,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Mentorship::class, mappedBy: 'mentor', orphanRemoval: true)]
     private Collection $mentorshipsAsMentor;
 
+    // Many-to-Many: User can manage many Companies
+    #[ORM\ManyToMany(targetEntity: Company::class, mappedBy: 'users')]
+    private Collection $companies;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -110,6 +115,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->applications = new ArrayCollection();
         $this->mentorshipsAsStudent = new ArrayCollection();
         $this->mentorshipsAsMentor = new ArrayCollection();
+        $this->companies = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -517,5 +523,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Company>
+     */
+    public function getCompanies(): Collection
+    {
+        return $this->companies;
+    }
+
+    public function addCompany(Company $company): self
+    {
+        if (!$this->companies->contains($company)) {
+            $this->companies->add($company);
+            $company->addUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCompany(Company $company): self
+    {
+        if ($this->companies->removeElement($company)) {
+            $company->removeUser($this);
+        }
+
+        return $this;
+    }
+
+    public function hasCompany(Company $company): bool
+    {
+        return $this->companies->contains($company);
     }
 }
