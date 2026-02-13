@@ -36,7 +36,7 @@ class CalendarController extends AbstractController
                     'id' => 'task_'.$task->getId(),
                     'title' => '📝 '.$task->getTitle(),
                     'start' => $task->getDueDate()->format('Y-m-d\TH:i:s'),
-                    'color' => $this->getTaskColor($task->getStatus(), $task->getSubject()?->getColor()),
+                    'color' => $this->getTaskColor($task->getStatus()),
                     'url' => $this->generateUrl('app_planner_task_edit', ['id' => $task->getId()]),
                     'type' => 'task',
                     'extendedProps' => [
@@ -72,12 +72,12 @@ class CalendarController extends AbstractController
         ]);
     }
 
-    private function getTaskColor(string $status, ?string $subjectColor): string
+    private function getTaskColor(string $status): string
     {
         return match($status) {
             'done' => '#10b981', // Vert
             'in_progress' => '#f59e0b', // Orange
-            default => $subjectColor ?? '#6840d6', // Violet par défaut
+            default => '#6840d6', // Violet par défaut
         };
     }
 }
