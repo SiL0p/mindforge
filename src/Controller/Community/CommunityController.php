@@ -7,6 +7,7 @@ use App\Entity\Community\Claim;
 use App\Entity\Community\SharedTask;
 use App\Entity\Guardian\VirtualRoom;
 use App\Entity\Architect\User;
+use App\Repository\UserRepository;
 use App\Repository\Community\ChatMessageRepository;
 use App\Repository\Community\ClaimRepository;
 use App\Repository\Community\SharedTaskRepository;
@@ -256,6 +257,12 @@ class CommunityController extends AbstractController
         ]);
     }
 
+    #[Route('/tasks', name: 'community_tasks', methods: ['GET'])]
+    public function communityTasks(): Response
+    {
+        return $this->redirectToRoute('app_planner_tasks');
+    }
+
     #[Route('/challenge/{id<\d+>}/respond', name: 'community_challenge_respond', methods: ['POST'])]
     public function respondToChallenge(
         int $id,
@@ -384,7 +391,11 @@ class CommunityController extends AbstractController
     // ============================================================================
 
     #[Route('/admin/claims', name: 'admin_community_claims', methods: ['GET'])]
-    public function adminListClaims(ClaimRepository $claimRepo, Request $request): Response
+    public function adminListClaims(
+        ClaimRepository $claimRepo,
+        UserRepository $userRepository,
+        Request $request
+    ): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -398,12 +409,14 @@ class CommunityController extends AbstractController
         }
 
         $openCount = $claimRepo->countOpenClaims();
+        $assignableUsers = $userRepository->findAll();
 
         return $this->render('admin/community_claims.html.twig', [
             'claims' => $claims,
             'filterStatus' => $status,
             'filterPriority' => $priority,
             'openClaimsCount' => $openCount,
+            'assignableUsers' => $assignableUsers,
         ]);
     }
 

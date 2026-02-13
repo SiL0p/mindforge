@@ -1,141 +1,50 @@
-{# templates/community/view_claim.html.twig #}
-{% extends "base.html.twig" %}
+{% extends 'workspace/module_base.html.twig' %}
 
-{% block title %}View Support Ticket | MindForge Community{% endblock %}
+{% block title %}Ticket #{{ claim.id }}{% endblock %}
 
-{% block body %}
-<div style="min-height: 100vh; background: linear-gradient(135deg, #f8f9fa 0%, #e8eaed 100%); padding: 2rem 1rem;">
+{% block module_title %}Ticket Details{% endblock %}
+{% block module_subtitle %}Detailed view of your support ticket.{% endblock %}
+{% block module_content %}
+<div class="section">
     <div class="container">
-        <!-- Header -->
-        <div style="margin-bottom: 2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
-                <h1 style="color: #2d3436; font-weight: 700; margin: 0; font-size: 2rem;">
-                    <i class="fa fa-ticket" style="color: #6d5ce7;"></i> Support Ticket #{{ claim.id }}
-                </h1>
-                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                    <span class="badge" style="padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; {% if claim.status == 'open' %}background-color: rgba(253, 203, 110, 0.15); color: #fdcb6e;{% elseif claim.status == 'in_progress' %}background-color: rgba(9, 132, 227, 0.15); color: #0984e3;{% elseif claim.status == 'resolved' %}background-color: rgba(0, 184, 148, 0.15); color: #00b894;{% else %}background-color: rgba(109, 92, 231, 0.15); color: #6d5ce7;{% endif %}">
-                        {{ claim.status|capitalize|replace({'_': ' '}) }}
-                    </span>
-                    <span class="badge" style="padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; {% if claim.priority == 'low' %}background-color: rgba(0, 184, 148, 0.15); color: #00b894;{% elseif claim.priority == 'medium' %}background-color: rgba(253, 203, 110, 0.15); color: #fdcb6e;{% elseif claim.priority == 'high' %}background-color: rgba(255, 149, 64, 0.15); color: #ff9540;{% else %}background-color: rgba(255, 107, 107, 0.15); color: #ff6b6b;{% endif %}">
-                        {{ claim.priority|capitalize }} Priority
-                    </span>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="page-header">
+                    <h2><i class="fa fa-ticket"></i> Ticket #{{ claim.id }}</h2>
                 </div>
-            </div>
-        </div>
 
-        <!-- Flash Messages -->
-        {% if app.flashes %}
-            {% for type, messages in app.flashes %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ type }}" style="margin-bottom: 1.5rem;">
-                        <i class="fa fa-{{ type == 'error' ? 'exclamation-circle' : 'check-circle' }}"></i>
-                        {{ message }}
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <strong>{{ claim.title }}</strong>
                     </div>
-                {% endfor %}
-            {% endfor %}
-        {% endif %}
+                    <div class="panel-body">
+                        <p style="white-space: pre-wrap;">{{ claim.description }}</p>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Status:</strong> {{ claim.status|replace({'_': ' '})|title }}</p>
+                                <p><strong>Priority:</strong> {{ claim.priority|title }}</p>
+                                <p><strong>Created:</strong> {{ claim.createdAt|date('d/m/Y H:i') }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Updated:</strong> {{ claim.updatedAt ? claim.updatedAt|date('d/m/Y H:i') : '-' }}</p>
+                                <p><strong>Assigned To:</strong> {{ claim.assignedTo ? claim.assignedTo.userIdentifier : 'Unassigned' }}</p>
+                                <p><strong>Resolved At:</strong> {{ claim.resolvedAt ? claim.resolvedAt|date('d/m/Y H:i') : '-' }}</p>
+                            </div>
+                        </div>
 
-        <!-- Content Grid -->
-        <div style="display: grid; grid-template-columns: 1fr 300px; gap: 2rem; margin-bottom: 2rem;">
-            <!-- Main Content -->
-            <div class="card" style="border: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border-left: 4px solid #6d5ce7;">
-                <div class="card-body">
-                    <!-- Ticket Title -->
-                    <h2 style="color: #2d3436; font-weight: 700; margin: 0 0 1rem 0;">{{ claim.title }}</h2>
-                    
-                    <!-- Ticket Description -->
-                    <div style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; color: #636e72; line-height: 1.8; white-space: pre-wrap; word-wrap: break-word;">
-                        {{ claim.description }}
-                    </div>
-
-                    <!-- Metadata Grid -->
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; padding: 1.5rem; background-color: rgba(109, 92, 231, 0.08); border-radius: 8px; margin-bottom: 2rem;">
-                        <div>
-                            <label style="font-weight: 600; color: #6d5ce7; font-size: 0.8rem; text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Created By</label>
-                            <p style="color: #2d3436; margin: 0; font-weight: 500;">{{ claim.createdBy.email }}</p>
-                        </div>
-                        <div>
-                            <label style="font-weight: 600; color: #6d5ce7; font-size: 0.8rem; text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Created At</label>
-                            <p style="color: #2d3436; margin: 0; font-weight: 500;">{{ claim.createdAt|date('d/m/Y H:i') }}</p>
-                        </div>
-                        <div>
-                            <label style="font-weight: 600; color: #6d5ce7; font-size: 0.8rem; text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Last Updated</label>
-                            <p style="color: #2d3436; margin: 0; font-weight: 500;">{{ claim.updatedAt|date('d/m/Y H:i') }}</p>
-                        </div>
-                        {% if claim.assignedTo %}
-                            <div>
-                                <label style="font-weight: 600; color: #6d5ce7; font-size: 0.8rem; text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Assigned To</label>
-                                <p style="color: #2d3436; margin: 0; font-weight: 500;">{{ claim.assignedTo.email }}</p>
-                            </div>
-                        {% else %}
-                            <div>
-                                <label style="font-weight: 600; color: #6d5ce7; font-size: 0.8rem; text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Assigned To</label>
-                                <p style="color: #ff6b6b; margin: 0; font-weight: 500; font-style: italic;">Not Assigned</p>
-                            </div>
-                        {% endif %}
-                        {% if claim.resolvedAt %}
-                            <div>
-                                <label style="font-weight: 600; color: #6d5ce7; font-size: 0.8rem; text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Resolved At</label>
-                                <p style="color: #2d3436; margin: 0; font-weight: 500;">{{ claim.resolvedAt|date('d/m/Y H:i') }}</p>
-                            </div>
+                        {% if claim.adminNotes %}
+                            <hr>
+                            <h4>Admin Notes</h4>
+                            <p style="white-space: pre-wrap;">{{ claim.adminNotes }}</p>
                         {% endif %}
                     </div>
-
-                    <!-- Admin Notes -->
-                    {% if claim.adminNotes %}
-                        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e8eaed;">
-                            <h4 style="color: #af17c2; margin-bottom: 1rem; font-weight: 600;">
-                                <i class="fa fa-sticky-note"></i> Admin Notes
-                            </h4>
-                            <div style="background-color: rgba(175, 23, 194, 0.08); padding: 1rem; border-left: 3px solid #af17c2; border-radius: 6px; color: #636e72; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word;">
-                                {{ claim.adminNotes }}
-                            </div>
-                        </div>
-                    {% endif %}
                 </div>
-            </div>
 
-            <!-- Sidebar -->
-            <div>
-                <div class="card" style="border: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border-top: 4px solid #6d5ce7;">
-                    <div class="card-body">
-                        <h4 style="color: #6d5ce7; margin: 0 0 1rem 0; font-weight: 600; border-bottom: 2px solid #e8eaed; padding-bottom: 0.75rem;">
-                            <i class="fa fa-info-circle"></i> Details
-                        </h4>
-                        <div style="display: flex; flex-direction: column; gap: 1rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="color: #636e72; font-weight: 600; font-size: 0.9rem;">Status</span>
-                                <span class="badge" style="padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; {% if claim.status == 'open' %}background-color: rgba(253, 203, 110, 0.2); color: #fdcb6e;{% elseif claim.status == 'in_progress' %}background-color: rgba(9, 132, 227, 0.2); color: #0984e3;{% elseif claim.status == 'resolved' %}background-color: rgba(0, 184, 148, 0.2); color: #00b894;{% else %}background-color: rgba(109, 92, 231, 0.2); color: #6d5ce7;{% endif %}">
-                                    {{ claim.status|capitalize|replace({'_': ' '}) }}
-                                </span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="color: #636e72; font-weight: 600; font-size: 0.9rem;">Priority</span>
-                                <span class="badge" style="padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; {% if claim.priority == 'low' %}background-color: rgba(0, 184, 148, 0.2); color: #00b894;{% elseif claim.priority == 'medium' %}background-color: rgba(253, 203, 110, 0.2); color: #fdcb6e;{% elseif claim.priority == 'high' %}background-color: rgba(255, 149, 64, 0.2); color: #ff9540;{% else %}background-color: rgba(255, 107, 107, 0.2); color: #ff6b6b;{% endif %}">
-                                    {{ claim.priority|capitalize }}
-                                </span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="color: #636e72; font-weight: 600; font-size: 0.9rem;">ID</span>
-                                <span style="color: #2d3436; font-weight: 600;">#{{ claim.id }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <a href="{{ path('community_claim_list') }}" class="btn btn-primary">Back to My Tickets</a>
+                <a href="{{ path('community_index') }}" class="btn btn-default">Back to Community</a>
             </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-            <a href="{{ path('community_claim_list') }}" class="btn btn-primary" style="padding: 12px 24px;">
-                <i class="fa fa-arrow-left"></i> Back to My Tickets
-            </a>
-            <a href="{{ path('community_index') }}" class="btn btn-secondary" style="padding: 12px 24px;">
-                <i class="fa fa-home"></i> Back to Hub
-            </a>
         </div>
     </div>
 </div>
 {% endblock %}
-
-{% block stylesheets %}{% endblock %}

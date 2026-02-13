@@ -1,0 +1,462 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Workspace{% endblock %}
+{% block body_class %}workspace-body{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        body.workspace-body {
+            background: #ececf2;
+        }
+        body.workspace-body #header,
+        body.workspace-body #footer {
+            display: none;
+        }
+        body.workspace-body .container {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+        }
+        .workspace-app {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 210px 1fr 300px;
+            gap: 0;
+            color: #3b4257;
+        }
+        .app-left,
+        .app-main,
+        .app-right {
+            background: #f5f5fa;
+            border-right: 1px solid #e1e3ef;
+        }
+        .app-left {
+            padding: 14px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 28px;
+            font-weight: 700;
+            padding: 6px 8px;
+            color: #21273b;
+        }
+        .nav-block a {
+            display: block;
+            color: #6d748a;
+            text-decoration: none;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .nav-block a:hover,
+        .nav-block a.active {
+            background: #4e64f4;
+            color: #fff;
+        }
+        .small-title {
+            color: #a0a5b8;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin: 4px 8px 6px;
+        }
+        .small-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #6a7186;
+            text-decoration: none;
+            font-size: 13px;
+            padding: 7px 10px;
+            border-radius: 8px;
+        }
+        .small-item:hover {
+            background: #eceffa;
+        }
+        .user-box {
+            margin-top: auto;
+            background: #fff;
+            border: 1px solid #e1e3ef;
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7f8cff, #b66dff);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .app-main {
+            padding: 18px 16px;
+        }
+        .main-header {
+            margin-bottom: 16px;
+            color: #555d75;
+            font-weight: 600;
+        }
+        .folder-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        .folder-card {
+            background: #fff;
+            border: 1px solid #dfe2ef;
+            border-radius: 10px;
+            min-height: 112px;
+            padding: 14px;
+            color: #454d67;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .folder-card:hover {
+            border-color: #8795ff;
+            box-shadow: 0 10px 22px rgba(75, 89, 180, 0.12);
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .folder-title {
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .folder-date {
+            font-size: 12px;
+            color: #a0a6ba;
+        }
+        .hero-strip {
+            background: linear-gradient(120deg, #eb5fac 0%, #8185ff 54%, #86d8ea 100%);
+            border-radius: 12px;
+            color: #fff;
+            padding: 16px;
+            margin-bottom: 14px;
+            display: grid;
+            grid-template-columns: 1.3fr repeat(3, 1fr);
+            gap: 10px;
+            align-items: center;
+        }
+        .hero-strip .meta small {
+            text-transform: uppercase;
+            font-size: 10px;
+            opacity: .9;
+            letter-spacing: .06em;
+        }
+        .hero-strip .meta strong {
+            display: block;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+        .board {
+            background: #fff;
+            border: 1px solid #dfe2ef;
+            border-radius: 12px;
+            padding: 10px;
+        }
+        .board-head {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .pill {
+            background: #f0f2fb;
+            color: #66719a;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 5px 10px;
+        }
+        .cols {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .col {
+            background: #f8f9fe;
+            border: 1px solid #eceef9;
+            border-radius: 10px;
+            padding: 8px;
+        }
+        .col h5 {
+            margin: 0 0 8px;
+            font-size: 12px;
+            color: #757d95;
+        }
+        .task-card {
+            display: block;
+            text-decoration: none;
+            background: #fff;
+            border: 1px solid #e5e8f4;
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 7px;
+            color: #4e556d;
+            font-size: 12px;
+        }
+        .task-card:hover {
+            border-color: #8c98ff;
+        }
+        .app-right {
+            padding: 12px;
+            border-right: 0;
+        }
+        .widget {
+            background: #fff;
+            border: 1px solid #e0e3ef;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+        .widget h4 {
+            margin: 0;
+            padding: 10px;
+            border-bottom: 1px solid #edf0fb;
+            font-size: 14px;
+            color: #565f79;
+        }
+        .widget-body {
+            padding: 8px;
+            max-height: 240px;
+            overflow: auto;
+        }
+        .mini-card {
+            display: block;
+            background: #fbfcff;
+            border: 1px solid #ebedf7;
+            border-radius: 8px;
+            padding: 8px;
+            text-decoration: none;
+            color: #59607a;
+            margin-bottom: 7px;
+            font-size: 12px;
+        }
+        .mini-card small {
+            display: block;
+            color: #9aa1b8;
+            margin-top: 4px;
+        }
+        @media (max-width: 1180px) {
+            .workspace-app { grid-template-columns: 190px 1fr; }
+            .app-right { grid-column: 1 / -1; }
+        }
+        @media (max-width: 900px) {
+            .workspace-app { grid-template-columns: 1fr; }
+            .folder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .cols { grid-template-columns: 1fr; }
+            .hero-strip { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 640px) {
+            .folder-grid { grid-template-columns: 1fr; }
+            .hero-strip { grid-template-columns: 1fr; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="workspace-app">
+    <aside class="app-left">
+        <div class="brand">MindForge</div>
+        <nav class="nav-block">
+            <a href="{{ path('app_workspace') }}" class="active"><i class="fa fa-th-large"></i> Overview</a>
+            <a href="{{ path('app_planner_calendar') }}"><i class="fa fa-calendar"></i> Calendar</a>
+            <a href="{{ path('app_analyst_gamification') }}"><i class="fa fa-pie-chart"></i> Analytics</a>
+            <a href="{{ path('community_index') }}"><i class="fa fa-users"></i> Community</a>
+            <a href="{{ path('app_planner_tasks') }}"><i class="fa fa-folder"></i> Tasks</a>
+        </nav>
+
+        <div>
+            <div class="small-title">Folders</div>
+            <a class="small-item" href="{{ path('guardian_library') }}"><span>Library</span><span>{{ myExamCount }}</span></a>
+            <a class="small-item" href="{{ path('guardian_rooms') }}"><span>Virtual Rooms</span><span>{{ myReceivedChallenges }}</span></a>
+            <a class="small-item" href="{{ path('community_claim_list') }}"><span>Support</span><span>{{ myClaimCount }}</span></a>
+        </div>
+
+        <div>
+            <div class="small-title">Quick Links</div>
+            <a class="small-item" href="{{ path('app_friends') }}"><span>Friends</span><span></span></a>
+            <a class="small-item" href="{{ path('app_analyst_leaderboard') }}"><span>Leaderboard</span><span>Lvl {{ myLevel }}</span></a>
+            <a class="small-item" href="{{ path('app_carriere_opportunity_index') }}"><span>Careers</span><span></span></a>
+        </div>
+
+        <div class="user-box">
+            <span class="user-avatar">{{ app.user.userIdentifier|slice(0,1)|upper }}</span>
+            <div>
+                <div style="font-size:12px;font-weight:700;">{{ app.user.userIdentifier }}</div>
+                <small style="color:#9aa2b8;">XP {{ myXp }} · Lvl {{ myLevel }}</small>
+            </div>
+        </div>
+    </aside>
+
+    <main class="app-main">
+        <div class="main-header">Welcome back! Here is your all-in-one productivity board.</div>
+
+        <div class="folder-grid">
+            <a href="{{ path('app_planner_tasks') }}" class="folder-card">
+                <div><span class="dot" style="background:#ea6faf"></span><span class="folder-title">Planner</span></div>
+                <div class="folder-date">{{ myTaskCount }} tasks</div>
+            </a>
+            <a href="{{ path('app_analyst_gamification') }}" class="folder-card">
+                <div><span class="dot" style="background:#41ba86"></span><span class="folder-title">Analyst</span></div>
+                <div class="folder-date">Level {{ myLevel }}</div>
+            </a>
+            <a href="{{ path('app_carriere_opportunity_index') }}" class="folder-card">
+                <div><span class="dot" style="background:#f1c542"></span><span class="folder-title">Careers</span></div>
+                <div class="folder-date">Opportunities</div>
+            </a>
+            <a href="{{ path('community_index') }}" class="folder-card">
+                <div><span class="dot" style="background:#5cc1e9"></span><span class="folder-title">Community</span></div>
+                <div class="folder-date">Challenges + Support</div>
+            </a>
+            <a href="{{ path('guardian_library') }}" class="folder-card">
+                <div><span class="dot" style="background:#7f6be7"></span><span class="folder-title">Library</span></div>
+                <div class="folder-date">Resources</div>
+            </a>
+            <a href="{{ path('guardian_rooms') }}" class="folder-card">
+                <div><span class="dot" style="background:#6676f3"></span><span class="folder-title">Virtual Rooms</span></div>
+                <div class="folder-date">Collaboration</div>
+            </a>
+        </div>
+
+        <div class="hero-strip">
+            <div>
+                <strong style="font-size:18px;">MindForge Workspace</strong>
+                <div style="font-size:12px;opacity:.9;">Everything you need in one dashboard.</div>
+            </div>
+            <div class="meta"><small>Tasks</small><strong>{{ myTaskCount }}</strong></div>
+            <div class="meta"><small>Challenges</small><strong>{{ myReceivedChallenges + mySentChallenges }}</strong></div>
+            <div class="meta"><small>Open Tickets</small><strong>{{ myOpenClaimCount }}</strong></div>
+        </div>
+
+        <section class="board">
+            <div class="board-head">
+                <span class="pill">Kanban</span>
+                <span class="pill">List</span>
+            </div>
+            <div class="cols">
+                <div class="col">
+                    <h5>Open</h5>
+                    {% set hasTodo = false %}
+                    {% for task in recentTasks %}
+                        {% if task.status == 'todo' %}
+                            {% set hasTodo = true %}
+                            <a href="{{ path('app_planner_tasks') }}" class="task-card">{{ task.title }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    {% if not hasTodo %}
+                        <div class="task-card">No open tasks.</div>
+                    {% endif %}
+                </div>
+                <div class="col">
+                    <h5>In Progress</h5>
+                    {% set hasProgress = false %}
+                    {% for task in recentTasks %}
+                        {% if task.status == 'in_progress' %}
+                            {% set hasProgress = true %}
+                            <a href="{{ path('app_planner_tasks') }}" class="task-card">{{ task.title }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    {% if not hasProgress %}
+                        <div class="task-card">No task in progress.</div>
+                    {% endif %}
+                </div>
+                <div class="col">
+                    <h5>Done</h5>
+                    {% set hasDone = false %}
+                    {% for task in recentTasks %}
+                        {% if task.status == 'done' %}
+                            {% set hasDone = true %}
+                            <a href="{{ path('app_planner_tasks') }}" class="task-card">{{ task.title }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    {% if not hasDone %}
+                        <div class="task-card">No completed tasks.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        {% if is_granted('ROLE_ADMIN') %}
+            <section class="board" style="margin-top:10px;">
+                <div class="board-head"><span class="pill">Admin Shortcuts</span></div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                    <a class="btn btn-default btn-sm" href="{{ path('admin_dashboard') }}">Dashboard</a>
+                    <a class="btn btn-default btn-sm" href="{{ path('admin_planner_overview') }}">Planner</a>
+                    <a class="btn btn-default btn-sm" href="{{ path('admin_analyst_overview') }}">Analyst</a>
+                    <a class="btn btn-default btn-sm" href="{{ path('admin_community_claims') }}">Claims</a>
+                </div>
+            </section>
+        {% endif %}
+    </main>
+
+    <aside class="app-right">
+        <section class="widget">
+            <h4>Todos</h4>
+            <div class="widget-body">
+                {% if recentTasks is empty %}
+                    <div class="mini-card">No tasks yet.</div>
+                {% else %}
+                    {% for task in recentTasks %}
+                        <a class="mini-card" href="{{ path('app_planner_tasks') }}">
+                            {{ task.title }}
+                            <small>{{ task.status|replace({'_': ' '})|title }}</small>
+                        </a>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="widget">
+            <h4>Challenges</h4>
+            <div class="widget-body">
+                {% if recentChallenges is empty %}
+                    <div class="mini-card">No challenges yet.</div>
+                {% else %}
+                    {% for challenge in recentChallenges %}
+                        <a class="mini-card" href="{{ path('community_challenge_inbox') }}">
+                            {{ challenge.title }}
+                            <small>{{ challenge.createdAt|date('d/m/Y') }}</small>
+                        </a>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="widget">
+            <h4>Notes / Support</h4>
+            <div class="widget-body">
+                {% if recentClaims is empty %}
+                    <div class="mini-card">No support tickets yet.</div>
+                {% else %}
+                    {% for claim in recentClaims %}
+                        <a class="mini-card" href="{{ path('community_claim_view', {id: claim.id}) }}">
+                            {{ claim.title }}
+                            <small>{{ claim.status|replace({'_': ' '})|title }}</small>
+                        </a>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </section>
+    </aside>
+</div>
+{% endblock %}

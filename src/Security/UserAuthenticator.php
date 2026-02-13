@@ -71,7 +71,7 @@ class UserAuthenticator extends AbstractAuthenticator
             return new RedirectResponse($targetPath);
         }
 
-        return new RedirectResponse($this->urlGenerator->generate('app_home'));
+        return new RedirectResponse($this->urlGenerator->generate('app_workspace'));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response

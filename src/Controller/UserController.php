@@ -1,8 +1,13 @@
 <?php
 namespace App\Controller;
 
+use App\Entity\Analyst\GamificationStats;
 use App\Entity\Architect\User;
 use App\Entity\Architect\Profile;  
+use App\Entity\Community\Claim;
+use App\Entity\Community\SharedTask;
+use App\Entity\Planner\Exam;
+use App\Entity\Planner\Task;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,6 +16,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use App\Entity\Architect\RoleRequest;
+
 final class UserController extends AbstractController
 {
     // Home page
@@ -32,7 +38,7 @@ final class UserController extends AbstractController
     {
         // If user is already logged in, redirect to home
         if ($this->getUser()) {
-            return $this->redirectToRoute('app_home');
+            return $this->redirectToRoute('app_workspace');
         }
 
         // Get the last authentication error if any
@@ -42,6 +48,51 @@ final class UserController extends AbstractController
         return $this->render('user/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
+        ]);
+    }
+
+    #[Route('/workspace', name: 'app_workspace')]
+    public function workspace(EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $taskRepo = $em->getRepository(Task::class);
+        $claimRepo = $em->getRepository(Claim::class);
+        $challengeRepo = $em->getRepository(SharedTask::class);
+        $examRepo = $em->getRepository(Exam::class);
+        $statsRepo = $em->getRepository(GamificationStats::class);
+
+        $myTaskCount = $taskRepo->count(['owner' => $user]);
+        $myDoneTaskCount = $taskRepo->count(['owner' => $user, 'status' => Task::STATUS_DONE]);
+        $myClaimCount = $claimRepo->count(['createdBy' => $user]);
+        $myOpenClaimCount = $claimRepo->count(['createdBy' => $user, 'status' => 'open']);
+        $myReceivedChallenges = $challengeRepo->count(['sharedWith' => $user]);
+        $mySentChallenges = $challengeRepo->count(['sharedBy' => $user]);
+        $myExamCount = $examRepo->count(['owner' => $user]);
+
+        $recentTasks = $taskRepo->findBy(['owner' => $user], ['createdAt' => 'DESC'], 5);
+        $recentChallenges = $challengeRepo->findBy(['sharedWith' => $user], ['createdAt' => 'DESC'], 5);
+        $recentClaims = $claimRepo->findBy(['createdBy' => $user], ['createdAt' => 'DESC'], 5);
+
+        $myStats = $statsRepo->findOneBy(['user' => $user]);
+
+        return $this->render('user/workspace.html.twig', [
+            'myTaskCount' => $myTaskCount,
+            'myDoneTaskCount' => $myDoneTaskCount,
+            'myClaimCount' => $myClaimCount,
+            'myOpenClaimCount' => $myOpenClaimCount,
+            'myReceivedChallenges' => $myReceivedChallenges,
+            'mySentChallenges' => $mySentChallenges,
+            'myExamCount' => $myExamCount,
+            'myXp' => $myStats?->getTotalXp() ?? 0,
+            'myLevel' => $myStats?->getCurrentLevel() ?? 1,
+            'recentTasks' => $recentTasks,
+            'recentChallenges' => $recentChallenges,
+            'recentClaims' => $recentClaims,
         ]);
     }
     #[Route('/signup', name: 'app_signup')]
@@ -102,20 +153,6 @@ final class UserController extends AbstractController
     public function contact(): Response
     {
         return $this->render('user/contact.html.twig');
-    }
-
-    // Blog page
-    #[Route('/user/blog', name: 'app_blog')]
-    public function blog(): Response
-    {
-        return $this->render('user/blog.html.twig');
-    }
-
-    // Blog post page
-    #[Route('/user/blog-post', name: 'app_blog_post')]
-    public function blogPost(): Response
-    {
-        return $this->render('user/blog-post.html.twig');
     }
 
     #[Route('/logout', name: 'app_logout')]

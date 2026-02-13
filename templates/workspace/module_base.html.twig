@@ -1,0 +1,206 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        body {
+            background: #ececf2;
+        }
+        #header,
+        #footer {
+            display: none;
+        }
+        .container {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+        }
+        .module-app {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 210px 1fr 300px;
+            gap: 0;
+            color: #3b4257;
+        }
+        .module-left,
+        .module-main,
+        .module-right {
+            background: #f5f5fa;
+            border-right: 1px solid #e1e3ef;
+        }
+        .module-left {
+            padding: 14px 12px;
+        }
+        .module-brand {
+            font-size: 28px;
+            font-weight: 700;
+            padding: 6px 8px;
+            margin-bottom: 10px;
+            color: #21273b;
+        }
+        .module-nav a {
+            display: block;
+            color: #6d748a;
+            text-decoration: none;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .module-nav a:hover,
+        .module-nav a.active {
+            background: #4e64f4;
+            color: #fff;
+        }
+        .module-left small {
+            display: block;
+            margin: 14px 8px 6px;
+            color: #a0a5b8;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+        .module-link {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #6a7186;
+            text-decoration: none;
+            font-size: 13px;
+            padding: 7px 10px;
+            border-radius: 8px;
+        }
+        .module-link:hover {
+            background: #eceffa;
+        }
+        .module-main {
+            padding: 16px;
+        }
+        .module-header {
+            background: linear-gradient(120deg, #eb5fac 0%, #8185ff 54%, #86d8ea 100%);
+            border-radius: 12px;
+            color: #fff;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+        }
+        .module-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+        .module-header p {
+            margin: 4px 0 0;
+            font-size: 13px;
+            opacity: .92;
+        }
+        .module-content-wrap {
+            background: #fff;
+            border: 1px solid #dfe2ef;
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .module-right {
+            padding: 12px;
+            border-right: 0;
+        }
+        .module-widget {
+            background: #fff;
+            border: 1px solid #e0e3ef;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+        .module-widget h4 {
+            margin: 0;
+            padding: 10px;
+            border-bottom: 1px solid #edf0fb;
+            font-size: 14px;
+            color: #565f79;
+        }
+        .module-widget .body {
+            padding: 8px;
+        }
+        .module-widget .item {
+            display: block;
+            background: #fbfcff;
+            border: 1px solid #ebedf7;
+            border-radius: 8px;
+            padding: 8px;
+            text-decoration: none;
+            color: #59607a;
+            margin-bottom: 7px;
+            font-size: 12px;
+        }
+        .module-widget .item:hover {
+            border-color: #8b98ff;
+        }
+        .module-widget .item small {
+            display: block;
+            color: #9aa1b8;
+            margin-top: 4px;
+        }
+        @media (max-width: 1180px) {
+            .module-app { grid-template-columns: 190px 1fr; }
+            .module-right { grid-column: 1 / -1; }
+        }
+        @media (max-width: 900px) {
+            .module-app { grid-template-columns: 1fr; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="module-app">
+    <aside class="module-left">
+        <div class="module-brand">MindForge</div>
+        <nav class="module-nav">
+            <a href="{{ path('app_workspace') }}"><i class="fa fa-th-large"></i> Workspace</a>
+            <a href="{{ path('app_planner_tasks') }}"><i class="fa fa-folder"></i> Planner</a>
+            <a href="{{ path('community_index') }}"><i class="fa fa-users"></i> Community</a>
+            <a href="{{ path('guardian_library') }}"><i class="fa fa-book"></i> Guardian</a>
+            <a href="{{ path('app_carriere_opportunity_index') }}"><i class="fa fa-briefcase"></i> Careers</a>
+            <a href="{{ path('app_analyst_gamification') }}"><i class="fa fa-pie-chart"></i> Analyst</a>
+        </nav>
+
+        <small>Quick Links</small>
+        <a class="module-link" href="{{ path('community_claim_create') }}"><span>Contact Support</span></a>
+        <a class="module-link" href="{{ path('app_friends') }}"><span>Friends</span></a>
+        <a class="module-link" href="{{ path('app_analyst_leaderboard') }}"><span>Leaderboard</span></a>
+    </aside>
+
+    <main class="module-main">
+        {% set default_module_title = block('title')|striptags|trim %}
+        <div class="module-header">
+            <h2>{% block module_title %}{% if default_module_title is not empty %}{{ default_module_title|replace({' - MindForge': ''}) }}{% else %}Module{% endif %}{% endblock %}</h2>
+            <p>{% block module_subtitle %}MindForge workspace module view{% endblock %}</p>
+        </div>
+        <div class="module-content-wrap">
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ label == 'error' ? 'danger' : label }}">{{ message }}</div>
+                {% endfor %}
+            {% endfor %}
+            {% block module_content %}{% endblock %}
+        </div>
+    </main>
+
+    <aside class="module-right">
+        <section class="module-widget">
+            <h4>Navigation</h4>
+            <div class="body">
+                <a class="item" href="{{ path('community_tasks') }}">Tasks Board</a>
+                <a class="item" href="{{ path('community_challenge_inbox') }}">Received Challenges</a>
+                <a class="item" href="{{ path('community_claim_list') }}">My Tickets</a>
+            </div>
+        </section>
+        <section class="module-widget">
+            <h4>Modules</h4>
+            <div class="body">
+                <a class="item" href="{{ path('guardian_rooms') }}">Virtual Rooms</a>
+                <a class="item" href="{{ path('app_carriere_opportunity_index') }}">Careers Center</a>
+                <a class="item" href="{{ path('app_profile_view') }}">Profile</a>
+            </div>
+        </section>
+        {% block module_right %}{% endblock %}
+    </aside>
+</div>
+{% endblock %}
