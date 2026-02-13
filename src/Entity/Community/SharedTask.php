@@ -120,7 +120,7 @@ class SharedTask
         return $this->respondedAt;
     }
 
-    public function setRespondedAt(?DateTimeImmutable $respondedAt): self
+    public function setRespondedAt(?\DateTimeImmutable $respondedAt): self
     {
         $this->respondedAt = $respondedAt;
         return $this;

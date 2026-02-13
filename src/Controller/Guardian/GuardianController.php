@@ -150,6 +150,7 @@ class GuardianController extends AbstractController
         SubjectRepository $subjectRepo
     ): Response {
         $subjectId = $request->query->get('subject');
+        $subjectId = $subjectId !== null && $subjectId !== '' ? (int) $subjectId : null;
         
         return $this->render('user/guardian/rooms.html.twig', [
             'rooms' => $repo->findActiveRooms($subjectId),

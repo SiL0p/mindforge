@@ -1,0 +1,88 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Planner Exams{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="margin-top: 20px;">
+    <div class="row">
+        {% include 'components/_sidebar_planner.html.twig' %}
+
+        <main class="col-md-9 col-lg-10">
+            <div class="page-header d-flex flex-wrap align-items-center justify-content-between">
+                <div>
+                    <h1>Exams</h1>
+                    <p class="text-muted">Manage upcoming and past exams.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ path('app_planner_exam_new') }}" class="btn btn-primary">Add exam</a>
+                    <a href="{{ path('app_planner_calendar') }}" class="btn btn-default">View calendar</a>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">Upcoming</div>
+                <div class="panel-body">
+                    {% if upcoming is empty %}
+                        <div class="text-muted">No upcoming exams yet.</div>
+                    {% else %}
+                        <ul class="list-group">
+                            {% for exam in upcoming %}
+                                <li class="list-group-item">
+                                    <div class="d-flex flex-wrap justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ exam.title }}</strong>
+                                            <div class="text-muted">
+                                                {{ exam.examDate|date('Y-m-d H:i') }}
+                                                {% if exam.subject %} - {{ exam.subject.name }}{% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ path('app_planner_exam_edit', {'id': exam.id}) }}" class="btn btn-sm btn-default">Edit</a>
+                                            <form method="POST" action="{{ path('app_planner_exam_delete', {'id': exam.id}) }}" onsubmit="return confirm('Delete this exam?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ exam.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="panel panel-default" style="margin-top: 20px;">
+                <div class="panel-heading">Past</div>
+                <div class="panel-body">
+                    {% if past is empty %}
+                        <div class="text-muted">No past exams yet.</div>
+                    {% else %}
+                        <ul class="list-group">
+                            {% for exam in past %}
+                                <li class="list-group-item">
+                                    <div class="d-flex flex-wrap justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ exam.title }}</strong>
+                                            <div class="text-muted">
+                                                {{ exam.examDate|date('Y-m-d H:i') }}
+                                                {% if exam.subject %} - {{ exam.subject.name }}{% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ path('app_planner_exam_edit', {'id': exam.id}) }}" class="btn btn-sm btn-default">Edit</a>
+                                            <form method="POST" action="{{ path('app_planner_exam_delete', {'id': exam.id}) }}" onsubmit="return confirm('Delete this exam?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ exam.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

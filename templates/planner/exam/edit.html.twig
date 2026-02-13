@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Exam{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="margin-top: 20px;">
+    <div class="row">
+        {% include 'components/_sidebar_planner.html.twig' %}
+
+        <main class="col-md-9 col-lg-10">
+            <div class="page-header d-flex flex-wrap align-items-center justify-content-between">
+                <div>
+                    <h1>Edit Exam</h1>
+                    <p class="text-muted">Update exam details.</p>
+                </div>
+                <a href="{{ path('app_planner_exams') }}" class="btn btn-default">Back to exams</a>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    {{ form_start(form) }}
+                        {{ form_widget(form) }}
+                        <div class="d-flex gap-2" style="margin-top: 16px;">
+                            <button type="submit" class="btn btn-primary">Save changes</button>
+                            <a href="{{ path('app_planner_exams') }}" class="btn btn-default">Cancel</a>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

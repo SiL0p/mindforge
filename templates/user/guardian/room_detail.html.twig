@@ -20,7 +20,7 @@
                     </span>
                 </div>
             </div>
-            <div>
+            <div class="d-flex flex-wrap gap-2">
                 {% if is_participant %}
                     <form method="POST" action="{{ path('guardian_room_leave', {id: room.id}) }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('leave_room_' ~ room.id) }}">
@@ -53,7 +53,12 @@
                         {% for message in messages %}
                             <div class="mb-3 d-flex {% if message.author == app.user %}justify-content-end{% else %}justify-content-start{% endif %}">
                                 <div class="guardian-message {% if message.author == app.user %}guardian-message--own{% else %}guardian-message--other{% endif %}">
-                                    <strong class="d-block">{{ message.author.firstName }} {{ message.author.lastName }}</strong>
+                                    <strong class="d-block">
+                                        {{ message.author.profile and message.author.profile.fullName
+                                            ? message.author.profile.fullName
+                                            : message.author.userIdentifier
+                                        }}
+                                    </strong>
                                     <div>{{ message.content }}</div>
                                     <small class="d-block text-end">{{ message.createdAt|date('H:i') }}</small>
                                 </div>
@@ -63,8 +68,8 @@
                 </div>
                 {% if is_participant and room.isActive %}
                     <div class="p-3 border-top">
-                        <form method="POST" action="#" class="d-flex gap-2">
-                            <input type="text" class="form-control" placeholder="Write a message..." required>
+                        <form method="POST" action="{{ path('community_message_send', {id: room.id}) }}" class="d-flex gap-2">
+                            <input type="text" name="content" class="form-control" placeholder="Write a message..." required maxlength="5000">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-paper-plane"></i> Send
                             </button>
@@ -82,7 +87,12 @@
             <div class="guardian-panel p-3 mb-4">
                 <h5 class="mb-3"><i class="fas fa-info-circle"></i> Details</h5>
                 <div class="d-grid gap-2 text-muted">
-                    <div><strong>Creator:</strong> {{ room.creator.firstName }} {{ room.creator.lastName }}</div>
+                    <div><strong>Creator:</strong>
+                        {{ room.creator.profile and room.creator.profile.fullName
+                            ? room.creator.profile.fullName
+                            : room.creator.userIdentifier
+                        }}
+                    </div>
                     <div><strong>Subject:</strong> {{ room.subject.name }}</div>
                     <div><strong>Created:</strong> {{ room.createdAt|date('d/m/Y H:i') }}</div>
                     <div><strong>Capacity:</strong> {{ room.participants|length }}/{{ room.maxParticipants }}</div>
@@ -95,7 +105,12 @@
                     {% for participant in room.participants %}
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <strong>{{ participant.firstName }} {{ participant.lastName }}</strong>
+                                <strong>
+                                    {{ participant.profile and participant.profile.fullName
+                                        ? participant.profile.fullName
+                                        : participant.userIdentifier
+                                    }}
+                                </strong>
                                 {% if participant == room.creator %}
                                     <span class="guardian-badge" style="background: rgba(255, 209, 102, 0.3); color: #8a5b00;">Creator</span>
                                 {% endif %}
