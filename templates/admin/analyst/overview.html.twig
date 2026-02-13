@@ -1,0 +1,96 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Analyst Backoffice{% endblock %}
+{% block body_class %}guardian-admin-ui{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="guardian-admin-hero mb-4">
+        <h1 class="mb-1">Analyst Backoffice</h1>
+        <p class="text-muted mb-0">Gamification operations: badges, XP stats, and unlock activity.</p>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="guardian-admin-card p-3">
+                <div class="text-muted small">Badges</div>
+                <h3 class="mb-0">{{ badgeCount }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="guardian-admin-card p-3">
+                <div class="text-muted small">Unlocked Badges</div>
+                <h3 class="mb-0">{{ userBadgeCount }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="guardian-admin-card p-3">
+                <div class="text-muted small">Users with Stats</div>
+                <h3 class="mb-0">{{ statsCount }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="guardian-admin-card p-3 table-responsive">
+                <h5 class="mb-3">Top Users by XP</h5>
+                <table class="table guardian-admin-table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>XP</th>
+                            <th>Level</th>
+                            <th>Tasks Completed</th>
+                            <th>Focus (min)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% if topUsers is empty %}
+                        <tr><td colspan="5" class="text-center text-muted">No gamification stats yet.</td></tr>
+                    {% else %}
+                        {% for stat in topUsers %}
+                            <tr>
+                                <td>{{ stat.user.userIdentifier }}</td>
+                                <td>{{ stat.totalXp }}</td>
+                                <td>{{ stat.currentLevel }}</td>
+                                <td>{{ stat.tasksCompleted }}</td>
+                                <td>{{ stat.totalFocusTime }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="guardian-admin-card p-3 table-responsive">
+                <h5 class="mb-3">Recent Badge Unlocks</h5>
+                <table class="table guardian-admin-table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Badge</th>
+                            <th>Earned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% if recentUnlocks is empty %}
+                        <tr><td colspan="3" class="text-center text-muted">No badge unlocks yet.</td></tr>
+                    {% else %}
+                        {% for unlock in recentUnlocks %}
+                            <tr>
+                                <td>{{ unlock.user.userIdentifier }}</td>
+                                <td>{{ unlock.badge.name }}</td>
+                                <td>{{ unlock.earnedAt|date('Y-m-d H:i') }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

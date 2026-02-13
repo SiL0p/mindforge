@@ -1,104 +1,59 @@
-{# templates/community/claims_list.html.twig #}
-{% extends "base.html.twig" %}
+{% extends 'workspace/module_base.html.twig' %}
 
-{% block title %}My Support Tickets | MindForge Community{% endblock %}
+{% block title %}My Support Tickets{% endblock %}
 
-{% block body %}
-<div style="min-height: 100vh; background: linear-gradient(135deg, #f8f9fa 0%, #e8eaed 100%); padding: 2rem 1rem;">
+{% block module_title %}My Tickets{% endblock %}
+{% block module_subtitle %}View and follow your support tickets.{% endblock %}
+{% block module_content %}
+<div class="section">
     <div class="container">
-        <!-- Header -->
-        <div style="text-align: center; margin-bottom: 2rem;">
-            <h1 style="color: #2d3436; font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">
-                <i class="fa fa-ticket" style="color: #6d5ce7;"></i> My Support Tickets
-            </h1>
-            <p style="color: #636e72; font-size: 1.1rem;">Track and manage your support requests</p>
-        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="page-header">
+                    <h2><i class="fa fa-ticket"></i> My Support Tickets</h2>
+                </div>
 
-        <!-- Flash Messages -->
-        {% if app.flashes %}
-            {% for type, messages in app.flashes %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ type }}" style="margin-bottom: 1.5rem;">
-                        <i class="fa fa-{{ type == 'error' ? 'exclamation-circle' : 'check-circle' }}"></i>
-                        {{ message }}
+                <div class="panel panel-default">
+                    <div class="panel-body table-responsive">
+                        {% if claims is empty %}
+                            <p class="text-muted">You have not created any tickets yet.</p>
+                        {% else %}
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Title</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        <th>Created</th>
+                                        <th>Updated</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for claim in claims %}
+                                        <tr>
+                                            <td>#{{ claim.id }}</td>
+                                            <td>{{ claim.title }}</td>
+                                            <td>{{ claim.status|replace({'_': ' '})|title }}</td>
+                                            <td>{{ claim.priority|title }}</td>
+                                            <td>{{ claim.createdAt|date('d/m/Y H:i') }}</td>
+                                            <td>{{ claim.updatedAt ? claim.updatedAt|date('d/m/Y H:i') : '-' }}</td>
+                                            <td>
+                                                <a href="{{ path('community_claim_view', {id: claim.id}) }}" class="btn btn-xs btn-primary">View</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
                     </div>
-                {% endfor %}
-            {% endfor %}
-        {% endif %}
-
-        <!-- Tickets List -->
-        <div class="card" style="border: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); margin-bottom: 2rem;">
-            {% if claims|length > 0 %}
-                <div style="overflow-x: auto;">
-                    <table class="table" style="margin-bottom: 0;">
-                        <thead>
-                            <tr>
-                                <th style="width: 60px;">ID</th>
-                                <th>Title</th>
-                                <th style="width: 120px;">Status</th>
-                                <th style="width: 120px;">Priority</th>
-                                <th style="width: 100px;">Created</th>
-                                <th style="width: 100px;">Updated</th>
-                                <th style="width: 80px; text-align: center;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for claim in claims %}
-                                <tr style="border-bottom: 1px solid var(--border-color); transition: var(--transition);"
-                                    onmouseover="this.style.backgroundColor='var(--bg-secondary)'"
-                                    onmouseout="this.style.backgroundColor='transparent'">
-                                    <td style="font-weight: 600; color: #6d5ce7;">#{{ claim.id }}</td>
-                                    <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                        <strong style="color: #2d3436;">{{ claim.title }}</strong>
-                                    </td>
-                                    <td>
-                                        <span class="badge" style="padding: 6px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; {% if claim.status == 'open' %}background-color: rgba(253, 203, 110, 0.15); color: #fdcb6e;{% elseif claim.status == 'in_progress' %}background-color: rgba(9, 132, 227, 0.15); color: #0984e3;{% elseif claim.status == 'resolved' %}background-color: rgba(0, 184, 148, 0.15); color: #00b894;{% else %}background-color: rgba(109, 92, 231, 0.15); color: #6d5ce7;{% endif %}">
-                                            {{ claim.status|capitalize|replace({'_': ' '}) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge" style="padding: 6px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; {% if claim.priority == 'low' %}background-color: rgba(0, 184, 148, 0.15); color: #00b894;{% elseif claim.priority == 'medium' %}background-color: rgba(253, 203, 110, 0.15); color: #fdcb6e;{% elseif claim.priority == 'high' %}background-color: rgba(255, 149, 64, 0.15); color: #ff9540;{% else %}background-color: rgba(255, 107, 107, 0.15); color: #ff6b6b;{% endif %}">
-                                            {{ claim.priority|capitalize }}
-                                        </span>
-                                    </td>
-                                    <td style="font-size: 0.9rem; color: #636e72;">{{ claim.createdAt|date('Y-m-d') }}</td>
-                                    <td style="font-size: 0.9rem; color: #636e72;">{{ claim.updatedAt|date('Y-m-d') }}</td>
-                                    <td style="text-align: center;">
-                                        <a href="{{ path('community_claim_view', {'id': claim.id}) }}" 
-                                           class="btn" 
-                                           style="display: inline-block; padding: 6px 12px; background: linear-gradient(135deg, #6d5ce7 0%, #5f3dc4 100%); color: white; text-decoration: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; transition: all 0.3s;"
-                                           onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(109, 92, 231, 0.3)';"
-                                           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
-                                            View
-                                        </a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
                 </div>
-            {% else %}
-                <div style="text-align: center; padding: 4rem 2rem;">
-                    <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">🎫</div>
-                    <p style="color: #636e72; font-size: 1.1rem; margin-bottom: 2rem;">You haven't created any support tickets yet.</p>
-                    <a href="{{ path('community_claim_create') }}" class="btn btn-primary" style="padding: 12px 24px; display: inline-block;">
-                        <i class="fa fa-plus"></i> Create First Ticket
-                    </a>
-                </div>
-            {% endif %}
-        </div>
 
-        <!-- Action Buttons -->
-        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-            <a href="{{ path('community_claim_create') }}" class="btn btn-primary" style="padding: 12px 24px;">
-                <i class="fa fa-plus"></i> New Support Ticket
-            </a>
-            <a href="{{ path('community_index') }}" class="btn btn-secondary" style="padding: 12px 24px;">
-                <i class="fa fa-home"></i> Back to Hub
-            </a>
+                <a href="{{ path('community_claim_create') }}" class="btn btn-primary">Create Ticket</a>
+                <a href="{{ path('community_index') }}" class="btn btn-default">Back to Community</a>
+            </div>
         </div>
     </div>
 </div>
 {% endblock %}
-
-{% block stylesheets %}{% endblock %}

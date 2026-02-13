@@ -1,0 +1,50 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Leader Board{% endblock %}
+
+{% block module_title %}Leader Board{% endblock %}
+{% block module_subtitle %}Top learners ranked by performance metrics.{% endblock %}
+{% block module_content %}
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="section-header text-center">
+                <h2>Leader Board</h2>
+                <p class="lead">Top learners ranked by XP, level, and completed tasks.</p>
+            </div>
+        </div>
+
+        {% if leaders is empty %}
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2">
+                    <div class="panel panel-default">
+                        <div class="panel-body text-center">
+                            <p class="text-muted" style="margin: 0;">No leaderboard data available yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="row">
+                {% for entry in leaders %}
+                    <div class="col-md-4 col-sm-6" style="margin-bottom: 30px;">
+                        <div class="course">
+                            <div class="course-img" style="background: #f8f9fa; padding: 20px; text-align: center;">
+                                <h3 style="margin: 0;">#{{ loop.index }}</h3>
+                            </div>
+                            <div class="course-title" style="display: block;">
+                                {{ entry.user.profile and entry.user.profile.fullName ? entry.user.profile.fullName : entry.user.userIdentifier }}
+                            </div>
+                            <div class="course-details" style="display: block; padding: 12px 20px 18px;">
+                                <div><strong>XP:</strong> {{ entry.totalXp }}</div>
+                                <div><strong>Level:</strong> {{ entry.currentLevel }}</div>
+                                <div><strong>Tasks:</strong> {{ entry.tasksCompleted }}</div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

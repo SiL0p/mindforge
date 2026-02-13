@@ -2,9 +2,12 @@
 // src/Controller/Planner/TaskController.php
 namespace App\Controller\Planner;
 
+use App\Entity\Architect\User;
 use App\Entity\Planner\Task;
 use App\Form\Planner\TaskType;
 use App\Repository\Planner\TaskRepository;
+use App\Service\Analyst\DifficultyClassifierService;
+use App\Service\Analyst\GamificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,15 +44,19 @@ class TaskController extends AbstractController
         return $this->render('planner/task/index.html.twig', [
             'tasks' => $tasks,
             'statuses' => [
-                Task::STATUS_TODO => ['label' => 'À faire', 'color' => '#ef4444', 'icon' => 'circle'],
-                Task::STATUS_IN_PROGRESS => ['label' => 'En cours', 'color' => '#f59e0b', 'icon' => 'spinner'],
-                Task::STATUS_DONE => ['label' => 'Terminé', 'color' => '#10b981', 'icon' => 'check-circle'],
+                Task::STATUS_TODO => ['label' => 'To do', 'color' => '#ef4444', 'icon' => 'circle'],
+                Task::STATUS_IN_PROGRESS => ['label' => 'In progress', 'color' => '#f59e0b', 'icon' => 'spinner'],
+                Task::STATUS_DONE => ['label' => 'Done', 'color' => '#10b981', 'icon' => 'check-circle'],
             ]
         ]);
     }
 
     #[Route('/new', name: 'app_planner_task_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em): Response
+    public function new(
+        Request $request,
+        EntityManagerInterface $em,
+        DifficultyClassifierService $difficultyClassifierService
+    ): Response
     {
         $task = new Task();
         $task->setOwner($this->getUser());
@@ -66,10 +73,11 @@ class TaskController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $task->setPriority($difficultyClassifierService->classifyTask($task));
             $em->persist($task);
             $em->flush();
 
-            $this->addFlash('success', 'Tâche créée avec succès.');
+            $this->addFlash('success', 'Task created successfully.');
             
             $redirect = $request->query->get('redirect', 'app_planner_tasks');
             return $this->redirectToRoute($redirect);
@@ -83,7 +91,12 @@ class TaskController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_planner_task_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Task $task, EntityManagerInterface $em): Response
+    public function edit(
+        Request $request,
+        Task $task,
+        EntityManagerInterface $em,
+        DifficultyClassifierService $difficultyClassifierService
+    ): Response
     {
         $this->denyAccessUnlessGranted('TASK_EDIT', $task);
 
@@ -91,8 +104,9 @@ class TaskController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $task->setPriority($difficultyClassifierService->classifyTask($task));
             $em->flush();
-            $this->addFlash('success', 'Tâche mise à jour.');
+            $this->addFlash('success', 'Task updated successfully.');
             return $this->redirectToRoute('app_planner_tasks');
         }
 
@@ -103,22 +117,45 @@ class TaskController extends AbstractController
     }
 
     #[Route('/{id}/status/{status}', name: 'app_planner_task_status', methods: ['POST'])]
-    public function updateStatus(Task $task, string $status, EntityManagerInterface $em): Response
+    public function updateStatus(
+        Task $task,
+        string $status,
+        EntityManagerInterface $em,
+        GamificationService $gamificationService
+    ): Response
     {
-        $this->denyAccessUnlessGranted('TASK_EDIT', $task);
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Authentication required.'], 401);
+        }
+
+        if ($task->getOwner() !== $user && !$this->isGranted('ROLE_ADMIN')) {
+            return $this->json(['error' => 'You are not allowed to update this task.'], 403);
+        }
         
         $validStatuses = [Task::STATUS_TODO, Task::STATUS_IN_PROGRESS, Task::STATUS_DONE];
         if (!in_array($status, $validStatuses)) {
-            return $this->json(['error' => 'Statut invalide'], 400);
+            return $this->json(['error' => 'Invalid status.'], 400);
         }
+
+        $wasDone = $task->getStatus() === Task::STATUS_DONE;
 
         $task->setStatus($status);
         $em->flush();
 
+        $gamificationPayload = null;
+        if (!$wasDone && $status === Task::STATUS_DONE) {
+            $user = $this->getUser();
+            if ($user instanceof User) {
+                $gamificationPayload = $gamificationService->processCompletedTask($task, $user);
+            }
+        }
+
         return $this->json([
             'success' => true, 
             'newStatus' => $status,
-            'message' => 'Statut mis à jour'
+            'message' => 'Status updated successfully.',
+            'gamification' => $gamificationPayload,
         ]);
     }
 
@@ -130,7 +167,7 @@ class TaskController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$task->getId(), $request->request->get('_token'))) {
             $em->remove($task);
             $em->flush();
-            $this->addFlash('success', 'Tâche supprimée.');
+            $this->addFlash('success', 'Task deleted successfully.');
         }
 
         return $this->redirectToRoute('app_planner_tasks');
@@ -143,7 +180,7 @@ class TaskController extends AbstractController
         $transcribedText = $request->request->get('text');
         
         if (empty($transcribedText)) {
-            return $this->json(['error' => 'Aucun texte reçu'], 400);
+            return $this->json(['error' => 'No text received.'], 400);
         }
 
         // Redirection vers le formulaire avec le texte pré-rempli

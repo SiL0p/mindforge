@@ -1,8 +1,10 @@
-{% extends 'base.html.twig' %}
+{% extends 'workspace/module_base.html.twig' %}
 
 {% block title %}Planner Calendar{% endblock %}
 
-{% block content %}
+{% block module_title %}Calendar{% endblock %}
+{% block module_subtitle %}Visualize your schedule and deadlines.{% endblock %}
+{% block module_content %}
 <div class="container-fluid" style="margin-top: 20px;">
     <div class="row">
         {% include 'components/_sidebar_planner.html.twig' %}

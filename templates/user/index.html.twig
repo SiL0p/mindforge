@@ -92,60 +92,27 @@
 <nav id="nav">
     <ul class="main-menu nav navbar-nav navbar-right">
         <li><a href="{{ path('app_home') }}">Home</a></li>
-		<li><a href="#">About</a></li>
-		<li><a href="{{ path('guardian_library') }}">Library</a></li>
-		<li><a href="{{ path('guardian_rooms') }}">Virtual Rooms</a></li>
-
-		{# Careers Center Dropdown #}
-		{% if app.user %}
-			<li class="dropdown">
-				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-					<i class="fa fa-briefcase"></i> Careers Center <span class="caret"></span>
-				</a>
-				<ul class="dropdown-menu">
-					{# Common options for all users #}
-					<li><a href="{{ path('app_carriere_opportunity_index') }}">
-						<i class="fa fa-search"></i> Browse Opportunities
-					</a></li>
-					<li><a href="{{ path('app_carriere_company_index') }}">
-						<i class="fa fa-building"></i> Companies
-					</a></li>
+		<li><a href="#about">About</a></li>
+		<li><a href="{{ path('app_workspace') }}">Workspace</a></li>
+		<li><a href="{{ path('app_analyst_leaderboard') }}">Leader Board</a></li>
+		<li class="dropdown">
+			<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+				<i class="fa fa-users"></i> Community <span class="caret"></span>
+			</a>
+			<ul class="dropdown-menu">
+				<li><a href="{{ path('community_index') }}"><i class="fa fa-home"></i> Community Hub</a></li>
+				<li><a href="{{ path('community_challenge_inbox') }}"><i class="fa fa-inbox"></i> Received Challenges</a></li>
+				<li><a href="{{ path('community_challenge_outbox') }}"><i class="fa fa-send"></i> Sent Challenges</a></li>
+				<li><a href="{{ path('community_tasks') }}"><i class="fa fa-tasks"></i> Tasks</a></li>
+				<li><a href="{{ path('community_claim_list') }}"><i class="fa fa-ticket"></i> My Tickets</a></li>
+				<li><a href="{{ path('community_claim_create') }}"><i class="fa fa-life-ring"></i> Contact Support</a></li>
+				<li><a href="{{ path('app_friends') }}"><i class="fa fa-user-friends"></i> Friends</a></li>
+				{% if is_granted('ROLE_ADMIN') %}
 					<li role="separator" class="divider"></li>
-
-					{# User/Student specific options #}
-					{% if 'ROLE_COMPANY' not in app.user.roles %}
-						<li><a href="{{ path('app_carriere_application_my_applications') }}">
-							<i class="fa fa-file-text"></i> My Applications
-						</a></li>
-						<li><a href="{{ path('app_carriere_mentorship_index') }}">
-							<i class="fa fa-graduation-cap"></i> My Mentorships
-						</a></li>
-					{% endif %}
-
-					{# Company specific options #}
-					{% if 'ROLE_COMPANY' in app.user.roles %}
-						<li><a href="{{ path('app_carriere_opportunity_new') }}">
-							<i class="fa fa-plus-circle"></i> Post New Opportunity
-						</a></li>
-						<li><a href="{{ path('app_carriere_opportunity_my_opportunities') }}">
-							<i class="fa fa-list"></i> My Job Postings
-						</a></li>
-						<li role="separator" class="divider"></li>
-						<li><a href="{{ path('app_carriere_application_my_company_applications') }}">
-							<i class="fa fa-inbox"></i> Applications Received
-						</a></li>
-						<li><a href="{{ path('app_carriere_mentorship_my_company_mentorships') }}">
-							<i class="fa fa-handshake-o"></i> Company Mentorships
-						</a></li>
-					{% endif %}
-				</ul>
-			</li>
-		{% else %}
-			<li><a href="{{ path('app_carriere_opportunity_index') }}">Careers Center</a></li>
-		{% endif %}
-        <li><a href="#">Leader Board</a></li>
-        <li><a href="{{ path('app_blog') }}">Blog</a></li>
-        <li><a href="{{ path('app_contact') }}">Contact</a></li>
+					<li><a href="{{ path('admin_community_claims') }}"><i class="fa fa-cog"></i> Manage Tickets</a></li>
+				{% endif %}
+			</ul>
+		</li>
         <li>
     <a href="{{ path('app_quotes') }}">
         <i class="fa fa-quote-left"></i> Quotes
@@ -611,13 +578,12 @@
 					<div class="col-md-6">
 						<ul class="footer-nav">
 							<li><a href="{{ path('app_home') }}">Home</a></li>
-							<li><a href="#">About</a></li>
+							<li><a href="#about">About</a></li>
 							<li><a href="{{ path('guardian_library') }}">Library</a></li>
 							<li><a href="{{ path('guardian_rooms') }}">Virtual Rooms</a></li>
+							<li><a href="{{ path('community_index') }}">Community</a></li>
 							<li><a href="#">careers center</a></li>
-							<li><a href="#">leader board</a></li>
-							<li><a href="{{ path('app_blog') }}">Blog</a></li>
-							<li><a href="{{ path('app_contact') }}">Contact</a></li>
+							<li><a href="{{ path('app_analyst_leaderboard') }}">leader board</a></li>
 						</ul>
 					</div>
 					<!-- /footer nav -->

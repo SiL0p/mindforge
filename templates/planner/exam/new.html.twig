@@ -1,8 +1,10 @@
-{% extends 'base.html.twig' %}
+{% extends 'workspace/module_base.html.twig' %}
 
 {% block title %}Add Exam{% endblock %}
 
-{% block content %}
+{% block module_title %}New Exam{% endblock %}
+{% block module_subtitle %}Add a new exam to your planner.{% endblock %}
+{% block module_content %}
 <div class="container-fluid" style="margin-top: 20px;">
     <div class="row">
         {% include 'components/_sidebar_planner.html.twig' %}

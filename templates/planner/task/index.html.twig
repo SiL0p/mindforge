@@ -1,0 +1,127 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Planner Tasks{% endblock %}
+
+{% block module_title %}Planner Tasks{% endblock %}
+{% block module_subtitle %}Track and organize your tasks.{% endblock %}
+{% block module_content %}
+<div class="container-fluid" style="margin-top: 20px; margin-bottom: 30px;">
+    <div class="row">
+        {% include 'components/_sidebar_planner.html.twig' %}
+
+        <main class="col-md-9 col-lg-10">
+            <div class="page-header d-flex flex-wrap align-items-center justify-content-between" style="margin-bottom: 20px;">
+                <div>
+                    <h1 style="margin-bottom: 8px;">Task Board</h1>
+                    <p class="text-muted" style="margin: 0;">Move tasks across columns and earn XP when completing them.</p>
+                </div>
+                <a href="{{ path('app_planner_task_new') }}" class="btn btn-primary">New task</a>
+            </div>
+
+            <div id="gamification-toast" class="alert alert-success" style="display:none; position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 320px;"></div>
+
+            <div class="row">
+                {% for statusKey, list in tasks %}
+                    <div class="col-md-4" style="margin-bottom: 20px;">
+                        <div class="panel panel-default" style="height: 100%;">
+                            <div class="panel-heading">
+                                <strong>{{ statuses[statusKey].label }}</strong>
+                                <span class="badge" style="float:right;">{{ list|length }}</span>
+                            </div>
+                            <div class="panel-body" style="min-height: 220px;">
+                                {% if list is empty %}
+                                    <p class="text-muted" style="margin:0;">No tasks in this column.</p>
+                                {% else %}
+                                    {% for task in list %}
+                                        <div class="well" style="margin-bottom: 12px;">
+                                            <h5 style="margin-top: 0; margin-bottom: 6px;">{{ task.title }}</h5>
+                                            {% if task.subject %}
+                                                <div class="text-muted" style="font-size: 12px;">{{ task.subject.name }}</div>
+                                            {% endif %}
+                                            {% if task.dueDate %}
+                                                <div class="text-muted" style="font-size: 12px; margin-top: 4px;">Due: {{ task.dueDate|date('Y-m-d H:i') }}</div>
+                                            {% endif %}
+
+                                            <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px;">
+                                                {% if statusKey != 'todo' %}
+                                                    <button class="btn btn-xs btn-default js-status-btn" data-task-id="{{ task.id }}" data-status="todo">To do</button>
+                                                {% endif %}
+                                                {% if statusKey != 'in_progress' %}
+                                                    <button class="btn btn-xs btn-warning js-status-btn" data-task-id="{{ task.id }}" data-status="in_progress">In progress</button>
+                                                {% endif %}
+                                                {% if statusKey != 'done' %}
+                                                    <button class="btn btn-xs btn-success js-status-btn" data-task-id="{{ task.id }}" data-status="done">Done</button>
+                                                {% endif %}
+                                            </div>
+
+                                            <div style="margin-top: 10px; display: flex; gap: 6px;">
+                                                <a href="{{ path('app_planner_task_edit', {id: task.id}) }}" class="btn btn-xs btn-info">Edit</a>
+                                                <form method="POST" action="{{ path('app_planner_task_delete', {id: task.id}) }}" onsubmit="return confirm('Delete this task?');" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
+                                                    <button type="submit" class="btn btn-xs btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+(function () {
+    const buttons = document.querySelectorAll('.js-status-btn');
+    const toastEl = document.getElementById('gamification-toast');
+
+    function showToast(message, isError) {
+        toastEl.className = isError ? 'alert alert-danger' : 'alert alert-success';
+        toastEl.textContent = message;
+        toastEl.style.display = 'block';
+        setTimeout(() => { toastEl.style.display = 'none'; }, 3500);
+    }
+
+    buttons.forEach((btn) => {
+        btn.addEventListener('click', async () => {
+            const taskId = btn.getAttribute('data-task-id');
+            const status = btn.getAttribute('data-status');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`/planner/tasks/${taskId}/status/${status}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    showToast(data.error || 'Unable to update status.', true);
+                    btn.disabled = false;
+                    return;
+                }
+
+                if (data.gamification) {
+                    const unlocked = (data.gamification.unlocked_badges || []);
+                    const badgeText = unlocked.length ? ` New badge: ${unlocked.join(', ')}` : '';
+                    showToast(`+${data.gamification.xp_gained} XP gained.${badgeText}`, false);
+                    setTimeout(() => window.location.reload(), 700);
+                    return;
+                }
+
+                window.location.reload();
+            } catch (error) {
+                showToast('Network error while updating task.', true);
+                btn.disabled = false;
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

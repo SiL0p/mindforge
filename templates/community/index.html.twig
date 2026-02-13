@@ -1,117 +1,57 @@
-{# templates/community/index.html.twig #}
-{% extends "base.html.twig" %}
+{% extends 'workspace/module_base.html.twig' %}
 
-{% block title %}Community Hub | MindForge{% endblock %}
+{% block title %}Community Hub{% endblock %}
 
-{% block body %}
-<div style="min-height: 100vh; background: linear-gradient(135deg, #f8f9fa 0%, #e8eaed 100%); padding: 3rem 1rem;">
+{% block module_title %}Community Hub{% endblock %}
+{% block module_subtitle %}Challenges, friends, and support in one place.{% endblock %}
+{% block module_content %}
+<div class="section">
     <div class="container">
-        <!-- Header -->
-        <div style="text-align: center; margin-bottom: 3rem;">
-            <h1 style="color: #2d3436; font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">
-                <i class="fa fa-users" style="color: #6d5ce7;"></i> Community Hub
-            </h1>
-            <p style="color: #636e72; font-size: 1.1rem;">Connect, challenge, and collaborate with your peers</p>
+        <div class="row">
+            <div class="col-md-12 text-center" style="margin-bottom: 30px;">
+                <h1><i class="fa fa-users"></i> Community Hub</h1>
+                <p class="lead">Connect, challenge, and collaborate with your peers.</p>
+            </div>
         </div>
 
-        <!-- Features Grid -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
-            <!-- Send Challenge Card -->
-            <div class="card" style="border: none; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
-                 onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 32px rgba(0, 0, 0, 0.18)';"
-                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 24px rgba(0, 0, 0, 0.12)';">
-                <div style="height: 100px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
-                    🎯
-                </div>
-                <div class="card-body" style="text-align: center; padding: 2rem;">
-                    <h4 style="color: #2d3436; margin-bottom: 0.5rem; font-weight: 600;">Challenges</h4>
-                    <p style="color: #636e72; margin-bottom: 1.5rem;">Send academic challenges to motivate your friends</p>
-                    <a href="{{ path('community_challenge_send') }}" class="btn btn-primary" style="width: 100%; text-align: center;">
-                        <i class="fa fa-paper-plane"></i> Send Challenge
-                    </a>
+        <div class="row" style="margin-bottom: 30px;">
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-body text-center">
+                        <h3><i class="fa fa-paper-plane"></i> Challenges</h3>
+                        <p>Send learning challenges to your friends.</p>
+                        <a href="{{ path('community_challenge_send') }}" class="btn btn-primary">Send Challenge</a>
+                    </div>
                 </div>
             </div>
-
-            <!-- Support Tickets Card -->
-            <div class="card" style="border: none; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
-                 onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 32px rgba(0, 0, 0, 0.18)';"
-                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 24px rgba(0, 0, 0, 0.12)';">
-                <div style="height: 100px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
-                    🆘
-                </div>
-                <div class="card-body" style="text-align: center; padding: 2rem;">
-                    <h4 style="color: #2d3436; margin-bottom: 0.5rem; font-weight: 600;">Support Tickets</h4>
-                    <p style="color: #636e72; margin-bottom: 1.5rem;">Need help? Create a support ticket for our team</p>
-                    <a href="{{ path('community_claim_create') }}" class="btn btn-primary" style="width: 100%; text-align: center;">
-                        <i class="fa fa-plus"></i> Create Ticket
-                    </a>
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-body text-center">
+                        <h3><i class="fa fa-ticket"></i> Support Tickets</h3>
+                        <p>Create and track your support requests.</p>
+                        <a href="{{ path('community_claim_create') }}" class="btn btn-primary">Create Ticket</a>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Quick Actions Section -->
-        <div class="card" style="border: none; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); margin-bottom: 3rem;">
-            <div style="background: linear-gradient(135deg, #6d5ce7 0%, #5f3dc4 100%); padding: 2rem; border-radius: 16px 16px 0 0; color: white;">
-                <h3 style="margin: 0; font-weight: 700;">
-                    <i class="fa fa-bolt"></i> Quick Actions
-                </h3>
-            </div>
-            <div class="card-body" style="padding: 2rem;">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1.5rem;">
-                    <!-- My Challenges -->
-                    <a href="{{ path('community_challenge_inbox') }}" 
-                       style="padding: 1.5rem; background-color: #f8f9fa; border-radius: 12px; text-align: center; text-decoration: none; color: #2d3436; transition: all 0.3s;"
-                       onmouseover="this.style.backgroundColor='#e8eaed'; this.style.transform='translateY(-2px)';"
-                       onmouseout="this.style.backgroundColor='#f8f9fa'; this.style.transform='translateY(0)';">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📥</div>
-                        <div style="font-weight: 600; color: #2d3436;">My Challenges</div>
-                        <div style="font-size: 0.85rem; color: #636e72; margin-top: 0.25rem;">Received</div>
-                    </a>
-
-                    <!-- Sent Challenges -->
-                    <a href="{{ path('community_challenge_outbox') }}" 
-                       style="padding: 1.5rem; background-color: #f8f9fa; border-radius: 12px; text-align: center; text-decoration: none; color: #2d3436; transition: all 0.3s;"
-                       onmouseover="this.style.backgroundColor='#e8eaed'; this.style.transform='translateY(-2px)';"
-                       onmouseout="this.style.backgroundColor='#f8f9fa'; this.style.transform='translateY(0)';">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📤</div>
-                        <div style="font-weight: 600; color: #2d3436;">Sent Challenges</div>
-                        <div style="font-size: 0.85rem; color: #636e72; margin-top: 0.25rem;">My Sends</div>
-                    </a>
-
-                    <!-- My Tickets -->
-                    <a href="{{ path('community_claim_list') }}" 
-                       style="padding: 1.5rem; background-color: #f8f9fa; border-radius: 12px; text-align: center; text-decoration: none; color: #2d3436; transition: all 0.3s;"
-                       onmouseover="this.style.backgroundColor='#e8eaed'; this.style.transform='translateY(-2px)';"
-                       onmouseout="this.style.backgroundColor='#f8f9fa'; this.style.transform='translateY(0)';">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎫</div>
-                        <div style="font-weight: 600; color: #2d3436;">My Tickets</div>
-                        <div style="font-size: 0.85rem; color: #636e72; margin-top: 0.25rem;">Support</div>
-                    </a>
-
-                    {% if is_granted('ROLE_ADMIN') %}
-                    <!-- Admin - Manage Tickets -->
-                    <a href="{{ path('admin_community_claims') }}" 
-                       style="padding: 1.5rem; background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%); border-radius: 12px; text-align: center; text-decoration: none; color: white; transition: all 0.3s; font-weight: 600; box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);"
-                       onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(255, 107, 107, 0.4)';"
-                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(255, 107, 107, 0.3)';">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚙️</div>
-                        <div>Manage Tickets</div>
-                        <div style="font-size: 0.8rem; margin-top: 0.25rem; opacity: 0.9;">Admin Only</div>
-                    </a>
-                    {% endif %}
+        <div class="row" style="margin-bottom: 30px;">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="panel panel-default">
+                    <div class="panel-body text-center">
+                        <h3><i class="fa fa-tasks"></i> Tasks</h3>
+                        <p>Open your personal task board from the Community area.</p>
+                        <a href="{{ path('community_tasks') }}" class="btn btn-primary">Open Tasks</a>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Welcome Section -->
-        <div style="background: linear-gradient(135deg, rgba(109, 92, 231, 0.08) 0%, rgba(95, 61, 196, 0.08) 100%); border-radius: 12px; padding: 2rem; border-left: 4px solid #6d5ce7;">
-            <h4 style="color: #6d5ce7; margin-bottom: 1rem; font-weight: 600;">
-                <i class="fa fa-info-circle"></i> Welcome to MindForge Community
-            </h4>
-            <p style="color: #636e72; margin-bottom: 0.5rem;">Join thousands of students collaborating and learning together. Share challenges, ask for help, and grow your network.</p>
-            <p style="color: #636e72; margin-bottom: 0;">Get started by joining a study room or sending your first challenge!</p>
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <p class="text-muted">Use the <strong>Community</strong> dropdown in the top navigation to open challenges, tasks, friends, and support.</p>
+            </div>
         </div>
     </div>
-</div>
 </div>
 {% endblock %}

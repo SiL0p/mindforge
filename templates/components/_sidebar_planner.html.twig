@@ -35,6 +35,13 @@
                     Exams
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link-mf d-flex align-items-center {{ app.request.get('_route') == 'app_analyst_gamification' ? 'active' : '' }}" 
+                   href="{{ path('app_analyst_gamification') }}">
+                    <i class="bi bi-trophy me-3"></i>
+                    Gamification
+                </a>
+            </li>
         </ul>
         
         <h6 class="sidebar-heading px-3 mt-4 mb-2 text-muted-mf text-uppercase small">
