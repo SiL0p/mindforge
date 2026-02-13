@@ -3,10 +3,8 @@
 namespace App\Command;
 
 use App\Entity\Architect\User;
-use App\Entity\Community\ChatMessage;
 use App\Entity\Community\Claim;
 use App\Entity\Community\SharedTask;
-use App\Entity\Guardian\VirtualRoom;
 use App\Entity\Planner\Subject;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -70,53 +68,7 @@ class GenerateTestDataCommand extends Command
             $this->em->flush();
             $io->success("✓ Created test subject: Mathematics (ID: {$subject->getId()})");
 
-            // 3. Create Test Virtual Rooms
-            $io->section('Creating test virtual rooms...');
-            
-            $room1 = new VirtualRoom();
-            $room1->setName('Mathematics Discussion');
-            $room1->setDescription('Room for discussing mathematical concepts');
-            $room1->setCreator($user1);
-            $room1->setSubject($subject);
-            $room1->addParticipant($user1);
-            $room1->addParticipant($user2);
-            $this->em->persist($room1);
-
-            $room2 = new VirtualRoom();
-            $room2->setName('Physics Study Group');
-            $room2->setDescription('Collaborative physics problem solving');
-            $room2->setCreator($user2);
-            $room2->setSubject($subject);
-            $room2->addParticipant($user1);
-            $room2->addParticipant($user2);
-            $this->em->persist($room2);
-
-            $this->em->flush();
-            $io->success("✓ Created 2 test virtual rooms");
-            $io->text("  - Mathematics Discussion (ID: {$room1->getId()})");
-            $io->text("  - Physics Study Group (ID: {$room2->getId()})");
-
-            // 4. Create Test Chat Messages
-            $io->section('Creating test chat messages...');
-            
-            $message1 = new ChatMessage();
-            $message1->setContent('Hello everyone! Let\'s discuss calculus today.');
-            $message1->setSender($user1);
-            $message1->setVirtualRoom($room1);
-            $this->em->persist($message1);
-
-            $message2 = new ChatMessage();
-            $message2->setContent('Great idea! I need help with derivatives.');
-            $message2->setSender($user2);
-            $message2->setVirtualRoom($room1);
-            $this->em->persist($message2);
-
-            $this->em->flush();
-            $io->success("✓ Created 2 test chat messages");
-            $io->text("  - Message 1 (ID: {$message1->getId()})");
-            $io->text("  - Message 2 (ID: {$message2->getId()})");
-
-            // 4. Create Test Shared Tasks (Challenges)
+            // 3. Create Test Shared Tasks (Challenges)
             $io->section('Creating test shared tasks (challenges)...');
             
             $challenge1 = new SharedTask();
@@ -139,7 +91,7 @@ class GenerateTestDataCommand extends Command
             $io->text("  - Challenge 1 (ID: {$challenge1->getId()})");
             $io->text("  - Challenge 2 (ID: {$challenge2->getId()})");
 
-            // 5. Create Test Claims (Support Tickets)
+            // 4. Create Test Claims (Support Tickets)
             $io->section('Creating test support tickets...');
             
             $ticket1 = new Claim();
@@ -182,12 +134,6 @@ class GenerateTestDataCommand extends Command
             $io->writeln("  Admin:   admin@mindforge.local (password: password123)");
 
             $io->writeln("\n<fg=yellow>TESTING PATHS (use IDs from above):</>");
-            $io->writeln("\n<fg=cyan>CHAT ROUTES:</>");
-            $io->writeln("  GET  http://127.0.0.1:8001/community/room/{$room1->getId()}/chat");
-            $io->writeln("  POST http://127.0.0.1:8001/community/room/{$room1->getId()}/message/send [content=message]");
-            $io->writeln("  POST http://127.0.0.1:8001/community/message/{$message1->getId()}/edit [content=edited]");
-            $io->writeln("  POST http://127.0.0.1:8001/community/message/{$message1->getId()}/delete");
-
             $io->writeln("\n<fg=cyan>CHALLENGE ROUTES:</>");
             $io->writeln("  GET  http://127.0.0.1:8001/community/challenge/send");
             $io->writeln("  POST http://127.0.0.1:8001/community/challenge/send [title=...&description=...&shared_with_id={$user2->getId()}]");

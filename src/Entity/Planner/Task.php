@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[ORM\Table(name: 'tasks')]
+#[ORM\Table(name: 'task')]
 class Task
 {
     public const STATUS_TODO = 'todo';

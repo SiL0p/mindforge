@@ -30,50 +30,9 @@ class CommunityController extends AbstractController
         return $this->render('community/index.html.twig');
     }
 
-    #[Route('/rooms', name: 'community_rooms_list', methods: ['GET'])]
-    public function listRooms(EntityManagerInterface $em): Response
-    {
-        $rooms = $em->getRepository(VirtualRoom::class)->findAll();
-
-        return $this->render('community/rooms_list.html.twig', [
-            'rooms' => $rooms,
-        ]);
-    }
-
     // ============================================================================
-    // CHAT MESSAGE ROUTES (Real-time Chat inside Virtual Rooms)
+    // CHAT MESSAGE ROUTES (Real-time Chat inside Guardian Virtual Rooms)
     // ============================================================================
-
-    #[Route('/room/{id<\d+>}/chat', name: 'community_room_chat', methods: ['GET'])]
-    public function viewRoomChat(
-        int $id,
-        EntityManagerInterface $em,
-        ChatMessageRepository $chatMessageRepo,
-        Request $request
-    ): Response {
-        $virtualRoom = $em->getRepository(VirtualRoom::class)->find($id);
-
-        if (!$virtualRoom) {
-            $this->addFlash('error', 'Salle virtuelle introuvable.');
-            return $this->redirectToRoute('community_index');
-        }
-
-        $page = max(1, $request->query->getInt('page', 1));
-        $limit = 50;
-        $offset = ($page - 1) * $limit;
-
-        $messages = $chatMessageRepo->findByVirtualRoomPaginated($id, $limit, $offset);
-        $totalMessages = $chatMessageRepo->countByVirtualRoom($id);
-        $totalPages = ceil($totalMessages / $limit);
-
-        return $this->render('community/room_chat.html.twig', [
-            'virtualRoom' => $virtualRoom,
-            'messages' => $messages,
-            'currentPage' => $page,
-            'totalPages' => $totalPages,
-            'totalMessages' => $totalMessages,
-        ]);
-    }
 
     #[Route('/room/{id<\d+>}/message/send', name: 'community_message_send', methods: ['POST'])]
     public function sendMessage(
@@ -87,22 +46,25 @@ class CommunityController extends AbstractController
 
         if (!$virtualRoom) {
             $this->addFlash('error', 'Salle virtuelle introuvable.');
-            return $this->redirectToRoute('community_index');
+            return $this->redirectToRoute('guardian_rooms');
         }
 
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
 
+        if (!$virtualRoom->isParticipant($user) && !$this->isGranted('ROLE_ADMIN')) {
+            $this->addFlash('error', 'Vous devez rejoindre la salle pour envoyer un message.');
+            return $this->redirectToRoute('guardian_room_detail', ['id' => $virtualRoom->getId()]);
+        }
+
         $content = trim($request->request->get('content', ''));
 
-        // Create ChatMessage entity for validation
         $chatMessage = new ChatMessage();
         $chatMessage->setContent($content);
         $chatMessage->setSender($user);
         $chatMessage->setVirtualRoom($virtualRoom);
 
-        // Validate using Symfony Assertions (server-side)
         $errors = $validator->validate($chatMessage);
 
         if (count($errors) > 0) {
@@ -112,13 +74,12 @@ class CommunityController extends AbstractController
             }
             $this->addFlash('error', implode(' ', $errorMessages));
         } else {
-            // Save message
             $em->persist($chatMessage);
             $em->flush();
-            $this->addFlash('success', 'Message envoyé avec succès.');
+            $this->addFlash('success', 'Message envoye avec succes.');
         }
 
-        return $this->redirectToRoute('community_room_chat', ['id' => $id]);
+        return $this->redirectToRoute('guardian_room_detail', ['id' => $id]);
     }
 
     #[Route('/message/{id<\d+>}/edit', name: 'community_message_edit', methods: ['POST'])]
@@ -133,19 +94,21 @@ class CommunityController extends AbstractController
 
         if (!$chatMessage) {
             $this->addFlash('error', 'Message introuvable.');
-            return $this->redirectToRoute('community_index');
+            return $this->redirectToRoute('guardian_rooms');
         }
 
-        // Only message sender can edit
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
         if ($chatMessage->getSender() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             $this->addFlash('error', 'Vous n\'avez pas la permission de modifier ce message.');
-            return $this->redirectToRoute('community_room_chat', ['id' => $chatMessage->getVirtualRoom()->getId()]);
+            return $this->redirectToRoute('guardian_room_detail', ['id' => $chatMessage->getVirtualRoom()->getId()]);
         }
 
         $content = trim($request->request->get('content', ''));
         $chatMessage->setContent($content);
 
-        // Validate
         $errors = $validator->validate($chatMessage);
 
         if (count($errors) > 0) {
@@ -156,10 +119,10 @@ class CommunityController extends AbstractController
             $this->addFlash('error', implode(' ', $errorMessages));
         } else {
             $em->flush();
-            $this->addFlash('success', 'Message modifié avec succès.');
+            $this->addFlash('success', 'Message modifie avec succes.');
         }
 
-        return $this->redirectToRoute('community_room_chat', ['id' => $chatMessage->getVirtualRoom()->getId()]);
+        return $this->redirectToRoute('guardian_room_detail', ['id' => $chatMessage->getVirtualRoom()->getId()]);
     }
 
     #[Route('/message/{id<\d+>}/delete', name: 'community_message_delete', methods: ['POST'])]
@@ -172,21 +135,24 @@ class CommunityController extends AbstractController
 
         if (!$chatMessage) {
             $this->addFlash('error', 'Message introuvable.');
-            return $this->redirectToRoute('community_index');
+            return $this->redirectToRoute('guardian_rooms');
         }
 
-        // Only message sender or admin can delete
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
         if ($chatMessage->getSender() !== $user && !$this->isGranted('ROLE_ADMIN')) {
             $this->addFlash('error', 'Vous n\'avez pas la permission de supprimer ce message.');
-            return $this->redirectToRoute('community_room_chat', ['id' => $chatMessage->getVirtualRoom()->getId()]);
+            return $this->redirectToRoute('guardian_room_detail', ['id' => $chatMessage->getVirtualRoom()->getId()]);
         }
 
         $roomId = $chatMessage->getVirtualRoom()->getId();
         $em->remove($chatMessage);
         $em->flush();
 
-        $this->addFlash('success', 'Message supprimé avec succès.');
-        return $this->redirectToRoute('community_room_chat', ['id' => $roomId]);
+        $this->addFlash('success', 'Message supprime avec succes.');
+        return $this->redirectToRoute('guardian_room_detail', ['id' => $roomId]);
     }
 
     // ============================================================================

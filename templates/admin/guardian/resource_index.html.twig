@@ -38,7 +38,12 @@
                             <td>{{ resource.title }}</td>
                             <td>{{ resource.type }}</td>
                             <td>{{ resource.subject.name }}</td>
-                            <td>{{ resource.uploader.firstName }} {{ resource.uploader.lastName }}</td>
+                            <td>
+                                {{ resource.uploader.profile and resource.uploader.profile.fullName
+                                    ? resource.uploader.profile.fullName
+                                    : resource.uploader.userIdentifier
+                                }}
+                            </td>
                             <td>{{ resource.uploadedAt|date('d/m/Y H:i') }}</td>
                             <td>{{ resource.downloadCount }}</td>
                             <td>

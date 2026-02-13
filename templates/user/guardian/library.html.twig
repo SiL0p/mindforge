@@ -75,7 +75,12 @@
                         </div>
                         <p class="text-muted">{{ resource.description ? resource.description|slice(0, 110) ~ '…' : 'No description yet.' }}</p>
                         <div class="d-flex justify-content-between align-items-center text-muted small mb-3">
-                            <span><i class="fas fa-user"></i> {{ resource.uploader.firstName }} {{ resource.uploader.lastName }}</span>
+                            <span><i class="fas fa-user"></i>
+                                {{ resource.uploader.profile and resource.uploader.profile.fullName
+                                    ? resource.uploader.profile.fullName
+                                    : resource.uploader.userIdentifier
+                                }}
+                            </span>
                             <span><i class="fas fa-download"></i> {{ resource.downloadCount }}</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center">

@@ -63,7 +63,12 @@
                         </div>
                         <p class="text-muted mt-3">{{ room.description ?: 'No description yet.' }}</p>
                         <div class="d-flex flex-wrap gap-2 text-muted small mb-3">
-                            <span><i class="fas fa-user"></i> {{ room.creator.firstName }} {{ room.creator.lastName }}</span>
+                            <span><i class="fas fa-user"></i>
+                                {{ room.creator.profile and room.creator.profile.fullName
+                                    ? room.creator.profile.fullName
+                                    : room.creator.userIdentifier
+                                }}
+                            </span>
                             <span><i class="fas fa-users"></i> {{ room.participants|length }}/{{ room.maxParticipants }}</span>
                             <span><i class="fas fa-calendar"></i> {{ room.createdAt|date('d/m/Y') }}</span>
                         </div>

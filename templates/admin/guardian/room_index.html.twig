@@ -38,7 +38,12 @@
                         <tr>
                             <td>{{ room.name }}</td>
                             <td>{{ room.subject.name }}</td>
-                            <td>{{ room.creator.firstName }} {{ room.creator.lastName }}</td>
+                            <td>
+                                {{ room.creator.profile and room.creator.profile.fullName
+                                    ? room.creator.profile.fullName
+                                    : room.creator.userIdentifier
+                                }}
+                            </td>
                             <td>{{ room.participants|length }}</td>
                             <td>{{ room.maxParticipants }}</td>
                             <td>

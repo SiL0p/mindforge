@@ -1,0 +1,78 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Planner Calendar{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="margin-top: 20px;">
+    <div class="row">
+        {% include 'components/_sidebar_planner.html.twig' %}
+
+        <main class="col-md-9 col-lg-10">
+            <div class="page-header">
+                <h1>Planner Calendar</h1>
+                <p class="text-muted">All tasks and exams in one place.</p>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">Upcoming items</div>
+                <div class="panel-body">
+                    <div id="planner-calendar-list"></div>
+                    <div id="planner-calendar-empty" class="text-muted" style="display: none;">
+                        No items scheduled yet.
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+(function () {
+    const events = {{ events|raw }};
+    const listEl = document.getElementById('planner-calendar-list');
+    const emptyEl = document.getElementById('planner-calendar-empty');
+
+    if (!events || events.length === 0) {
+        emptyEl.style.display = 'block';
+        return;
+    }
+
+    const ul = document.createElement('ul');
+    ul.className = 'list-group';
+
+    events
+        .slice()
+        .sort((a, b) => new Date(a.start) - new Date(b.start))
+        .forEach((event) => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+
+            const title = document.createElement('div');
+            title.style.fontWeight = '600';
+            title.textContent = event.title || 'Untitled';
+
+            const meta = document.createElement('div');
+            meta.className = 'text-muted';
+
+            const when = new Date(event.start);
+            const whenText = Number.isNaN(when.getTime()) ? event.start : when.toLocaleString();
+            const subject = event.extendedProps && event.extendedProps.subject ? ' - ' + event.extendedProps.subject : '';
+            meta.textContent = whenText + subject;
+
+            li.appendChild(title);
+            li.appendChild(meta);
+
+            if (event.url) {
+                li.style.cursor = 'pointer';
+                li.addEventListener('click', () => {
+                    window.location.href = event.url;
+                });
+            }
+
+            ul.appendChild(li);
+        });
+
+    listEl.appendChild(ul);
+})();
+</script>
+{% endblock %}
