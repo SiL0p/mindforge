@@ -36,18 +36,36 @@ final class UserController extends AbstractController
     #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        // If user is already logged in, redirect to home
         if ($this->getUser()) {
             return $this->redirectToRoute('app_workspace');
         }
 
-        // Get the last authentication error if any
-        $error = $authenticationUtils->getLastAuthenticationError();
-        $lastUsername = $authenticationUtils->getLastUsername();
+        return $this->render('user/login.html.twig');
+    }
 
-        return $this->render('user/login.html.twig', [
-            'last_username' => $lastUsername,
-            'error' => $error,
+    #[Route('/login/student', name: 'app_login_student')]
+    public function loginStudent(AuthenticationUtils $authenticationUtils): Response
+    {
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_workspace');
+        }
+
+        return $this->render('user/login_student.html.twig', [
+            'last_username' => $authenticationUtils->getLastUsername(),
+            'error' => $authenticationUtils->getLastAuthenticationError(),
+        ]);
+    }
+
+    #[Route('/login/company', name: 'app_login_company')]
+    public function loginCompany(AuthenticationUtils $authenticationUtils): Response
+    {
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_workspace');
+        }
+
+        return $this->render('user/login_company.html.twig', [
+            'last_username' => $authenticationUtils->getLastUsername(),
+            'error' => $authenticationUtils->getLastAuthenticationError(),
         ]);
     }
 
