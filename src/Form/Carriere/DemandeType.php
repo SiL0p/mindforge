@@ -14,14 +14,13 @@ class DemandeType extends AbstractType
     {
         $builder
             ->add('coverLetter', TextareaType::class, [
-                'label' => 'Cover Letter (Optional)',
-                'required' => false,
+                'label' => 'Cover Letter',
                 'attr' => [
                     'class' => 'input',
                     'rows' => 8,
                     'placeholder' => 'Write a personalized message to the employer explaining why you are a great fit for this role...'
                 ],
-                'help' => 'Optional: Write a personalized message to the employer (50-3000 characters recommended).'
+                'help' => 'Write a personalized message to the employer (50-3000 characters).'
             ]);
     }
 

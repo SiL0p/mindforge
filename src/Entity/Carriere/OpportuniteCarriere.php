@@ -48,6 +48,7 @@ class OpportuniteCarriere
     private ?string $type = 'internship';
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank(message: 'Location is required.')]
     #[Assert\Length(
         max: 255,
         maxMessage: 'Location cannot exceed {{ limit }} characters.'
@@ -55,6 +56,7 @@ class OpportuniteCarriere
     private ?string $location = null;
 
     #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\NotBlank(message: 'Duration is required.')]
     #[Assert\Length(
         max: 100,
         maxMessage: 'Duration cannot exceed {{ limit }} characters.'
@@ -62,6 +64,7 @@ class OpportuniteCarriere
     private ?string $duration = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    #[Assert\NotBlank(message: 'Application deadline is required.')]
     private ?\DateTimeImmutable $deadline = null;
 
     #[ORM\Column(length: 20)]

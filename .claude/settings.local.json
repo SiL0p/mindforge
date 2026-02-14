@@ -4,7 +4,11 @@
       "Bash(grep:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(where:*)",
+      "Bash(dir \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\")",
+      "Bash(dir \"C:\\\\wamp64\\\\bin\\\\mysql\\\\*\\\\bin\\\\mysql.exe\")",
+      "Bash(dir \"C:\\\\laragon\\\\bin\\\\mysql\\\\*\\\\bin\\\\mysql.exe\")"
     ]
   }
 }

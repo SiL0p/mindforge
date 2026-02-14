@@ -31,23 +31,30 @@ class Entreprise
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\NotBlank(message: 'Description is required.')]
     #[Assert\Length(
+        min: 5,
         max: 2000,
+        minMessage: 'Description must be at least {{ limit }} characters long.',
         maxMessage: 'Description cannot exceed {{ limit }} characters.'
     )]
     private ?string $description = null;
 
     #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\NotBlank(message: 'Industry is required.')]
     private ?string $industry = null;
 
     #[ORM\Column(length: 180, nullable: true)]
+    #[Assert\NotBlank(message: 'Contact email is required.')]
     #[Assert\Email(message: 'Please enter a valid email address.')]
     private ?string $contactEmail = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Assert\NotBlank(message: 'Contact phone is required.')]
     private ?string $contactPhone = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank(message: 'Website is required.')]
     #[Assert\Url(message: 'Please enter a valid website URL.')]
     private ?string $website = null;
 
