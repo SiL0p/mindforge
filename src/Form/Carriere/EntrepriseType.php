@@ -25,7 +25,6 @@ class EntrepriseType extends AbstractType
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'About Us',
-                'required' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 5,
@@ -34,7 +33,6 @@ class EntrepriseType extends AbstractType
             ])
             ->add('industry', TextType::class, [
                 'label' => 'Industry',
-                'required' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'e.g., Technology, Finance, Healthcare'
@@ -42,7 +40,6 @@ class EntrepriseType extends AbstractType
             ])
             ->add('contactEmail', EmailType::class, [
                 'label' => 'Contact Email',
-                'required' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'contact@company.com'
@@ -50,7 +47,6 @@ class EntrepriseType extends AbstractType
             ])
             ->add('contactPhone', TextType::class, [
                 'label' => 'Contact Phone',
-                'required' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => '+1 234 567 8900'
@@ -58,7 +54,6 @@ class EntrepriseType extends AbstractType
             ])
             ->add('website', UrlType::class, [
                 'label' => 'Website',
-                'required' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'https://www.company.com'

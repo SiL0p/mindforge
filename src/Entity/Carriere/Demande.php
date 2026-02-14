@@ -25,6 +25,7 @@ class Demande
     private ?User $user = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\NotBlank(message: 'Cover letter is required.')]
     #[Assert\Length(
         min: 50,
         max: 3000,

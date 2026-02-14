@@ -46,7 +46,6 @@ class OpportuniteCarriereType extends AbstractType
             ])
             ->add('location', TextType::class, [
                 'label' => 'Location',
-                'required' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'City, Country or Remote'
@@ -54,7 +53,6 @@ class OpportuniteCarriereType extends AbstractType
             ])
             ->add('duration', TextType::class, [
                 'label' => 'Duration',
-                'required' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'e.g., 6 months, 1 year'
@@ -63,7 +61,6 @@ class OpportuniteCarriereType extends AbstractType
             ->add('deadline', DateType::class, [
                 'label' => 'Application Deadline',
                 'widget' => 'single_text',
-                'required' => false,
                 'attr' => ['class' => 'form-control']
             ])
             ->add('company', EntityType::class, [
@@ -71,7 +68,6 @@ class OpportuniteCarriereType extends AbstractType
                 'choice_label' => 'name',
                 'label' => 'Company',
                 'placeholder' => 'Select a company',
-                'required' => false,
                 'choices' => $options['user_companies'],
                 'attr' => ['class' => 'form-control']
             ]);
