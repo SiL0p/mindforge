@@ -1,0 +1,98 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}My Applications - MindForge{% endblock %}
+
+{% block hero %}
+<div class="hero-area section">
+	<div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/page-background.jpg') }})"></div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-10 col-md-offset-1 text-center">
+				<ul class="hero-area-tree">
+					<li><a href="{{ path('app_home') }}">Home</a></li>
+					<li>My Applications</li>
+				</ul>
+				<h1 class="white-text">My Applications</h1>
+				<p class="white-text lead">Track your job applications and their status</p>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block module_content %}
+<div class="section">
+	<div class="container">
+
+		{% if applications|length > 0 %}
+			<div class="table-responsive" style="background: #fff; padding: 20px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>Job Title</th>
+							<th>Company</th>
+							<th>Applied Date</th>
+							<th>Status</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for application in applications %}
+						<tr>
+							<td>
+								<a href="{{ path('app_carriere_opportunite_show', {id: application.opportunity.id}) }}" style="color: #6C3BAA; font-weight: 600;">
+									{{ application.opportunity.title }}
+								</a>
+							</td>
+							<td>
+								{% if application.opportunity.company %}
+									{{ application.opportunity.company.name }}
+								{% else %}
+									<em class="text-muted">Not specified</em>
+								{% endif %}
+							</td>
+							<td>{{ application.appliedAt|date('M d, Y') }}</td>
+							<td>
+								{% if application.status == 'pending' %}
+									<span class="label label-warning">Pending</span>
+								{% elseif application.status == 'accepted' %}
+									<span class="label label-success">Accepted</span>
+								{% elseif application.status == 'rejected' %}
+									<span class="label label-danger">Rejected</span>
+								{% elseif application.status == 'withdrawn' %}
+									<span class="label label-default">Withdrawn</span>
+								{% endif %}
+							</td>
+							<td>
+								<a href="{{ path('app_carriere_demande_show', {id: application.id}) }}" class="main-button icon-button" style="padding: 6px 15px; font-size: 12px;">
+									<i class="fa fa-eye"></i> View
+								</a>
+								{% if application.isPending %}
+									<form method="post" action="{{ path('app_carriere_demande_withdraw', {id: application.id}) }}"
+										  style="display: inline;" onsubmit="return confirm('Are you sure you want to withdraw this application?');">
+										<input type="hidden" name="_token" value="{{ csrf_token('withdraw' ~ application.id) }}">
+										<button type="submit" class="main-button icon-button" style="padding: 6px 15px; font-size: 12px; background: #f0ad4e;">
+											<i class="fa fa-times"></i> Withdraw
+										</button>
+									</form>
+								{% endif %}
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% else %}
+			<div class="text-center" style="padding: 60px 0;">
+				<i class="fa fa-folder-open" style="font-size: 64px; color: #ccc; margin-bottom: 20px; display: block;"></i>
+				<h3>No applications yet</h3>
+				<p class="text-muted">You haven't applied to any opportunities yet.</p>
+				<a href="{{ path('app_carriere_opportunite_index') }}" class="main-button icon-button" style="margin-top: 15px;">
+					<i class="fa fa-search"></i> Browse Opportunities
+				</a>
+			</div>
+		{% endif %}
+
+	</div>
+</div>
+{% endblock %}
