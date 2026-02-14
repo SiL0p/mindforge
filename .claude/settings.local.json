@@ -8,7 +8,8 @@
       "Bash(where:*)",
       "Bash(dir \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\")",
       "Bash(dir \"C:\\\\wamp64\\\\bin\\\\mysql\\\\*\\\\bin\\\\mysql.exe\")",
-      "Bash(dir \"C:\\\\laragon\\\\bin\\\\mysql\\\\*\\\\bin\\\\mysql.exe\")"
+      "Bash(dir \"C:\\\\laragon\\\\bin\\\\mysql\\\\*\\\\bin\\\\mysql.exe\")",
+      "WebFetch(domain:127.0.0.1)"
     ]
   }
 }
