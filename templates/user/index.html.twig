@@ -205,8 +205,8 @@
 						<div class="feature">
 							<i class="feature-icon fa fa-flask"></i>
 							<div class="feature-content">
-								<h4>Online Courses </h4>
-								<p>Ceteros fuisset mei no, soleat epicurei adipiscing ne vis. Et his suas veniam nominati.</p>
+								<h4>Focus Rooms</h4>
+								<p>Join quiet, goal-driven rooms designed to help you work deeply and finish what matters.</p>
 							</div>
 						</div>
 						<!-- /feature -->
@@ -215,8 +215,8 @@
 						<div class="feature">
 							<i class="feature-icon fa fa-users"></i>
 							<div class="feature-content">
-								<h4>Expert Teachers</h4>
-								<p>Ceteros fuisset mei no, soleat epicurei adipiscing ne vis. Et his suas veniam nominati.</p>
+								<h4>Shared Accountability</h4>
+								<p>Set weekly targets, track wins, and stay consistent with people who keep each other moving.</p>
 							</div>
 						</div>
 						<!-- /feature -->
@@ -225,8 +225,8 @@
 						<div class="feature">
 							<i class="feature-icon fa fa-comments"></i>
 							<div class="feature-content">
-								<h4>Community</h4>
-								<p>Ceteros fuisset mei no, soleat epicurei adipiscing ne vis. Et his suas veniam nominati.</p>
+								<h4>Helpful Community</h4>
+								<p>Exchange resources, ask better questions, and solve blockers faster through active discussions.</p>
 							</div>
 						</div>
 						<!-- /feature -->
@@ -436,7 +436,7 @@
 					<div class="col-md-6">
 						<h2 class="white-text">Build momentum with MindForge.</h2>
 						<p class="lead white-text">Join focused rooms, share resources, and grow with your community.</p>
-						<a class="main-button icon-button" href="#">Get Started</a>
+						<a class="main-button icon-button" href="{{ path('community_index') }}">Get Started</a>
 					</div>
 
 				</div>
@@ -466,8 +466,8 @@
 						<div class="feature">
 							<i class="feature-icon fa fa-flask"></i>
 							<div class="feature-content">
-								<h4>Online Courses</h4>
-								<p>Ceteros fuisset mei no, soleat epicurei adipiscing ne vis. Et his suas veniam nominati.</p>
+								<h4>Focus Rooms</h4>
+								<p>Enter distraction-free rooms to work on a single goal with a clear daily routine.</p>
 							</div>
 						</div>
 					</div>
@@ -478,8 +478,8 @@
 						<div class="feature">
 							<i class="feature-icon fa fa-users"></i>
 							<div class="feature-content">
-								<h4>Expert Teachers</h4>
-								<p>Ceteros fuisset mei no, soleat epicurei adipiscing ne vis. Et his suas veniam nominati.</p>
+								<h4>Accountability</h4>
+								<p>Track progress with peers, share milestones, and keep momentum through consistent check-ins.</p>
 							</div>
 						</div>
 					</div>
@@ -490,33 +490,12 @@
 						<div class="feature">
 							<i class="feature-icon fa fa-comments"></i>
 							<div class="feature-content">
-								<h4>Community</h4>
-								<p>Ceteros fuisset mei no, soleat epicurei adipiscing ne vis. Et his suas veniam nominati.</p>
+								<h4>Community Support</h4>
+								<p>Ask questions, exchange resources, and get help quickly from people solving similar challenges.</p>
 							</div>
 						</div>
 					</div>
 					<!-- /feature -->
-
-				</div>
-				<!-- /row -->
-
-				<hr class="section-hr">
-
-				<!-- row -->
-				<div class="row">
-
-					<div class="col-md-6">
-						<h3>Persius imperdiet incorrupte et qui, munere nusquam et nec.</h3>
-						<p class="lead">Libris vivendo eloquentiam ex ius, nec id splendide abhorreant.</p>
-						<p>No vel facete sententiae, quodsi dolores no quo, pri ex tamquam interesset necessitatibus. Te denique cotidieque delicatissimi sed. Eu doming epicurei duo. Sit ea perfecto deseruisse theophrastus. At sed malis hendrerit, elitr deseruisse in sit, sit ei facilisi mediocrem.</p>
-					</div>
-
-					<div class="col-md-5 col-md-offset-1">
-						<a class="about-video" href="#">
-							<img src="{{ asset('user/img/about-video.jpg') }}" alt="">
-							<i class="play-icon fa fa-play"></i>
-						</a>
-					</div>
 
 				</div>
 				<!-- /row -->
@@ -542,8 +521,8 @@
 
 					<div class="col-md-8 col-md-offset-2 text-center">
 						<h2 class="white-text">Contact Us</h2>
-						<p class="lead white-text">Libris vivendo eloquentiam ex ius, nec id splendide abhorreant.</p>
-						<a class="main-button icon-button" href="#">Contact Us Now</a>
+						<p class="lead white-text">Need help with your workspace or community tasks? We are here to support you.</p>
+						<a class="main-button icon-button" href="{{ path('community_claim_create') }}">Contact Support</a>
 					</div>
 
 				</div>
@@ -610,7 +589,7 @@
 					<!-- copyright -->
 					<div class="col-md-8 col-md-pull-4">
 						<div class="footer-copyright">
-							<span>&copy; Copyright 2018. All Rights Reserved. | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com">Colorlib</a></span>
+							<span>&copy; Copyright {{ "now"|date("Y") }}. All Rights Reserved. | Made by SiL0p</span>
 						</div>
 					</div>
 					<!-- /copyright -->
