@@ -44,7 +44,7 @@
                                     : resource.uploader.userIdentifier
                                 }}
                             </td>
-                            <td>{{ resource.uploadedAt|date('d/m/Y H:i') }}</td>
+                            <td>{{ resource.createdAt ? resource.createdAt|date('d/m/Y H:i') : '—' }}</td>
                             <td>{{ resource.downloadCount }}</td>
                             <td>
                                 <a href="{{ path('admin_resource_edit', {id: resource.id}) }}" class="btn btn-sm btn-primary">

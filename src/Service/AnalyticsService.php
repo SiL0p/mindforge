@@ -77,6 +77,15 @@ class AnalyticsService
     {
         $conn = $this->em->getConnection();
 
+        if (!$this->hasTable('focus_session')) {
+            return [
+                'active_today'   => 0,
+                'active_week'    => 0,
+                'avg_focus_time' => 0,
+                'total_focus'    => 0,
+            ];
+        }
+
         // Active today (users who had a focus session today)
         $activeToday = (int) $conn->fetchOne("
             SELECT COUNT(DISTINCT user_id)
@@ -149,6 +158,27 @@ class AnalyticsService
     $conn = $this->em->getConnection();
     $limit = (int) $limit; // HARD CAST (safe)
 
+    if (!$this->hasTable('focus_session')) {
+        $sql = "
+            SELECT
+                u.id,
+                u.email,
+                u.created_at,
+                p.first_name,
+                p.last_name,
+                p.avatar,
+                NULL as last_focus,
+                0 as focus_sessions,
+                0 as total_focus_time
+            FROM user u
+            LEFT JOIN profile p ON p.user_id = u.id
+            ORDER BY u.created_at DESC
+            LIMIT $limit
+        ";
+
+        return $conn->fetchAllAssociative($sql);
+    }
+
     $sql = "
         SELECT 
             u.id,
@@ -170,5 +200,10 @@ class AnalyticsService
 
     return $conn->fetchAllAssociative($sql);
 }
+
+    private function hasTable(string $tableName): bool
+    {
+        return $this->em->getConnection()->createSchemaManager()->tablesExist([$tableName]);
+    }
 
 }
