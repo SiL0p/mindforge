@@ -8,9 +8,8 @@ use App\Entity\Community\Claim;
 use App\Entity\Community\SharedTask;
 use App\Entity\Guardian\VirtualRoom;
 use App\Entity\Guardian\Resource;
-use App\Entity\Carriere\Application;
-use App\Entity\Carriere\Mentorship;
-use App\Entity\Carriere\Company;
+use App\Entity\Carriere\Demande;
+use App\Entity\Carriere\Entreprise;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -84,21 +83,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $uploadedResources;
 
     // RELATIONSHIPS: Career Module
-    // One-to-Many: User submits many Applications
-    #[ORM\OneToMany(targetEntity: Application::class, mappedBy: 'user', orphanRemoval: true)]
-    private Collection $applications;
+    // One-to-Many: User submits many Demandes
+    #[ORM\OneToMany(targetEntity: Demande::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $demandes;
 
-    // One-to-Many: User has many Mentorships as student
-    #[ORM\OneToMany(targetEntity: Mentorship::class, mappedBy: 'student', orphanRemoval: true)]
-    private Collection $mentorshipsAsStudent;
-
-    // One-to-Many: User has many Mentorships as mentor
-    #[ORM\OneToMany(targetEntity: Mentorship::class, mappedBy: 'mentor', orphanRemoval: true)]
-    private Collection $mentorshipsAsMentor;
-
-    // Many-to-Many: User can manage many Companies
-    #[ORM\ManyToMany(targetEntity: Company::class, mappedBy: 'users')]
-    private Collection $companies;
+    // Many-to-Many: User can manage many Entreprises
+    #[ORM\ManyToMany(targetEntity: Entreprise::class, mappedBy: 'users')]
+    private Collection $entreprises;
 
     public function __construct()
     {
@@ -112,10 +103,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdRooms = new ArrayCollection();
         $this->joinedRooms = new ArrayCollection();
         $this->uploadedResources = new ArrayCollection();
-        $this->applications = new ArrayCollection();
-        $this->mentorshipsAsStudent = new ArrayCollection();
-        $this->mentorshipsAsMentor = new ArrayCollection();
-        $this->companies = new ArrayCollection();
+        $this->demandes = new ArrayCollection();
+        $this->entreprises = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -385,81 +374,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     // ========================================
 
     /**
-     * @return Collection<int, Application>
+     * @return Collection<int, Demande>
      */
-    public function getApplications(): Collection
+    public function getDemandes(): Collection
     {
-        return $this->applications;
+        return $this->demandes;
     }
 
-    public function addApplication(Application $application): self
+    public function addDemande(Demande $demande): self
     {
-        if (!$this->applications->contains($application)) {
-            $this->applications->add($application);
-            $application->setUser($this);
+        if (!$this->demandes->contains($demande)) {
+            $this->demandes->add($demande);
+            $demande->setUser($this);
         }
         return $this;
     }
 
-    public function removeApplication(Application $application): self
+    public function removeDemande(Demande $demande): self
     {
-        if ($this->applications->removeElement($application)) {
-            if ($application->getUser() === $this) {
-                $application->setUser(null);
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Mentorship>
-     */
-    public function getMentorshipsAsStudent(): Collection
-    {
-        return $this->mentorshipsAsStudent;
-    }
-
-    public function addMentorshipAsStudent(Mentorship $mentorship): self
-    {
-        if (!$this->mentorshipsAsStudent->contains($mentorship)) {
-            $this->mentorshipsAsStudent->add($mentorship);
-            $mentorship->setStudent($this);
-        }
-        return $this;
-    }
-
-    public function removeMentorshipAsStudent(Mentorship $mentorship): self
-    {
-        if ($this->mentorshipsAsStudent->removeElement($mentorship)) {
-            if ($mentorship->getStudent() === $this) {
-                $mentorship->setStudent(null);
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Mentorship>
-     */
-    public function getMentorshipsAsMentor(): Collection
-    {
-        return $this->mentorshipsAsMentor;
-    }
-
-    public function addMentorshipAsMentor(Mentorship $mentorship): self
-    {
-        if (!$this->mentorshipsAsMentor->contains($mentorship)) {
-            $this->mentorshipsAsMentor->add($mentorship);
-            $mentorship->setMentor($this);
-        }
-        return $this;
-    }
-
-    public function removeMentorshipAsMentor(Mentorship $mentorship): self
-    {
-        if ($this->mentorshipsAsMentor->removeElement($mentorship)) {
-            if ($mentorship->getMentor() === $this) {
-                $mentorship->setMentor(null);
+        if ($this->demandes->removeElement($demande)) {
+            if ($demande->getUser() === $this) {
+                $demande->setUser(null);
             }
         }
         return $this;
@@ -526,34 +461,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, Company>
+     * @return Collection<int, Entreprise>
      */
-    public function getCompanies(): Collection
+    public function getEntreprises(): Collection
     {
-        return $this->companies;
+        return $this->entreprises;
     }
 
-    public function addCompany(Company $company): self
+    public function addEntreprise(Entreprise $entreprise): self
     {
-        if (!$this->companies->contains($company)) {
-            $this->companies->add($company);
-            $company->addUser($this);
+        if (!$this->entreprises->contains($entreprise)) {
+            $this->entreprises->add($entreprise);
+            $entreprise->addUser($this);
         }
 
         return $this;
     }
 
-    public function removeCompany(Company $company): self
+    public function removeEntreprise(Entreprise $entreprise): self
     {
-        if ($this->companies->removeElement($company)) {
-            $company->removeUser($this);
+        if ($this->entreprises->removeElement($entreprise)) {
+            $entreprise->removeUser($this);
         }
 
         return $this;
     }
 
-    public function hasCompany(Company $company): bool
+    public function hasEntreprise(Entreprise $entreprise): bool
     {
-        return $this->companies->contains($company);
+        return $this->entreprises->contains($entreprise);
     }
 }
