@@ -203,6 +203,9 @@
 							<h1 class="white-text">MindForge</h1>
 							<p class="lead white-text">From chaos to focus.</p>
 							<a class="main-button icon-button" href="#">Get Started</a>
+							{% if is_granted('ROLE_ADMIN') %}
+								<a class="main-button" href="{{ path('admin_dashboard') }}" style="margin-left: 10px;">Admin Panel</a>
+							{% endif %}
 						</div>
 					</div>
 				</div>
