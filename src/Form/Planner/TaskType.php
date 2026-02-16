@@ -24,20 +24,20 @@ class TaskType extends AbstractType
         $builder
             ->add('title', TextType::class, [
                 'constraints' => [
-                    new NotBlank(['message' => 'Veuillez saisir un titre pour la tâche.']),
+                    new NotBlank(['message' => 'Please enter a task title.']),
                     new Length([
                         'min' => 3,
                         'max' => 150,
-                        'minMessage' => 'Le titre doit contenir au moins {{ limit }} caractères.',
-                        'maxMessage' => 'Le titre ne peut pas dépasser {{ limit }} caractères.',
+                        'minMessage' => 'The title must be at least {{ limit }} characters long.',
+                        'maxMessage' => 'The title cannot be longer than {{ limit }} characters.',
                     ]),
                 ],
                 'attr' => [
-                    'placeholder' => 'Ex: Réviser le chapitre 3',
+                    'placeholder' => 'Ex: Review chapter 3',
                     'maxlength' => 150,
                     'class' => 'form-control bg-dark text-light border-secondary',
                 ],
-                'label' => 'Titre',
+                'label' => 'Title',
                 'label_attr' => ['class' => 'form-label text-light'],
             ])
             ->add('description', TextareaType::class, [
@@ -45,7 +45,7 @@ class TaskType extends AbstractType
                 'attr' => [
                     'rows' => 3,
                     'class' => 'form-control bg-dark text-light border-secondary',
-                    'placeholder' => 'Détails supplémentaires...',
+                    'placeholder' => 'Additional details...',
                 ],
                 'label' => 'Description',
                 'label_attr' => ['class' => 'form-label text-light'],
@@ -54,19 +54,19 @@ class TaskType extends AbstractType
                 'class' => Subject::class,
                 'choice_label' => 'name',
                 'required' => false,
-                'placeholder' => 'Sélectionner une matière (optionnel)',
+                'placeholder' => 'Select a subject (optional)',
                 'attr' => ['class' => 'form-select bg-dark text-light border-secondary'],
-                'label' => 'Matière',
+                'label' => 'Subject',
                 'label_attr' => ['class' => 'form-label text-light'],
             ])
             ->add('priority', ChoiceType::class, [
                 'choices' => [
-                    'Basse 🔵' => Task::PRIORITY_LOW,
-                    'Moyenne 🟡' => Task::PRIORITY_MEDIUM,
-                    'Haute 🔴' => Task::PRIORITY_HIGH,
+                    'Low 🔵' => Task::PRIORITY_LOW,
+                    'Medium 🟡' => Task::PRIORITY_MEDIUM,
+                    'High 🔴' => Task::PRIORITY_HIGH,
                 ],
                 'attr' => ['class' => 'form-select bg-dark text-light border-secondary'],
-                'label' => 'Priorité',
+                'label' => 'Priority',
                 'label_attr' => ['class' => 'form-label text-light'],
             ])
             ->add('dueDate', DateTimeType::class, [
@@ -74,7 +74,7 @@ class TaskType extends AbstractType
                 'input' => 'datetime_immutable',
                 'required' => false,
                 'attr' => ['class' => 'form-control bg-dark text-light border-secondary'],
-                'label' => 'Date d\'échéance',
+                'label' => 'Due date',
                 'label_attr' => ['class' => 'form-label text-light'],
             ])
             ->add('estimatedMinutes', IntegerType::class, [
@@ -83,7 +83,7 @@ class TaskType extends AbstractType
                     new Range([
                         'min' => 1,
                         'max' => 480,
-                        'notInRangeMessage' => 'L\'estimation doit être entre {{ min }} et {{ max }} minutes.',
+                        'notInRangeMessage' => 'Estimate must be between {{ min }} and {{ max }} minutes.',
                     ]),
                 ],
                 'attr' => [
@@ -92,7 +92,7 @@ class TaskType extends AbstractType
                     'class' => 'form-control bg-dark text-light border-secondary',
                     'placeholder' => 'Ex: 60',
                 ],
-                'label' => 'Temps estimé (minutes)',
+                'label' => 'Estimated time (minutes)',
                 'label_attr' => ['class' => 'form-label text-light'],
             ])
         ;
