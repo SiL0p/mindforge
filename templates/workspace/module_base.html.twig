@@ -201,7 +201,8 @@
                         Careers Center <i class="fa fa-caret-down" style="float:right; margin-top:2px;"></i>
                     </a>
                     <div id="careers-sub" style="display:none; padding: 0 0 7px 12px;">
-                        <a class="item" href="{{ path('app_carriere_opportunite_index') }}" style="font-size:11px;"><i class="fa fa-search" style="margin-right:5px;"></i> Browse Opportunities</a>
+                        <a class="item" href="{{ path('guardian_focus_timer') }}">Focus Timer</a>
+                <a class="item" href="{{ path('app_carriere_opportunite_index') }}" style="font-size:11px;"><i class="fa fa-search" style="margin-right:5px;"></i> Browse Opportunities</a>
                         <a class="item" href="{{ path('app_carriere_entreprise_index') }}" style="font-size:11px;"><i class="fa fa-building" style="margin-right:5px;"></i> Companies</a>
                         {% if app.user %}
                             {% if 'ROLE_COMPANY' not in app.user.roles %}

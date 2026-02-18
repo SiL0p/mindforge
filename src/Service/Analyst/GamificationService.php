@@ -49,6 +49,48 @@ class GamificationService
         ];
     }
 
+    public function processFocusSession(User $user, int $durationMinutes): array
+    {
+        $this->ensureDefaultBadges();
+
+        $durationMinutes = max(0, (int) $durationMinutes);
+        $xpGained = $durationMinutes * 2;
+        $today = new \DateTimeImmutable('today');
+
+        $stats = $this->getOrCreateStats($user);
+        $lastActivityDate = $stats->getLastActivityDate();
+
+        if ($lastActivityDate === null) {
+            $stats->setStreakDays(1);
+        } else {
+            $dayDiff = (int) $lastActivityDate->diff($today)->format('%r%a');
+            if ($dayDiff === 0) {
+                // keep current streak
+            } elseif ($dayDiff === 1) {
+                $stats->setStreakDays($stats->getStreakDays() + 1);
+            } else {
+                $stats->setStreakDays(1);
+            }
+        }
+
+        $stats
+            ->addXp($xpGained)
+            ->setTotalFocusTime($stats->getTotalFocusTime() + $durationMinutes)
+            ->setLastActivityDate($today);
+
+        $unlocked = $this->unlockEligibleBadges($user, $stats);
+
+        $this->entityManager->flush();
+
+        return [
+            'xp_gained' => $xpGained,
+            'current_level' => $stats->getCurrentLevel(),
+            'total_xp' => $stats->getTotalXp(),
+            'streak_days' => $stats->getStreakDays(),
+            'unlocked_badges' => $unlocked,
+        ];
+    }
+
     public function getDashboardData(User $user): array
     {
         $this->ensureDefaultBadges();

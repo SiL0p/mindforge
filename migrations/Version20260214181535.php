@@ -11,7 +11,7 @@ final class Version20260214181535 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Rename career tables to French names, drop mentorship and focus_session tables';
+        return 'Rename career tables to French names and drop mentorship table (keep focus_session for Pomodoro)';
     }
 
     public function up(Schema $schema): void
@@ -29,28 +29,23 @@ final class Version20260214181535 extends AbstractMigration
         $this->addSql('ALTER TABLE mentorship DROP FOREIGN KEY `FK_ADE55FF4DB403044`');
         $this->addSql('DROP TABLE mentorship');
 
-        // 3. Drop focus_session table (no entity)
-        $this->addSql('ALTER TABLE focus_session DROP FOREIGN KEY `FK_FOCUS_TASK`');
-        $this->addSql('ALTER TABLE focus_session DROP FOREIGN KEY `FK_FOCUS_USER`');
-        $this->addSql('DROP TABLE focus_session');
-
-        // 4. Rename tables (preserves data)
+        // 3. Rename tables (preserves data)
         $this->addSql('RENAME TABLE company TO entreprise');
         $this->addSql('RENAME TABLE company_user TO entreprise_user');
         $this->addSql('RENAME TABLE career_opportunity TO opportunite_carriere');
         $this->addSql('RENAME TABLE application TO demande');
 
-        // 5. Rename the FK column in entreprise_user (company_id -> entreprise_id)
+        // 4. Rename the FK column in entreprise_user (company_id -> entreprise_id)
         $this->addSql('ALTER TABLE entreprise_user CHANGE company_id entreprise_id INT NOT NULL');
 
-        // 6. Re-add foreign keys with updated references
+        // 5. Re-add foreign keys with updated references
         $this->addSql('ALTER TABLE demande ADD CONSTRAINT FK_2694D7A5A76ED395 FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE demande ADD CONSTRAINT FK_2694D7A59A34590F FOREIGN KEY (opportunity_id) REFERENCES opportunite_carriere (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE opportunite_carriere ADD CONSTRAINT FK_E92B9E91979B1AD6 FOREIGN KEY (company_id) REFERENCES entreprise (id) ON DELETE SET NULL');
         $this->addSql('ALTER TABLE entreprise_user ADD CONSTRAINT FK_606C16EA4AEAFEA FOREIGN KEY (entreprise_id) REFERENCES entreprise (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE entreprise_user ADD CONSTRAINT FK_606C16EA76ED395 FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE');
 
-        // 7. Fix index naming on badge, gamification_stats, user_badge
+        // 6. Fix index naming on badge, gamification_stats, user_badge
         $this->addSql('DROP INDEX uniq_badge_name ON badge');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_FEF0481D5E237E06 ON badge (name)');
         $this->addSql('ALTER TABLE gamification_stats DROP FOREIGN KEY `FK_GAMIFICATION_USER`');
@@ -97,11 +92,6 @@ final class Version20260214181535 extends AbstractMigration
         $this->addSql('ALTER TABLE mentorship ADD CONSTRAINT FK_ADE55FF4979B1AD6 FOREIGN KEY (company_id) REFERENCES company (id) ON DELETE SET NULL');
         $this->addSql('ALTER TABLE mentorship ADD CONSTRAINT FK_ADE55FF4CB944F1A FOREIGN KEY (student_id) REFERENCES user (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE mentorship ADD CONSTRAINT FK_ADE55FF4DB403044 FOREIGN KEY (mentor_id) REFERENCES user (id) ON DELETE CASCADE');
-
-        // Recreate focus_session table
-        $this->addSql('CREATE TABLE focus_session (id INT AUTO_INCREMENT NOT NULL, user_id INT NOT NULL, task_id INT DEFAULT NULL, duration INT NOT NULL, started_at DATETIME NOT NULL, ended_at DATETIME DEFAULT NULL, session_type VARCHAR(50) DEFAULT \'pomodoro\', INDEX IDX_FOCUS_STARTED (started_at), INDEX IDX_FOCUS_USER (user_id), INDEX IDX_FOCUS_TASK (task_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4');
-        $this->addSql('ALTER TABLE focus_session ADD CONSTRAINT FK_FOCUS_TASK FOREIGN KEY (task_id) REFERENCES task (id) ON DELETE SET NULL');
-        $this->addSql('ALTER TABLE focus_session ADD CONSTRAINT FK_FOCUS_USER FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE');
 
         // Revert index naming
         $this->addSql('DROP INDEX UNIQ_FEF0481D5E237E06 ON badge');
