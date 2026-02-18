@@ -203,6 +203,9 @@
 							<h1 class="white-text">MindForge</h1>
 							<p class="lead white-text">From chaos to focus.</p>
 							<a class="main-button icon-button" href="#">Get Started</a>
+							{% if is_granted('ROLE_ADMIN') %}
+								<a class="main-button" href="{{ path('admin_dashboard') }}" style="margin-left: 10px;">Admin Panel</a>
+							{% endif %}
 						</div>
 					</div>
 				</div>
@@ -585,6 +588,7 @@
 							<li><a href="#about">About</a></li>
 							<li><a href="{{ path('guardian_library') }}">Library</a></li>
 							<li><a href="{{ path('guardian_rooms') }}">Virtual Rooms</a></li>
+							<li><a href="{{ path('guardian_focus_timer') }}">Focus Timer</a></li>
 							<li><a href="{{ path('community_index') }}">Community</a></li>
 							<li><a href="#">careers center</a></li>
 							<li><a href="{{ path('app_analyst_leaderboard') }}">leader board</a></li>
