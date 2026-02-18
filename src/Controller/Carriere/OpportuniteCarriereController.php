@@ -111,7 +111,7 @@ class OpportuniteCarriereController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_carriere_opportunite_show', requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'app_carriere_opportunite_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(
         OpportuniteCarriere $opportunity,
         DemandeRepository $demandeRepository
@@ -196,6 +196,6 @@ class OpportuniteCarriereController extends AbstractController
             $this->addFlash('success', 'Job opportunity deleted successfully.');
         }
 
-        return $this->redirectToRoute('app_carriere_opportunite_index');
+        return $this->redirectToRoute('app_carriere_opportunite_my_opportunites');
     }
 }

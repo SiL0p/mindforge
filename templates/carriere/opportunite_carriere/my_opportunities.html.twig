@@ -34,44 +34,52 @@
 		{% if opportunities|length > 0 %}
 			<div class="row">
 				{% for opportunity in opportunities %}
-				<div class="col-md-4">
-					<div class="course" style="margin-bottom: 30px;">
-						<a href="{{ path('app_carriere_opportunite_show', {id: opportunity.id}) }}" class="course-img">
-							<img src="{{ asset('user/img/course.jpg') }}" alt="">
-							<i class="course-link-icon fa fa-link"></i>
-						</a>
-						<div class="course-body">
-							<span class="course-category" style="background:
-								{% if opportunity.type == 'internship' %}#6C3BAA
-								{% elseif opportunity.type == 'full-time' %}#17a2b8
-								{% elseif opportunity.type == 'part-time' %}#28a745
-								{% else %}#ffc107{% endif %};">
-								{{ opportunity.type|capitalize }}
-							</span>
-							<h3 class="course-title">
-								<a href="{{ path('app_carriere_opportunite_show', {id: opportunity.id}) }}">
+				<div class="col-md-6">
+					<div class="single-blog" style="margin-bottom: 30px;">
+						<div class="blog-img" style="background: linear-gradient(135deg, {% if opportunity.isActive %}#6C3BAA 0%, #374050{% else %}#999 0%, #666{% endif %} 100%); padding: 25px; min-height: 130px; position: relative;">
+							{% if not opportunity.isActive %}
+								<span style="position: absolute; top: 12px; right: 12px; background: #FF6B6B; color: #fff; padding: 3px 10px; border-radius: 3px; font-size: 11px; font-weight: bold;">
+									{{ opportunity.status|capitalize }}
+								</span>
+							{% else %}
+								<span style="position: absolute; top: 12px; right: 12px; background: #28a745; color: #fff; padding: 3px 10px; border-radius: 3px; font-size: 11px; font-weight: bold;">
+									Active
+								</span>
+							{% endif %}
+							<h3 style="color: #fff; margin: 0 0 8px 0;">
+								<a href="{{ path('app_carriere_opportunite_show', {id: opportunity.id}) }}" style="color: #fff;">
 									{{ opportunity.title }}
 								</a>
 							</h3>
-							<div class="course-details">
-								<span class="course-category">
+							{% if opportunity.company %}
+								<p style="color: rgba(255,255,255,0.85); margin: 0;">
 									<i class="fa fa-building"></i> {{ opportunity.company.name }}
-								</span>
-								{% if opportunity.location %}
-									<span class="course-category">
-										<i class="fa fa-map-marker"></i> {{ opportunity.location }}
-									</span>
+								</p>
+							{% endif %}
+							{% if opportunity.location %}
+								<p style="color: rgba(255,255,255,0.85); margin: 5px 0 0 0;">
+									<i class="fa fa-map-marker"></i> {{ opportunity.location }}
+								</p>
+							{% endif %}
+						</div>
+						<div class="blog-content" style="padding: 20px;">
+							<div style="margin-bottom: 12px;">
+								<span class="label label-primary">{{ opportunity.type|capitalize }}</span>
+								{% if opportunity.duration %}
+									<span class="label label-info">{{ opportunity.duration }}</span>
 								{% endif %}
 								{% if opportunity.deadline %}
-									<span class="course-category">
-										<i class="fa fa-calendar"></i> Deadline: {{ opportunity.deadline|date('M d, Y') }}
+									<span class="label {% if opportunity.isDeadlinePassed %}label-danger{% else %}label-warning{% endif %}">
+										Deadline: {{ opportunity.deadline|date('M d, Y') }}
 									</span>
 								{% endif %}
-								<span class="course-category">
-									<i class="fa fa-{{ opportunity.isActive ? 'check-circle' : 'times-circle' }}"></i>
-									{{ opportunity.isActive ? 'Active' : 'Inactive' }}
+								<span class="label label-default">
+									<i class="fa fa-users"></i> {{ opportunity.applicationCount }} application{{ opportunity.applicationCount != 1 ? 's' : '' }}
 								</span>
 							</div>
+							<p class="text-muted">
+								{{ opportunity.description|length > 120 ? opportunity.description|slice(0, 120) ~ '...' : opportunity.description }}
+							</p>
 							<div style="margin-top: 15px;">
 								<a href="{{ path('app_carriere_opportunite_show', {id: opportunity.id}) }}" class="main-button icon-button" style="padding: 8px 15px; font-size: 13px; margin-right: 5px;">
 									<i class="fa fa-eye"></i> View
