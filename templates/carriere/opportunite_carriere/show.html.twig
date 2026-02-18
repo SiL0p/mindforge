@@ -87,7 +87,7 @@
 					{% endif %}
 
 					<!-- Company Actions -->
-					{% if is_granted('ROLE_COMPANY') %}
+					{% if is_granted('ROLE_COMPANY') and opportunity.company and app.user.hasEntreprise(opportunity.company) %}
 						<div style="margin-top: 20px;">
 							<a href="{{ path('app_carriere_opportunite_edit', {id: opportunity.id}) }}" class="main-button icon-button">
 								<i class="fa fa-edit"></i> Edit
