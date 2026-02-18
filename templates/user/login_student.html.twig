@@ -2,35 +2,9 @@
 
 {% block title %}Student Login - MindForge{% endblock %}
 
-{% block body %}
+{% block header_class %}transparent-nav{% endblock %}
 
-<!-- Header -->
-<header id="header" class="transparent-nav">
-	<div class="container">
-		<div class="navbar-header">
-			<div class="navbar-brand">
-				<a class="logo" href="{{ path('app_home') }}">
-					<img src="{{ asset('user/img/logo-alt.png') }}" alt="logo">
-				</a>
-			</div>
-			<button class="navbar-toggle">
-				<span></span>
-			</button>
-		</div>
-
-		<nav id="nav">
-			<ul class="main-menu nav navbar-nav navbar-right">
-				<li><a href="{{ path('app_home') }}">Home</a></li>
-				<li><a href="{{ path('app_home') }}#about">About</a></li>
-				<li><a href="{{ path('app_workspace') }}">Workspace</a></li>
-				<li><a href="{{ path('app_analyst_leaderboard') }}">Leader Board</a></li>
-				<li><a href="{{ path('app_contact') }}">Contact</a></li>
-			</ul>
-		</nav>
-	</div>
-</header>
-<!-- /Header -->
-
+{% block hero %}
 <!-- Hero -->
 <div id="home" class="hero-area">
 	<div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/home-background.jpg') }})"></div>
@@ -116,5 +90,4 @@
 	</div>
 </div>
 <!-- /Hero -->
-
 {% endblock %}
