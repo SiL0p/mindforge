@@ -49,9 +49,12 @@ class Entreprise
     #[Assert\Email(message: 'Please enter a valid email address.')]
     private ?string $contactEmail = null;
 
-    #[ORM\Column(length: 50, nullable: true)]
+    #[ORM\Column(type: 'integer', nullable: true)]
     #[Assert\NotBlank(message: 'Contact phone is required.')]
-    private ?string $contactPhone = null;
+    #[Assert\Positive(message: 'Contact phone must be a positive number.')]
+    #[Assert\GreaterThanOrEqual(value: 10000000, message: 'Contact phone must be at least 8 digits.')]
+    #[Assert\LessThan(value: 100000000, message: 'Contact phone must be at most 8 digits.')]
+    private ?int $contactPhone = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\NotBlank(message: 'Website is required.')]
