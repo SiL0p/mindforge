@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block body %}
+<header id="header">
+    <div class="container">
+        <div class="navbar-header">
+            <div class="navbar-brand">
+                <a class="logo" href="{{ path('app_home') }}">
+                    <img src="{{ asset('user/img/logo-alt.png') }}" alt="logo">
+                </a>
+            </div>
+        </div>
+        <nav id="nav">
+            <ul class="main-menu nav navbar-nav navbar-right">
+                <li><a href="{{ path('app_home') }}">Home</a></li>
+                <li><a href="{{ path('app_request_student_plus') }}">Request Student+</a></li>
+                <li><a href="{{ path('app_request_status') }}">My Requests</a></li>
+                <li><a href="{{ path('app_logout') }}">Logout</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<div class="container" style="margin-top: 100px; margin-bottom: 50px;">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <h1>Welcome, {{ app.user.email }}!</h1>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Your Account Info</h3>
+                </div>
+                <div class="panel-body">
+                    <table class="table">
+                        <tr>
+                            <th>Email:</th>
+                            <td>{{ app.user.email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Role:</th>
+                            <td>
+                                {% for role in app.user.roles %}
+                                    {% if role == 'ROLE_ADMIN' %}
+                                        <span class="label label-danger">Admin</span>
+                                    {% elseif role == 'ROLE_STUDENT_PLUS' %}
+                                        <span class="label label-warning">Student+</span>
+                                    {% elseif role == 'ROLE_STUDENT' %}
+                                        <span class="label label-info">Student</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Member Since:</th>
+                            <td>{{ app.user.createdAt|date('F j, Y') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Verified:</th>
+                            <td>
+                                {% if app.user.isVerified %}
+                                    <span class="label label-success">Yes</span>
+                                {% else %}
+                                    <span class="label label-warning">No</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    {% if 'ROLE_STUDENT' in app.user.roles and 'ROLE_STUDENT_PLUS' not in app.user.roles %}
+                        <a href="{{ path('app_request_student_plus') }}" class="btn btn-primary">
+                            <i class="fa fa-star"></i> Request Student+ Status
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,6 +3,8 @@
 
 namespace App\Entity\Guardian;
 
+use App\Entity\Architect\User;
+use App\Entity\Planner\Subject;
 use App\Repository\Guardian\ResourceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -63,7 +65,7 @@ class Resource
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    // RELATIONSHIP: Many Resources belong to One Subject
+    // RELATIONSHIP: Many Resources belong to One Subject (Planner module)
     #[ORM\ManyToOne(targetEntity: Subject::class, inversedBy: 'resources')]
     #[ORM\JoinColumn(nullable: false, name: 'subject_id', referencedColumnName: 'id')]
     #[Assert\NotNull(message: 'Veuillez sélectionner une matière.')]

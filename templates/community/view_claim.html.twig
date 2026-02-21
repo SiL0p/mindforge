@@ -1,0 +1,50 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Ticket #{{ claim.id }}{% endblock %}
+
+{% block module_title %}Ticket Details{% endblock %}
+{% block module_subtitle %}Detailed view of your support ticket.{% endblock %}
+{% block module_content %}
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="page-header">
+                    <h2><i class="fa fa-ticket"></i> Ticket #{{ claim.id }}</h2>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <strong>{{ claim.title }}</strong>
+                    </div>
+                    <div class="panel-body">
+                        <p style="white-space: pre-wrap;">{{ claim.description }}</p>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Status:</strong> {{ claim.status|replace({'_': ' '})|title }}</p>
+                                <p><strong>Priority:</strong> {{ claim.priority|title }}</p>
+                                <p><strong>Created:</strong> {{ claim.createdAt|date('d/m/Y H:i') }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Updated:</strong> {{ claim.updatedAt ? claim.updatedAt|date('d/m/Y H:i') : '-' }}</p>
+                                <p><strong>Assigned To:</strong> {{ claim.assignedTo ? claim.assignedTo.userIdentifier : 'Unassigned' }}</p>
+                                <p><strong>Resolved At:</strong> {{ claim.resolvedAt ? claim.resolvedAt|date('d/m/Y H:i') : '-' }}</p>
+                            </div>
+                        </div>
+
+                        {% if claim.adminNotes %}
+                            <hr>
+                            <h4>Admin Notes</h4>
+                            <p style="white-space: pre-wrap;">{{ claim.adminNotes }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <a href="{{ path('community_claim_list') }}" class="btn btn-primary">Back to My Tickets</a>
+                <a href="{{ path('community_index') }}" class="btn btn-default">Back to Community</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

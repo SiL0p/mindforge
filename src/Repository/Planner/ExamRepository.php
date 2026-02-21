@@ -1,8 +1,9 @@
 <?php
-// src/Repository/ExamRepository.php
+// src/Repository/Planner/ExamRepository.php
 namespace App\Repository\Planner;
 
-use App\Entity\Exam;
+use App\Entity\Planner\Exam;
+use App\Entity\Architect\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -13,7 +14,7 @@ class ExamRepository extends ServiceEntityRepository
         parent::__construct($registry, Exam::class);
     }
 
-    public function findUpcomingByUser($user): array
+    public function findUpcomingByUser(User $user): array
     {
         return $this->createQueryBuilder('e')
             ->where('e.owner = :user')
