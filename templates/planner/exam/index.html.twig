@@ -39,6 +39,7 @@
                                             </div>
                                         </div>
                                         <div class="d-flex gap-2">
+                                            <a href="{{ path('app_planner_exam_show', {'id': exam.id}) }}" class="btn btn-sm btn-info text-white"><i class="fa fa-robot"></i> AI Plan</a>
                                             <a href="{{ path('app_planner_exam_edit', {'id': exam.id}) }}" class="btn btn-sm btn-default">Edit</a>
                                             <form method="POST" action="{{ path('app_planner_exam_delete', {'id': exam.id}) }}" onsubmit="return confirm('Delete this exam?');">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ exam.id) }}">
@@ -70,7 +71,7 @@
                                                 {% if exam.subject %} - {{ exam.subject.name }}{% endif %}
                                             </div>
                                         </div>
-                                        <div class="d-flex gap-2">
+                                            <a href="{{ path('app_planner_exam_show', {'id': exam.id}) }}" class="btn btn-sm btn-info text-white"><i class="fa fa-robot"></i> AI Plan</a>
                                             <a href="{{ path('app_planner_exam_edit', {'id': exam.id}) }}" class="btn btn-sm btn-default">Edit</a>
                                             <form method="POST" action="{{ path('app_planner_exam_delete', {'id': exam.id}) }}" onsubmit="return confirm('Delete this exam?');">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ exam.id) }}">
