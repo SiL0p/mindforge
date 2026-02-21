@@ -74,20 +74,28 @@ class TaskController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if ($task->getSubject()) {
+                $stats = $taskRepository->getSubjectStatsForDate($this->getUser(), $task->getSubject(), $task->getDueDate());
+                
+                $willExceedCount = $stats['count'] >= 3;
+                $willExceedTime = ($stats['minutes'] + (int)$task->getEstimatedMinutes()) > 180;
+
+                if ($willExceedCount || $willExceedTime) {
+                    $this->addFlash('danger', 'Limit reached: You cannot schedule more than 3 tasks or exceed 180 minutes for the same subject on the same day. Please do another subject!');
+                    // Render the form again with the error flash
+                    return $this->render('planner/task/new.html.twig', [
+                        'form' => $form->createView(),
+                        'task' => $task,
+                        'isVoice' => $request->query->has('voice'),
+                    ]);
+                }
+            }
+
             $task->setPriority($difficultyClassifierService->classifyTask($task));
             $em->persist($task);
             $em->flush();
 
-            if ($task->getSubject()) {
-                $stats = $taskRepository->getSubjectStatsForDate($this->getUser(), $task->getSubject(), $task->getDueDate());
-                if ($stats['count'] > 3 || $stats['minutes'] > 180) {
-                    $this->addFlash('warning', 'do another subject');
-                } else {
-                    $this->addFlash('success', 'Task created successfully.');
-                }
-            } else {
-                $this->addFlash('success', 'Task created successfully.');
-            }
+            $this->addFlash('success', 'Task created successfully.');
             
             $redirect = $request->query->get('redirect', 'app_planner_tasks');
             return $this->redirectToRoute($redirect);
