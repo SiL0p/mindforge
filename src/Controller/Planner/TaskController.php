@@ -55,7 +55,8 @@ class TaskController extends AbstractController
     public function new(
         Request $request,
         EntityManagerInterface $em,
-        DifficultyClassifierService $difficultyClassifierService
+        DifficultyClassifierService $difficultyClassifierService,
+        TaskRepository $taskRepository
     ): Response
     {
         $task = new Task();
@@ -77,7 +78,16 @@ class TaskController extends AbstractController
             $em->persist($task);
             $em->flush();
 
-            $this->addFlash('success', 'Task created successfully.');
+            if ($task->getSubject()) {
+                $stats = $taskRepository->getSubjectStatsForDate($this->getUser(), $task->getSubject(), $task->getDueDate());
+                if ($stats['count'] > 3 || $stats['minutes'] > 180) {
+                    $this->addFlash('warning', 'do another subject');
+                } else {
+                    $this->addFlash('success', 'Task created successfully.');
+                }
+            } else {
+                $this->addFlash('success', 'Task created successfully.');
+            }
             
             $redirect = $request->query->get('redirect', 'app_planner_tasks');
             return $this->redirectToRoute($redirect);
@@ -98,7 +108,9 @@ class TaskController extends AbstractController
         DifficultyClassifierService $difficultyClassifierService
     ): Response
     {
-        $this->denyAccessUnlessGranted('TASK_EDIT', $task);
+        if ($task->getOwner() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas modifier cette tâche.');
+        }
 
         $form = $this->createForm(TaskType::class, $task);
         $form->handleRequest($request);
@@ -162,7 +174,9 @@ class TaskController extends AbstractController
     #[Route('/{id}/delete', name: 'app_planner_task_delete', methods: ['POST'])]
     public function delete(Request $request, Task $task, EntityManagerInterface $em): Response
     {
-        $this->denyAccessUnlessGranted('TASK_DELETE', $task);
+        if ($task->getOwner() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer cette tâche.');
+        }
 
         if ($this->isCsrfTokenValid('delete'.$task->getId(), $request->request->get('_token'))) {
             $em->remove($task);

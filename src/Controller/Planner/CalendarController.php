@@ -30,8 +30,29 @@ class CalendarController extends AbstractController
         // Formater pour FullCalendar ou similaire
         $events = [];
         
+        $now = new \DateTimeImmutable();
+        $endedItems = [];
+
         foreach ($tasks as $task) {
             if ($task->getDueDate()) {
+                if ($task->getDueDate() < $now && $task->getStatus() !== 'done') {
+                    $endedItems[] = [
+                        'title' => '📝 '.$task->getTitle(),
+                        'date' => $task->getDueDate(),
+                        'url' => $this->generateUrl('app_planner_task_edit', ['id' => $task->getId()]),
+                        'type' => 'task',
+                        'status' => 'overdue'
+                    ];
+                } elseif ($task->getStatus() === 'done') {
+                    $endedItems[] = [
+                        'title' => '📝 '.$task->getTitle(),
+                        'date' => $task->getCompletedAt() ?? $task->getDueDate(),
+                        'url' => $this->generateUrl('app_planner_task_edit', ['id' => $task->getId()]),
+                        'type' => 'task',
+                        'status' => 'completed'
+                    ];
+                }
+
                 $events[] = [
                     'id' => 'task_'.$task->getId(),
                     'title' => '📝 '.$task->getTitle(),
@@ -49,13 +70,25 @@ class CalendarController extends AbstractController
         }
 
         foreach ($exams as $exam) {
+            $endTime = $exam->getDurationMinutes()
+                ? $exam->getExamDate()->modify("+{$exam->getDurationMinutes()} minutes")
+                : $exam->getExamDate();
+                
+            if ($endTime < $now) {
+                $endedItems[] = [
+                    'title' => '🎓 '.$exam->getTitle(),
+                    'date' => $endTime,
+                    'url' => $this->generateUrl('app_planner_exam_edit', ['id' => $exam->getId()]),
+                    'type' => 'exam',
+                    'status' => 'past'
+                ];
+            }
+
             $events[] = [
                 'id' => 'exam_'.$exam->getId(),
                 'title' => '🎓 '.$exam->getTitle(),
                 'start' => $exam->getExamDate()->format('Y-m-d\TH:i:s'),
-                'end' => $exam->getDurationMinutes() 
-                    ? $exam->getExamDate()->modify("+{$exam->getDurationMinutes()} minutes")->format('Y-m-d\TH:i:s')
-                    : null,
+                'end' => $endTime->format('Y-m-d\TH:i:s'),
                 'color' => '#af17c2', // Magenta Energy pour les examens
                 'url' => $this->generateUrl('app_planner_exam_edit', ['id' => $exam->getId()]),
                 'type' => 'exam',
@@ -67,8 +100,12 @@ class CalendarController extends AbstractController
             ];
         }
 
+        // Sort ended items by date descending (most recent first)
+        usort($endedItems, fn($a, $b) => $b['date'] <=> $a['date']);
+
         return $this->render('planner/calendar/index.html.twig', [
             'events' => json_encode($events),
+            'endedItems' => $endedItems,
         ]);
     }
 
