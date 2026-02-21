@@ -1,0 +1,62 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Received Challenges{% endblock %}
+
+{% block module_title %}Received Challenges{% endblock %}
+{% block module_subtitle %}Review and respond to incoming challenges.{% endblock %}
+{% block module_content %}
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="page-header">
+                    <h2><i class="fa fa-inbox"></i> Received Challenges</h2>
+                </div>
+
+                <div class="btn-group" style="margin-bottom: 20px;">
+                    <a href="{{ path('community_challenge_inbox') }}" class="btn btn-default {% if not filterStatus %}active{% endif %}">All</a>
+                    <a href="{{ path('community_challenge_inbox', {status: 'pending'}) }}" class="btn btn-default {% if filterStatus == 'pending' %}active{% endif %}">Pending</a>
+                    <a href="{{ path('community_challenge_inbox', {status: 'accepted'}) }}" class="btn btn-default {% if filterStatus == 'accepted' %}active{% endif %}">Accepted</a>
+                    <a href="{{ path('community_challenge_inbox', {status: 'rejected'}) }}" class="btn btn-default {% if filterStatus == 'rejected' %}active{% endif %}">Rejected</a>
+                </div>
+
+                {% if tasks is empty %}
+                    <div class="alert alert-info">No challenges found.</div>
+                {% else %}
+                    {% for task in tasks %}
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <strong>{{ task.title }}</strong>
+                                <span class="label label-default" style="margin-left: 8px;">{{ task.status|upper }}</span>
+                            </div>
+                            <div class="panel-body">
+                                <p><strong>From:</strong> {{ task.sharedBy.userIdentifier }}</p>
+                                {% if task.description %}
+                                    <p style="white-space: pre-wrap;">{{ task.description }}</p>
+                                {% endif %}
+                                <p class="text-muted"><small>Received: {{ task.createdAt|date('d/m/Y H:i') }}</small></p>
+
+                                {% if task.status == 'pending' %}
+                                    <form method="POST" action="{{ path('community_challenge_respond', {id: task.id}) }}" style="display:inline-block; margin-right: 8px;">
+                                        <input type="hidden" name="response" value="accepted">
+                                        <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                                    </form>
+                                    <form method="POST" action="{{ path('community_challenge_respond', {id: task.id}) }}" style="display:inline-block;">
+                                        <input type="hidden" name="response" value="rejected">
+                                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <a href="{{ path('community_challenge_send') }}" class="btn btn-primary">Send Challenge</a>
+                <a href="{{ path('community_challenge_outbox') }}" class="btn btn-default">Sent Challenges</a>
+                <a href="{{ path('community_tasks') }}" class="btn btn-default">Tasks</a>
+                <a href="{{ path('community_index') }}" class="btn btn-link">Back to Community</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

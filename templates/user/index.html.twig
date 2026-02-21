@@ -7,7 +7,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		 <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
-		<title>HTML Education Template</title>
+		<title>MindForge</title>
+		<link rel="icon" type="image/png" href="{{ asset('user/img/logo.png') }}">
 
 		<!-- Google font -->
 		<link href="https://fonts.googleapis.com/css?family=Lato:700%7CMontserrat:400,600" rel="stylesheet">
@@ -29,6 +30,41 @@
 		<![endif]-->
 
     </head>
+	<style>
+        /* Dropdown menu styling */
+        .dropdown-menu {
+            background-color: #fff;
+            border: 1px solid #ccc;
+        }
+
+        .dropdown-menu > li > a {
+            color: #333 !important;
+            padding: 10px 20px;
+        }
+
+        .dropdown-menu > li > a:hover,
+        .dropdown-menu > li > a:focus {
+            color: #000 !important;
+            background-color: #f5f5f5;
+        }
+
+        .dropdown-menu > .dropdown-header {
+            color: #333 !important;
+            font-weight: bold;
+            padding: 10px 20px;
+        }
+
+        .dropdown-menu .divider {
+            height: 1px;
+            margin: 9px 0;
+            background-color: #e5e5e5;
+        }
+
+        .dropdown-menu > li > a i {
+            color: #333;
+            margin-right: 8px;
+        }
+    </style>
 	<body>
 
 		<!-- Header -->
@@ -55,15 +91,96 @@
 				<!-- Navigation -->
 <nav id="nav">
     <ul class="main-menu nav navbar-nav navbar-right">
-							<li><a href="{{ path('app_home') }}">Home</a></li>
-							<li><a href="#">About</a></li>
-							<li><a href="#">Courses</a></li>
-							<li><a href="#">rommes</a></li>
-							<li><a href="#">careers center</a></li>
-							<li><a href="#">leader board</a></li>
-							<li><a href="{{ path('app_blog') }}">Blog</a></li>
-							<li><a href="{{ path('app_contact') }}">Contact</a></li>
-						</ul>
+        <li><a href="{{ path('app_home') }}">Home</a></li>
+		<li><a href="#about">About</a></li>
+		<li><a href="{{ path('app_workspace') }}">Workspace</a></li>
+		<li><a href="{{ path('app_analyst_leaderboard') }}">Leader Board</a></li>
+		<li class="dropdown">
+			<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+				<i class="fa fa-users"></i> Community <span class="caret"></span>
+			</a>
+			<ul class="dropdown-menu">
+				<li><a href="{{ path('community_index') }}"><i class="fa fa-home"></i> Community Hub</a></li>
+				<li><a href="{{ path('community_challenge_inbox') }}"><i class="fa fa-inbox"></i> Received Challenges</a></li>
+				<li><a href="{{ path('community_challenge_outbox') }}"><i class="fa fa-send"></i> Sent Challenges</a></li>
+				<li><a href="{{ path('community_tasks') }}"><i class="fa fa-tasks"></i> Tasks</a></li>
+				<li><a href="{{ path('community_claim_list') }}"><i class="fa fa-ticket"></i> My Tickets</a></li>
+				<li><a href="{{ path('community_claim_create') }}"><i class="fa fa-life-ring"></i> Contact Support</a></li>
+				<li><a href="{{ path('app_friends') }}"><i class="fa fa-user-friends"></i> Friends</a></li>
+				{% if is_granted('ROLE_ADMIN') %}
+					<li role="separator" class="divider"></li>
+					<li><a href="{{ path('admin_community_claims') }}"><i class="fa fa-cog"></i> Manage Tickets</a></li>
+				{% endif %}
+			</ul>
+		</li>
+        <li>
+    <a href="{{ path('app_quotes') }}">
+        <i class="fa fa-quote-left"></i> Quotes
+    </a>
+
+</li>
+
+		{# Careers Center Dropdown #}
+		{% if app.user %}
+			<li class="dropdown">
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+					<i class="fa fa-briefcase"></i> Careers Center <span class="caret"></span>
+				</a>
+				<ul class="dropdown-menu">
+					<li><a href="{{ path('app_carriere_opportunite_index') }}"><i class="fa fa-search"></i> Browse Opportunities</a></li>
+					<li><a href="{{ path('app_carriere_entreprise_index') }}"><i class="fa fa-building"></i> Companies</a></li>
+					<li role="separator" class="divider"></li>
+					{% if 'ROLE_COMPANY' not in app.user.roles %}
+						<li><a href="{{ path('app_carriere_demande_my_demandes') }}"><i class="fa fa-file-text"></i> My Applications</a></li>
+					{% endif %}
+					{% if 'ROLE_COMPANY' in app.user.roles %}
+						<li><a href="{{ path('app_carriere_opportunite_new') }}"><i class="fa fa-plus-circle"></i> Post New Opportunity</a></li>
+						<li><a href="{{ path('app_carriere_opportunite_my_opportunites') }}"><i class="fa fa-list"></i> My Job Postings</a></li>
+						<li role="separator" class="divider"></li>
+						<li><a href="{{ path('app_carriere_demande_my_company_demandes') }}"><i class="fa fa-inbox"></i> Applications Received</a></li>
+					{% endif %}
+				</ul>
+			</li>
+		{% else %}
+			<li><a href="{{ path('app_carriere_opportunite_index') }}">Careers Center</a></li>
+		{% endif %}
+
+        {% if app.user %}
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-user-circle"></i> Profile <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li class="dropdown-header">
+                        <i class="fa fa-user"></i> {{ app.user.email }}
+                    </li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="{{ path('app_profile_view') }}">
+                        <i class="fa fa-id-card"></i> View Profile
+                    </a></li>
+                    <li><a href="{{ path('app_profile_edit') }}">
+                        <i class="fa fa-edit"></i> Edit Profile
+                    </a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="{{ path('app_request_status') }}">
+                        <i class="fa fa-list-alt"></i> My Requests
+                    </a></li>
+                    <li><a href="{{ path('app_request_student_plus') }}">
+                        <i class="fa fa-star"></i> Request Student+
+                    </a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="{{ path('app_logout') }}">
+                        <i class="fa fa-sign-out"></i> Logout
+                    </a></li>
+                </ul>
+            </li>
+        {% else %}
+            <li><a href="{{ path('app_login') }}">
+                <i class="fa fa-sign-in"></i> Login
+            </a></li>
+
+        {% endif %}
+    </ul>
 </nav>
 
 				<!-- /Navigation -->
@@ -83,9 +200,12 @@
 				<div class="container">
 					<div class="row">
 						<div class="col-md-8">
-							<h1 class="white-text">Edusite Free Online Training Courses</h1>
-							<p class="lead white-text">Libris vivendo eloquentiam ex ius, nec id splendide abhorreant, eu pro alii error homero.</p>
-							<a class="main-button icon-button" href="#">Get Started!</a>
+							<h1 class="white-text">MindForge</h1>
+							<p class="lead white-text">From chaos to focus.</p>
+							<a class="main-button icon-button" href="#">Get Started</a>
+							{% if is_granted('ROLE_ADMIN') %}
+								<a class="main-button" href="{{ path('admin_dashboard') }}" style="margin-left: 10px;">Admin Panel</a>
+							{% endif %}
 						</div>
 					</div>
 				</div>
@@ -105,16 +225,16 @@
 
 					<div class="col-md-6">
 						<div class="section-header">
-							<h2>Welcome to Edusite</h2>
-							<p class="lead">Libris vivendo eloquentiam ex ius, nec id splendide abhorreant.</p>
+							<h2>Welcome to MindForge</h2>
+							<p class="lead">Turn focus into progress with guided learning spaces.</p>
 						</div>
 
 						<!-- feature -->
 						<div class="feature">
 							<i class="feature-icon fa fa-flask"></i>
 							<div class="feature-content">
-								<h4>Online Courses </h4>
-								<p>Ceteros fuisset mei no, soleat epicurei adipiscing ne vis. Et his suas veniam nominati.</p>
+								<h4>Focus Rooms</h4>
+								<p>Join quiet, goal-driven rooms designed to help you work deeply and finish what matters.</p>
 							</div>
 						</div>
 						<!-- /feature -->
@@ -123,8 +243,8 @@
 						<div class="feature">
 							<i class="feature-icon fa fa-users"></i>
 							<div class="feature-content">
-								<h4>Expert Teachers</h4>
-								<p>Ceteros fuisset mei no, soleat epicurei adipiscing ne vis. Et his suas veniam nominati.</p>
+								<h4>Shared Accountability</h4>
+								<p>Set weekly targets, track wins, and stay consistent with people who keep each other moving.</p>
 							</div>
 						</div>
 						<!-- /feature -->
@@ -133,8 +253,8 @@
 						<div class="feature">
 							<i class="feature-icon fa fa-comments"></i>
 							<div class="feature-content">
-								<h4>Community</h4>
-								<p>Ceteros fuisset mei no, soleat epicurei adipiscing ne vis. Et his suas veniam nominati.</p>
+								<h4>Helpful Community</h4>
+								<p>Exchange resources, ask better questions, and solve blockers faster through active discussions.</p>
 							</div>
 						</div>
 						<!-- /feature -->
@@ -342,9 +462,9 @@
 				<div class="row">
 
 					<div class="col-md-6">
-						<h2 class="white-text">Ceteros fuisset mei no, soleat epicurei adipiscing ne vis.</h2>
-						<p class="lead white-text">Ceteros fuisset mei no, soleat epicurei adipiscing ne vis. Et his suas veniam nominati.</p>
-						<a class="main-button icon-button" href="#">Get Started!</a>
+						<h2 class="white-text">Build momentum with MindForge.</h2>
+						<p class="lead white-text">Join focused rooms, share resources, and grow with your community.</p>
+						<a class="main-button icon-button" href="{{ path('community_index') }}">Get Started</a>
 					</div>
 
 				</div>
@@ -365,8 +485,8 @@
 				<!-- row -->
 				<div class="row">
 					<div class="section-header text-center">
-						<h2>Why Edusite</h2>
-						<p class="lead">Libris vivendo eloquentiam ex ius, nec id splendide abhorreant.</p>
+						<h2>Why MindForge</h2>
+						<p class="lead">A calmer space to learn, collaborate, and stay on track.</p>
 					</div>
 
 					<!-- feature -->
@@ -374,8 +494,8 @@
 						<div class="feature">
 							<i class="feature-icon fa fa-flask"></i>
 							<div class="feature-content">
-								<h4>Online Courses</h4>
-								<p>Ceteros fuisset mei no, soleat epicurei adipiscing ne vis. Et his suas veniam nominati.</p>
+								<h4>Focus Rooms</h4>
+								<p>Enter distraction-free rooms to work on a single goal with a clear daily routine.</p>
 							</div>
 						</div>
 					</div>
@@ -386,8 +506,8 @@
 						<div class="feature">
 							<i class="feature-icon fa fa-users"></i>
 							<div class="feature-content">
-								<h4>Expert Teachers</h4>
-								<p>Ceteros fuisset mei no, soleat epicurei adipiscing ne vis. Et his suas veniam nominati.</p>
+								<h4>Accountability</h4>
+								<p>Track progress with peers, share milestones, and keep momentum through consistent check-ins.</p>
 							</div>
 						</div>
 					</div>
@@ -398,33 +518,12 @@
 						<div class="feature">
 							<i class="feature-icon fa fa-comments"></i>
 							<div class="feature-content">
-								<h4>Community</h4>
-								<p>Ceteros fuisset mei no, soleat epicurei adipiscing ne vis. Et his suas veniam nominati.</p>
+								<h4>Community Support</h4>
+								<p>Ask questions, exchange resources, and get help quickly from people solving similar challenges.</p>
 							</div>
 						</div>
 					</div>
 					<!-- /feature -->
-
-				</div>
-				<!-- /row -->
-
-				<hr class="section-hr">
-
-				<!-- row -->
-				<div class="row">
-
-					<div class="col-md-6">
-						<h3>Persius imperdiet incorrupte et qui, munere nusquam et nec.</h3>
-						<p class="lead">Libris vivendo eloquentiam ex ius, nec id splendide abhorreant.</p>
-						<p>No vel facete sententiae, quodsi dolores no quo, pri ex tamquam interesset necessitatibus. Te denique cotidieque delicatissimi sed. Eu doming epicurei duo. Sit ea perfecto deseruisse theophrastus. At sed malis hendrerit, elitr deseruisse in sit, sit ei facilisi mediocrem.</p>
-					</div>
-
-					<div class="col-md-5 col-md-offset-1">
-						<a class="about-video" href="#">
-							<img src="{{ asset('user/img/about-video.jpg') }}" alt="">
-							<i class="play-icon fa fa-play"></i>
-						</a>
-					</div>
 
 				</div>
 				<!-- /row -->
@@ -450,8 +549,8 @@
 
 					<div class="col-md-8 col-md-offset-2 text-center">
 						<h2 class="white-text">Contact Us</h2>
-						<p class="lead white-text">Libris vivendo eloquentiam ex ius, nec id splendide abhorreant.</p>
-						<a class="main-button icon-button" href="#">Contact Us Now</a>
+						<p class="lead white-text">Need help with your workspace or community tasks? We are here to support you.</p>
+						<a class="main-button icon-button" href="{{ path('community_claim_create') }}">Contact Support</a>
 					</div>
 
 				</div>
@@ -486,13 +585,13 @@
 					<div class="col-md-6">
 						<ul class="footer-nav">
 							<li><a href="{{ path('app_home') }}">Home</a></li>
-							<li><a href="#">About</a></li>
-							<li><a href="#">Courses</a></li>
-							<li><a href="#">rommes</a></li>
+							<li><a href="#about">About</a></li>
+							<li><a href="{{ path('guardian_library') }}">Library</a></li>
+							<li><a href="{{ path('guardian_rooms') }}">Virtual Rooms</a></li>
+							<li><a href="{{ path('guardian_focus_timer') }}">Focus Timer</a></li>
+							<li><a href="{{ path('community_index') }}">Community</a></li>
 							<li><a href="#">careers center</a></li>
-							<li><a href="#">leader board</a></li>
-							<li><a href="{{ path('app_blog') }}">Blog</a></li>
-							<li><a href="{{ path('app_contact') }}">Contact</a></li>
+							<li><a href="{{ path('app_analyst_leaderboard') }}">leader board</a></li>
 						</ul>
 					</div>
 					<!-- /footer nav -->
@@ -519,7 +618,7 @@
 					<!-- copyright -->
 					<div class="col-md-8 col-md-pull-4">
 						<div class="footer-copyright">
-							<span>&copy; Copyright 2018. All Rights Reserved. | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com">Colorlib</a></span>
+							<span>&copy; Copyright {{ "now"|date("Y") }}. All Rights Reserved. | Made by SiL0p</span>
 						</div>
 					</div>
 					<!-- /copyright -->

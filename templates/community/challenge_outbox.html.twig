@@ -1,0 +1,58 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Sent Challenges{% endblock %}
+
+{% block module_title %}Sent Challenges{% endblock %}
+{% block module_subtitle %}Track challenges you shared with others.{% endblock %}
+{% block module_content %}
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="page-header">
+                    <h2><i class="fa fa-send"></i> Sent Challenges</h2>
+                </div>
+
+                <div class="btn-group" style="margin-bottom: 20px;">
+                    <a href="{{ path('community_challenge_outbox') }}" class="btn btn-default {% if not filterStatus %}active{% endif %}">All</a>
+                    <a href="{{ path('community_challenge_outbox', {status: 'pending'}) }}" class="btn btn-default {% if filterStatus == 'pending' %}active{% endif %}">Pending</a>
+                    <a href="{{ path('community_challenge_outbox', {status: 'accepted'}) }}" class="btn btn-default {% if filterStatus == 'accepted' %}active{% endif %}">Accepted</a>
+                    <a href="{{ path('community_challenge_outbox', {status: 'rejected'}) }}" class="btn btn-default {% if filterStatus == 'rejected' %}active{% endif %}">Rejected</a>
+                </div>
+
+                {% if tasks is empty %}
+                    <div class="alert alert-info">No challenges found.</div>
+                {% else %}
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Recipient</th>
+                                <th>Status</th>
+                                <th>Sent</th>
+                                <th>Responded</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in tasks %}
+                                <tr>
+                                    <td>{{ task.title }}</td>
+                                    <td>{{ task.sharedWith.userIdentifier }}</td>
+                                    <td>{{ task.status|title }}</td>
+                                    <td>{{ task.createdAt|date('d/m/Y H:i') }}</td>
+                                    <td>{{ task.respondedAt ? task.respondedAt|date('d/m/Y H:i') : '-' }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+
+                <a href="{{ path('community_challenge_send') }}" class="btn btn-primary">Send Challenge</a>
+                <a href="{{ path('community_challenge_inbox') }}" class="btn btn-default">Received Challenges</a>
+                <a href="{{ path('community_tasks') }}" class="btn btn-default">Tasks</a>
+                <a href="{{ path('community_index') }}" class="btn btn-link">Back to Community</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

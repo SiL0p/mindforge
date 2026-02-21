@@ -1,0 +1,65 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Send Challenge{% endblock %}
+
+{% block module_title %}Send Challenge{% endblock %}
+{% block module_subtitle %}Motivate peers with a new challenge.{% endblock %}
+{% block module_content %}
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="page-header">
+                    <h2><i class="fa fa-paper-plane"></i> Send a Challenge</h2>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <form method="POST">
+                            <div class="form-group">
+                                <label for="shared_with_id">Recipient</label>
+                                <select name="shared_with_id" id="shared_with_id" class="form-control" required>
+                                    <option value="">-- Choose a classmate --</option>
+                                    {% for user in users %}
+                                        <option value="{{ user.id }}">{{ user.userIdentifier }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="title">Title</label>
+                                <input
+                                    type="text"
+                                    name="title"
+                                    id="title"
+                                    class="form-control"
+                                    maxlength="255"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="description">Description</label>
+                                <textarea
+                                    name="description"
+                                    id="description"
+                                    class="form-control"
+                                    rows="5"
+                                    maxlength="2000"
+                                ></textarea>
+                            </div>
+
+                            <div class="form-group" style="margin-top: 20px;">
+                                <button type="submit" class="btn btn-primary">Send Challenge</button>
+                                <a href="{{ path('community_challenge_outbox') }}" class="btn btn-default">Sent Challenges</a>
+                                <a href="{{ path('community_tasks') }}" class="btn btn-default">Tasks</a>
+                                <a href="{{ path('community_index') }}" class="btn btn-link">Back to Community</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

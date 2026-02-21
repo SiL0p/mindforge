@@ -1,0 +1,93 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Student Login - MindForge{% endblock %}
+
+{% block header_class %}transparent-nav{% endblock %}
+
+{% block hero %}
+<!-- Hero -->
+<div id="home" class="hero-area">
+	<div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/home-background.jpg') }})"></div>
+
+	<div class="home-wrapper">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-4 col-md-offset-4">
+
+					<div class="panel panel-default" style="margin-top:50px; border-top: 3px solid #6C3BAA;">
+						<div class="panel-heading text-center" style="background: linear-gradient(135deg, #6C3BAA 0%, #9B59B6 100%); border: none;">
+							<div style="margin-bottom: 10px;">
+								<i class="fa fa-graduation-cap" style="font-size: 32px; color: #fff;"></i>
+							</div>
+							<h3 style="color: #fff; margin: 0;">Student Login</h3>
+						</div>
+
+						<div class="panel-body">
+
+							{% for message in app.flashes('error') %}
+								<div class="alert alert-danger">
+									{{ message }}
+								</div>
+							{% endfor %}
+
+							{% if error %}
+								<div class="alert alert-danger">
+									{{ error.messageKey|trans(error.messageData, 'security') }}
+								</div>
+							{% endif %}
+
+							<form method="post" action="{{ path('app_login') }}">
+
+								<input type="hidden" name="_login_type" value="student">
+
+								<div class="form-group">
+									<label for="inputEmail">Email</label>
+									<input
+										type="email"
+										name="_username"
+										id="inputEmail"
+										class="form-control"
+										value="{{ last_username }}"
+										required
+										autofocus
+										placeholder="Enter your student email">
+								</div>
+
+								<div class="form-group">
+									<label for="inputPassword">Password</label>
+									<input
+										type="password"
+										name="_password"
+										id="inputPassword"
+										class="form-control"
+										required
+										placeholder="Enter your password">
+								</div>
+
+								<input type="hidden" name="_csrf_token"
+									   value="{{ csrf_token('authenticate') }}"
+								>
+
+								<button class="main-button btn-block" type="submit" style="background: #6C3BAA;">
+									<i class="fa fa-sign-in"></i> Login as Student
+								</button>
+
+							</form>
+
+							<hr>
+
+							<p class="text-center">
+								<a href="{{ path('app_login') }}"><i class="fa fa-arrow-left"></i> Back to login selection</a><br>
+								<a href="{{ path('app_login_company') }}">Login as Company instead</a>
+							</p>
+
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- /Hero -->
+{% endblock %}
