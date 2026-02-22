@@ -82,7 +82,14 @@
 
                             <hr>
 
-                            <h5 class="mt-3 mb-3"><i class="fa fa-calendar-check text-primary"></i> Suggested Revision Plan</h5>
+                            <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+                                <h5><i class="fa fa-calendar-check text-primary"></i> Suggested Revision Plan</h5>
+                                {% if exam.aiRevisionPlan %}
+                                <button type="button" id="btn-read-plan" class="btn btn-sm btn-outline-primary">
+                                    <i class="fa fa-volume-up"></i> Read Aloud
+                                </button>
+                                {% endif %}
+                            </div>
                             
                             {% if exam.aiRevisionPlan %}
                                 <div class="timeline">
@@ -121,4 +128,80 @@
         </main>
     </div>
 </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const btnRead = document.getElementById('btn-read-plan');
+    if (!btnRead) return;
+
+    if (!('speechSynthesis' in window)) {
+        btnRead.style.display = 'none';
+        return;
+    }
+
+    let isPlaying = false;
+
+    btnRead.addEventListener('click', () => {
+        if (isPlaying) {
+            window.speechSynthesis.cancel();
+            isPlaying = false;
+            btnRead.innerHTML = '<i class="fa fa-volume-up"></i> Read Aloud';
+            return;
+        }
+
+        const title = "{{ exam.title|escape('js') }}";
+        const importance = {{ exam.importance|default(5) }};
+        const dateStr = "{{ exam.examDate|date('Y-m-d') }}";
+        
+        const examDate = new Date(dateStr);
+        const today = new Date();
+        const diffTime = examDate.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        
+        let importanceText = "important";
+        if (importance >= 8) importanceText = "highly important";
+        else if (importance <= 3) importanceText = "not very important";
+
+        let textToRead = `Your ${title} is in ${Math.max(0, diffDays)} days. This exam is ${importanceText}. `;
+        
+        const steps = document.querySelectorAll('.timeline .d-flex');
+        if (steps.length > 0) {
+            textToRead += "Here is your suggested plan. ";
+            steps.forEach(step => {
+                const day = step.querySelector('.badge').innerText;
+                const action = step.querySelector('p').innerText;
+                textToRead += `For ${day}: ${action}. `;
+            });
+        }
+
+        const utterance = new SpeechSynthesisUtterance(textToRead);
+        utterance.lang = 'en-US'; // Set explicit language
+        
+        // Wait for voices to load or get them immediately
+        let voices = window.speechSynthesis.getVoices();
+        if (voices.length > 0) {
+            const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+            if (englishVoices.length > 0) {
+                // Try to favor specific high-quality English voices (Google US/UK, Microsoft Zira/David, etc)
+                utterance.voice = englishVoices.find(v => v.name.includes('Google') || v.name.includes('Zira') || v.name.includes('Mark')) || englishVoices[0];
+            }
+        }
+        
+        utterance.onend = () => {
+            isPlaying = false;
+            btnRead.innerHTML = '<i class="fa fa-volume-up"></i> Read Aloud';
+        };
+
+        isPlaying = true;
+        btnRead.innerHTML = '<i class="fa fa-stop"></i> Stop';
+        window.speechSynthesis.speak(utterance);
+    });
+    
+    // Voices might load asynchronously depending on OS/Browser
+    window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+    };
+});
+</script>
 {% endblock %}
