@@ -20,6 +20,18 @@
 
             <div class="panel panel-default">
                 <div class="panel-body">
+                    <div class="mb-4 p-3 bg-light rounded border text-dark">
+                        <div class="d-flex align-items-center mb-2">
+                            <button type="button" id="btn-voice-ai" class="btn btn-outline-info me-3">
+                                <i class="fa fa-microphone"></i> AI Voice Input
+                            </button>
+                            <span id="voice-status" class="text-muted fw-bold">Click to speak...</span>
+                        </div>
+                        <small class="text-muted d-block">
+                            <em>Example: "Math exam on February 25th at 2 PM, duration 120 minutes, very important"</em>
+                        </small>
+                    </div>
+
                     {{ form_start(form) }}
                         {{ form_widget(form) }}
                         <div class="d-flex gap-2" style="margin-top: 16px;">
@@ -32,4 +44,190 @@
         </main>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('btn-voice-ai');
+    const status = document.getElementById('voice-status');
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        
+        // Force English. Otherwise French users get "on a fait briller ari" instead of "on february"
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.continuous = true; // Listen continuously
+
+        let timeoutId = null;
+        let fullTranscript = '';
+
+        const stopListening = () => {
+            recognition.stop();
+            btn.classList.remove('btn-danger');
+            btn.classList.add('btn-outline-info');
+            if (timeoutId) clearTimeout(timeoutId);
+        };
+
+        btn.addEventListener('click', () => {
+            fullTranscript = '';
+            status.textContent = 'Listening... (up to 15 seconds)';
+            status.className = 'text-primary fw-bold';
+            btn.classList.add('btn-danger');
+            btn.classList.remove('btn-outline-info');
+            
+            try { recognition.start(); } catch(e) {}
+
+            // Auto-stop after 15 seconds
+            timeoutId = setTimeout(() => {
+                stopListening();
+                status.textContent += ' [Timeout]';
+            }, 15000);
+        });
+
+        const wordToNumber = (txt) => {
+            return txt.replace(/one hundred twenty/g, '120')
+                      .replace(/twenty eight/g, '28')
+                      .replace(/free/g, '3')
+                      .replace(/vert/g, 'very')
+                      .replace(/fait briller ari/g, 'february')
+                      .replace(/on a/g, 'on')
+                      .replace(/one/g, '1')
+                      .replace(/two/g, '2')
+                      .replace(/three/g, '3')
+                      .replace(/four/g, '4')
+                      .replace(/five/g, '5')
+                      .replace(/six/g, '6')
+                      .replace(/seven/g, '7')
+                      .replace(/eight/g, '8')
+                      .replace(/nine/g, '9')
+                      .replace(/ten/g, '10')
+                      .replace(/eleven/g, '11')
+                      .replace(/twelve/g, '12')
+                      .replace(/twenty/g, '20')
+                      .replace(/thirty/g, '30')
+                      .replace(/sixty/g, '60')
+                      .replace(/ninety/g, '90')
+                      .replace(/hundred/g, '100');
+        };
+
+        recognition.onresult = (event) => {
+            let currentText = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                currentText += event.results[i][0].transcript;
+            }
+            fullTranscript += ' ' + currentText;
+            
+            let rawText = fullTranscript.toLowerCase().trim();
+            
+            // Clean text to handle common mismatches like word-to-digits if speech engine didn't convert
+            let text = wordToNumber(rawText);
+
+            status.textContent = 'Extracted: "' + text + '"';
+            status.className = 'text-success fw-bold';
+
+            // 1. Duration (e.g., "120 minutes")
+            const durationMatch = text.match(/(\\d+)\\s*(?:minute|min)/);
+            if (durationMatch) {
+                const el = document.querySelector('[name="exam[durationMinutes]"]');
+                if (el) el.value = durationMatch[1];
+            }
+
+            // 2. Importance
+            let importance = null;
+            if (text.includes('very important') || text.includes('highly important') || text.includes('très important') || text.includes('very.')) {
+                importance = 9;
+            } else if (text.includes('not important') || text.includes('pas important')) {
+                importance = 2;
+            } else if (text.includes('important')) {
+                importance = 7;
+            }
+            const importanceMatch = text.match(/(?:importance|niveau)\\s*(\\d+)/);
+            if (importanceMatch) importance = parseInt(importanceMatch[1]);
+            
+            if (importance !== null) {
+                const impEl = document.querySelector('[name="exam[importance]"]');
+                if (impEl) impEl.value = Math.min(10, Math.max(1, importance));
+            }
+
+            // 3. Date Parsing
+            const months = {
+                'january': 1, 'february': 2, 'march': 3, 'april': 4, 'may': 5, 'june': 6,
+                'july': 7, 'august': 8, 'september': 9, 'october': 10, 'november': 11, 'december': 12,
+                'janvier': 1, 'février': 2, 'fevrier': 2, 'mars': 3, 'avril': 4, 'mai': 5, 'juin': 6,
+                'juillet': 7, 'août': 8, 'aout': 8, 'septembre': 9, 'octobre': 10, 'novembre': 11, 'décembre': 12, 'decembre': 12
+            };
+            
+            let month = new Date().getMonth() + 1;
+            let day = new Date().getDate();
+            let hours = 10; // default time
+            let mins = 0;
+            
+            let monthFound = false;
+            for (const [mName, mNum] of Object.entries(months)) {
+                if (text.includes(mName)) {
+                    month = mNum;
+                    monthFound = true;
+                    break;
+                }
+            }
+
+            const dayMatch = text.match(/(?:le|the)?\\s*(\\d{1,2})(?:st|nd|rd|th|er)?\\s*/);
+            if (dayMatch && parseInt(dayMatch[1]) <= 31) {
+                day = parseInt(dayMatch[1]);
+            }
+
+            const timeMatch = text.match(/(?:at|à)\\s*(\\d{1,2})(?:\\s*\\:\\s*(\\d{2})|h(?:eures?)?\\s*(\\d{2})?)?\\s*(am|pm)?/);
+            if (timeMatch) {
+                let h = parseInt(timeMatch[1]);
+                let m = timeMatch[2] ? parseInt(timeMatch[2]) : (timeMatch[3] ? parseInt(timeMatch[3]) : 0);
+                let ampm = timeMatch[4];
+                if (ampm === 'pm' && h < 12) h += 12;
+                if (ampm === 'am' && h === 12) h = 0;
+                hours = h;
+                mins = m;
+            }
+
+            const dateEl = document.querySelector('[name="exam[examDate]"]');
+            if (dateEl && (monthFound || timeMatch || dayMatch)) {
+                const yyyy = new Date().getFullYear();
+                const MM = String(month).padStart(2, '0');
+                const DD = String(day).padStart(2, '0');
+                const HH = String(hours).padStart(2, '0');
+                const mm = String(mins).padStart(2, '0');
+                dateEl.value = `${yyyy}-${MM}-${DD}T${HH}:${mm}`;
+            }
+
+            // 4. Title Extraction
+            let title = text
+                .replace(/on (january|february|march|april|may|june|july|august|september|october|november|december).*/, '')
+                .replace(/le (janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre).*/, '')
+                .replace(/(?:duration|durée).*/, '')
+                .replace(/(?:very important|highly important|très important|very.).*/, '')
+                .replace(/(?:important).*/, '')
+                .trim();
+            
+            if (title) {
+                title = title.charAt(0).toUpperCase() + title.slice(1);
+                // Remove trailing commas or periods
+                title = title.replace(/[,\.]$/, '').trim();
+                const titleEl = document.querySelector('[name="exam[title]"]');
+                if (titleEl && !titleEl.value) {
+                    titleEl.value = title;
+                }
+            }
+        };
+        
+        recognition.onerror = (e) => {
+            status.textContent = 'Error: ' + e.error;
+            status.className = 'text-danger fw-bold';
+            btn.classList.remove('btn-danger');
+            btn.classList.add('btn-outline-info');
+        };
+    } else {
+        btn.style.display = 'none';
+        status.textContent = 'Voice recognition not supported in this browser.';
+    }
+});
+</script>
 {% endblock %}
