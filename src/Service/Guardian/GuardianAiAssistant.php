@@ -8,6 +8,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class GuardianAiAssistant
 {
+    public const ALLOWED_RESOURCE_TYPES = ['pdf', 'summary', 'cheat_sheet', 'exercise'];
+
     private const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
     private const GEMINI_ENDPOINT_TEMPLATE = 'https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent';
     private const CLAUDE_ENDPOINT = 'https://api.anthropic.com/v1/messages';
@@ -272,6 +274,116 @@ class GuardianAiAssistant
             'title' => mb_substr($title, 0, 255),
             'content' => mb_substr($content, 0, 12000),
             'source' => 'ai',
+        ];
+    }
+
+    public function getAllowedResourceTypes(): array
+    {
+        return self::ALLOWED_RESOURCE_TYPES;
+    }
+
+    public function validateLearningResourceRequest(string $subject, string $description, string $studentDemand, string $resourceType): array
+    {
+        if (!in_array($resourceType, self::ALLOWED_RESOURCE_TYPES, true)) {
+            return [
+                'valid' => false,
+                'message' => 'Requested file type is not allowed for AI generation.',
+            ];
+        }
+
+        $combined = mb_strtolower(trim($subject.' '.$description.' '.$studentDemand));
+        $blockedTopics = [
+            'football',
+            'soccer',
+            'fifa',
+            'nba',
+            'nfl',
+            'tennis',
+            'boxing',
+            'ufc',
+            'transfer market',
+            'premier league',
+            'champions league',
+        ];
+
+        foreach ($blockedTopics as $topic) {
+            if (str_contains($combined, $topic)) {
+                return [
+                    'valid' => false,
+                    'message' => 'Only study-related educational content is allowed. Sports topics are blocked.',
+                ];
+            }
+        }
+
+        $studyAllowlist = [
+            'study',
+            'learning',
+            'learn',
+            'education',
+            'course',
+            'lesson',
+            'revision',
+            'exercise',
+            'exam',
+            'quiz',
+            'homework',
+            'assignment',
+            'school',
+            'university',
+            'student',
+            'teacher',
+            'class',
+            'math',
+            'mathematics',
+            'algebra',
+            'geometry',
+            'physics',
+            'chemistry',
+            'biology',
+            'history',
+            'geography',
+            'literature',
+            'programming',
+            'informatique',
+            'étude',
+            'etud',
+            'apprentissage',
+            'éducation',
+            'education',
+            'cours',
+            'leçon',
+            'lecon',
+            'révision',
+            'revision',
+            'exercice',
+            'devoir',
+            'contrôle',
+            'controle',
+            'bac',
+            'licence',
+            'master',
+            'matière',
+            'matiere',
+        ];
+
+        $hasStudySignal = false;
+        foreach ($studyAllowlist as $token) {
+            if (str_contains($combined, $token)) {
+                $hasStudySignal = true;
+                break;
+            }
+        }
+
+        if (!$hasStudySignal) {
+            return [
+                'valid' => false,
+                'message' => 'Only study-related educational content is allowed. Please provide an academic learning request.',
+            ];
+        }
+
+        return [
+            'valid' => true,
+            'message' => null,
         ];
     }
 
