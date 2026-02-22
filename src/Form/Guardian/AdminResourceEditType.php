@@ -1,7 +1,7 @@
 <?php
 // src/Form/AdminResourceEditType.php
 
-namespace App\Form;
+namespace App\Form\Guardian;
 
 use App\Entity\Guardian\Resource;
 use App\Entity\Planner\Subject;

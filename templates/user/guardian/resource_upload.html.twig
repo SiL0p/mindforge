@@ -13,6 +13,11 @@
                 <span class="guardian-pill"><i class="fas fa-upload"></i> Quick share</span>
                 <h1 class="guardian-title">Add a Resource</h1>
                 <p class="guardian-subtitle">Share the best ideas with the community.</p>
+                <div class="mt-2">
+                    <span class="guardian-badge" style="background: {{ external_ai_available ? 'rgba(34,197,94,0.2)' : 'rgba(245,158,11,0.2)' }}; color: {{ external_ai_available ? '#166534' : '#92400e' }};">
+                        {{ external_ai_available ? 'External AI mode active' : 'Local generator mode active' }}
+                    </span>
+                </div>
             </div>
             <a href="{{ path('guardian_library') }}" class="btn btn-outline-dark">Back to the library</a>
         </div>
@@ -41,6 +46,12 @@
                             {{ form_errors(form.description) }}
                         </div>
                     {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="ai-student-demand">Student demand / need</label>
+                    <textarea id="ai-student-demand" class="form-control" rows="3" placeholder="Example: I need a concise explanation with practical exercises for exam prep."></textarea>
+                    <small class="text-muted">Used by the generator to create resource content automatically.</small>
                 </div>
 
                 <div class="row">
@@ -83,8 +94,13 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-upload"></i> Add resource
                     </button>
+                    <button type="button" id="ai-generate-btn" class="btn btn-success">
+                        <i class="fas fa-wand-magic-sparkles"></i> Generate Resource
+                    </button>
                     <a href="{{ path('guardian_library') }}" class="btn btn-outline-dark">Cancel</a>
                 </div>
+
+                <div id="ai-generate-status" class="text-muted small" style="margin-top: 10px;"></div>
 
                 {{ form_end(form) }}
             </div>
@@ -102,4 +118,63 @@
         </div>
     </div>
 </div>
+
+<script>
+(function () {
+    const aiGenerateBtn = document.getElementById('ai-generate-btn');
+    const aiGenerateStatus = document.getElementById('ai-generate-status');
+
+    if (!aiGenerateBtn || !aiGenerateStatus) {
+        return;
+    }
+
+    aiGenerateBtn.addEventListener('click', async function () {
+        const titleInput = document.getElementById('{{ form.title.vars.id }}');
+        const descriptionInput = document.getElementById('{{ form.description.vars.id }}');
+        const subjectInput = document.getElementById('{{ form.subject.vars.id }}');
+        const typeInput = document.getElementById('{{ form.type.vars.id }}');
+        const demandInput = document.getElementById('ai-student-demand');
+
+        const payload = {
+            _token: '{{ csrf_token('guardian_ai_resource') }}',
+            title_hint: titleInput ? titleInput.value : '',
+            description: descriptionInput ? descriptionInput.value : '',
+            subject_id: subjectInput ? subjectInput.value : '',
+            type: typeInput ? typeInput.value : 'summary',
+            student_demand: demandInput ? demandInput.value : ''
+        };
+
+        aiGenerateBtn.disabled = true;
+        aiGenerateStatus.textContent = 'Generating resource...';
+
+        try {
+            const response = await fetch('{{ path('guardian_resource_ai_generate') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                aiGenerateStatus.textContent = data.message || 'Unable to generate resource.';
+                aiGenerateBtn.disabled = false;
+                return;
+            }
+
+            const sourceLabel = data.source === 'ai' ? 'External AI' : 'Local Generator';
+            const fileLabel = data.file_name ? `File: ${data.file_name}` : 'File created';
+            aiGenerateStatus.textContent = `Created: ${data.title} (${sourceLabel}) · ${fileLabel}. Redirecting to the library...`;
+            window.location.href = data.redirect_url || '{{ path('guardian_library') }}';
+        } catch (error) {
+            aiGenerateStatus.textContent = 'Network error while generating AI resource.';
+            aiGenerateBtn.disabled = false;
+        }
+    });
+})();
+</script>
 {% endblock %}

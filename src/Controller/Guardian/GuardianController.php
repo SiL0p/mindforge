@@ -5,10 +5,12 @@ namespace App\Controller\Guardian;
 
 use App\Entity\Architect\User;
 use App\Entity\Guardian\FocusSession;
+use App\Entity\Guardian\AiInsight;
 use App\Entity\Guardian\Resource;
 use App\Entity\Guardian\VirtualRoom;
 use App\Entity\Community\ChatMessage;
 use App\Entity\Planner\Subject;
+use App\Entity\Planner\Task;
 use App\Form\Guardian\ResourceType;
 use App\Form\Guardian\VirtualRoomType;
 use App\Repository\Guardian\FocusSessionRepository;
@@ -18,6 +20,10 @@ use App\Repository\Planner\TaskRepository;
 use App\Repository\Planner\SubjectRepository;
 use App\Repository\Community\ChatMessageRepository;
 use App\Service\Analyst\GamificationService;
+use App\Service\Guardian\ExternalLearningResourceService;
+use App\Service\Guardian\GuardianAiAssistant;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -61,11 +67,31 @@ class GuardianController extends AbstractController
         ]);
     }
 
+    #[Route('/library/api/external-suggestions', name: 'guardian_library_api_external_suggestions', methods: ['GET'])]
+    public function libraryApiExternalSuggestions(
+        Request $request,
+        ExternalLearningResourceService $externalLearningResourceService
+    ): JsonResponse {
+        $query = trim((string) $request->query->get('q', ''));
+        $limit = max(1, min(10, (int) $request->query->get('limit', 6)));
+
+        $suggestions = $externalLearningResourceService->fetchOpenLibrarySuggestions($query, $limit);
+
+        return new JsonResponse([
+            'success' => true,
+            'query' => $query !== '' ? $query : 'study skills',
+            'source' => 'openlibrary',
+            'count' => count($suggestions),
+            'suggestions' => $suggestions,
+        ]);
+    }
+
     #[Route('/library/upload', name: 'guardian_resource_upload', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_STUDENT_PLUS')]
     public function uploadResource(
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        GuardianAiAssistant $guardianAiAssistant
     ): Response {
         $resource = new Resource();
         $form = $this->createForm(ResourceType::class, $resource, ['require_file' => true]);
@@ -98,7 +124,217 @@ class GuardianController extends AbstractController
 
         return $this->render('user/guardian/resource_upload.html.twig', [
             'form' => $form,
+            'external_ai_available' => $guardianAiAssistant->isExternalAiAvailable(),
         ]);
+    }
+
+    #[Route('/library/ai-generate', name: 'guardian_resource_ai_generate', methods: ['POST'])]
+    #[IsGranted('ROLE_STUDENT_PLUS')]
+    public function generateAiResource(
+        Request $request,
+        EntityManagerInterface $em,
+        GuardianAiAssistant $guardianAiAssistant,
+        SubjectRepository $subjectRepository
+    ): JsonResponse {
+        $payload = json_decode($request->getContent(), true) ?? [];
+
+        $token = (string) ($payload['_token'] ?? '');
+        if (!$this->isCsrfTokenValid('guardian_ai_resource', $token)) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Invalid security token.',
+            ], 403);
+        }
+
+        $subjectId = (int) ($payload['subject_id'] ?? 0);
+        $description = trim((string) ($payload['description'] ?? ''));
+        $studentDemand = trim((string) ($payload['student_demand'] ?? ''));
+        $type = trim((string) ($payload['type'] ?? 'summary'));
+        $titleHint = trim((string) ($payload['title_hint'] ?? ''));
+
+        if ($subjectId <= 0) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Please choose a subject first.',
+            ], 422);
+        }
+
+        if ($description === '' || $studentDemand === '') {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Description and student demand are required to generate an AI resource.',
+            ], 422);
+        }
+
+        $subject = $subjectRepository->find($subjectId);
+        if (!$subject) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Selected subject was not found.',
+            ], 404);
+        }
+
+        $allowedTypes = ['pdf', 'summary', 'cheat_sheet', 'exercise'];
+        if (!in_array($type, $allowedTypes, true)) {
+            $type = 'summary';
+        }
+
+        $draft = $guardianAiAssistant->generateLearningResource([
+            'subject' => $subject->getName(),
+            'description' => $description,
+            'student_demand' => $studentDemand,
+            'resource_type' => $type,
+            'title_hint' => $titleHint,
+        ]);
+
+        $title = trim((string) ($draft['title'] ?? 'AI Generated Resource'));
+        $content = trim((string) ($draft['content'] ?? ''));
+        $generationSource = (string) ($draft['source'] ?? 'local');
+
+        if ($content === '') {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Unable to generate resource content right now.',
+            ], 500);
+        }
+
+        $baseName = (string) $this->slugger->slug($title !== '' ? $title : 'ai-resource');
+        $baseName = $baseName !== '' ? $baseName : 'ai-resource';
+
+        try {
+            if ($type === 'pdf') {
+                $filename = sprintf('%s-%s.pdf', $baseName, uniqid());
+                $contentWithoutTopTitle = preg_replace('/^\s*#\s+[^\r\n]+\R+/u', '', $content, 1) ?? $content;
+                $renderedContent = $this->simpleMarkdownToHtml($contentWithoutTopTitle);
+
+                $html = sprintf(
+                    '<html><head><meta charset="UTF-8"><style>body{font-family: DejaVu Sans, sans-serif; font-size:12px; line-height:1.6; color:#1f2937;} h1{font-size:22px; margin:0 0 8px;} h2{font-size:16px; margin:14px 0 6px;} h3{font-size:14px; margin:12px 0 4px;} p{margin:0 0 8px;} ul,ol{margin:0 0 10px 18px;} li{margin:0 0 4px;} .meta{font-size:11px;color:#6b7280;margin-bottom:12px;}</style></head><body><h1>%s</h1><div class="meta">Generated by MindForge AI Resource Builder</div>%s</body></html>',
+                    htmlspecialchars($title !== '' ? $title : 'AI Generated Resource', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+                    $renderedContent
+                );
+
+                $options = new Options();
+                $options->set('isRemoteEnabled', false);
+                $dompdf = new Dompdf($options);
+                $dompdf->loadHtml($html, 'UTF-8');
+                $dompdf->setPaper('A4');
+                $dompdf->render();
+
+                file_put_contents($this->resourcesDirectory.'/'.$filename, $dompdf->output());
+            } else {
+                $filename = sprintf('%s-%s.md', $baseName, uniqid());
+                file_put_contents($this->resourcesDirectory.'/'.$filename, $content);
+            }
+        } catch (\Throwable) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Unable to write generated file on server.',
+            ], 500);
+        }
+
+        $resource = new Resource();
+        $resource
+            ->setTitle($title !== '' ? $title : 'AI Generated Resource')
+            ->setDescription($description)
+            ->setType($type)
+            ->setAiGenerated(true)
+            ->setSubject($subject)
+            ->setUploader($this->getUser())
+            ->setFilePath($filename);
+
+        $em->persist($resource);
+        $em->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => $generationSource === 'ai'
+                ? 'Resource created successfully with external AI.'
+                : 'Resource created successfully with local generator.',
+            'resource_id' => $resource->getId(),
+            'title' => $resource->getTitle(),
+            'source' => $generationSource,
+            'file_name' => $filename,
+            'file_type' => $type,
+            'redirect_url' => $this->generateUrl('guardian_library'),
+        ]);
+    }
+
+    private function simpleMarkdownToHtml(string $markdown): string
+    {
+        $lines = preg_split('/\r\n|\r|\n/', $markdown) ?: [];
+        $html = [];
+        $inUl = false;
+        $inOl = false;
+
+        $closeLists = static function () use (&$html, &$inUl, &$inOl): void {
+            if ($inUl) {
+                $html[] = '</ul>';
+                $inUl = false;
+            }
+            if ($inOl) {
+                $html[] = '</ol>';
+                $inOl = false;
+            }
+        };
+
+        foreach ($lines as $rawLine) {
+            $line = trim($rawLine);
+            if ($line === '') {
+                $closeLists();
+                continue;
+            }
+
+            if (preg_match('/^###\s+(.*)$/', $line, $matches)) {
+                $closeLists();
+                $html[] = '<h3>'.htmlspecialchars($matches[1], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</h3>';
+                continue;
+            }
+
+            if (preg_match('/^##\s+(.*)$/', $line, $matches)) {
+                $closeLists();
+                $html[] = '<h2>'.htmlspecialchars($matches[1], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</h2>';
+                continue;
+            }
+
+            if (preg_match('/^#\s+(.*)$/', $line, $matches)) {
+                $closeLists();
+                $html[] = '<h1>'.htmlspecialchars($matches[1], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</h1>';
+                continue;
+            }
+
+            if (preg_match('/^-\s+(.*)$/', $line, $matches)) {
+                if ($inOl) {
+                    $html[] = '</ol>';
+                    $inOl = false;
+                }
+                if (!$inUl) {
+                    $html[] = '<ul>';
+                    $inUl = true;
+                }
+                $html[] = '<li>'.htmlspecialchars($matches[1], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</li>';
+                continue;
+            }
+
+            if (preg_match('/^\d+\.\s+(.*)$/', $line, $matches)) {
+                if ($inUl) {
+                    $html[] = '</ul>';
+                    $inUl = false;
+                }
+                if (!$inOl) {
+                    $html[] = '<ol>';
+                    $inOl = true;
+                }
+                $html[] = '<li>'.htmlspecialchars($matches[1], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</li>';
+                continue;
+            }
+
+            $closeLists();
+            $html[] = '<p>'.htmlspecialchars($line, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</p>';
+        }
+
+        $closeLists();
+
+        return implode('', $html);
     }
 
     #[Route('/library/resource/{id}/download', name: 'guardian_resource_download', methods: ['GET'])]
@@ -115,10 +351,16 @@ class GuardianController extends AbstractController
         $resource->incrementDownloadCount();
         $em->flush();
 
+        $extension = pathinfo((string) $resource->getFilePath(), PATHINFO_EXTENSION);
+        $downloadFilename = $resource->getTitle();
+        if ($extension !== '') {
+            $downloadFilename .= '.'.$extension;
+        }
+
         return (new BinaryFileResponse($filePath))
             ->setContentDisposition(
                 ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                $resource->getTitle().'.pdf'
+                $downloadFilename
             );
     }
 
@@ -345,7 +587,10 @@ class GuardianController extends AbstractController
     #[Route('/focus-timer/api/recommended-duration/{taskId}', name: 'guardian_focus_timer_api_recommended_duration', methods: ['GET'])]
     public function focusTimerApiRecommendedDuration(
         int $taskId,
-        TaskRepository $taskRepository
+        TaskRepository $taskRepository,
+        FocusSessionRepository $focusSessionRepository,
+        GuardianAiAssistant $guardianAiAssistant,
+        EntityManagerInterface $em
     ): JsonResponse {
         $user = $this->getUser();
 
@@ -362,12 +607,231 @@ class GuardianController extends AbstractController
             return new JsonResponse(['success' => false, 'message' => 'Selected task was not found.'], 404);
         }
 
+        $stats = [
+            'today_sessions' => $focusSessionRepository->getTodaySessionCountByUser($user),
+            'week_focus_minutes' => $focusSessionRepository->getWeekDurationByUser($user),
+            'total_focus_minutes' => $focusSessionRepository->getTotalDurationByUser($user),
+            'per_task_totals' => $focusSessionRepository->getPerTaskTotalsByUser($user, 6),
+        ];
+
+        $taskContext = [
+            'id' => $task->getId(),
+            'title' => $task->getTitle(),
+            'priority' => $task->getPriority(),
+            'estimated_minutes' => $task->getEstimatedMinutes(),
+            'actual_minutes' => $task->getActualMinutes(),
+        ];
+
+        $aiRecommendation = $guardianAiAssistant->recommendDuration($taskContext, $stats);
+
+        $this->persistAiInsight(
+            $em,
+            $user,
+            $task,
+            AiInsight::TYPE_RECOMMENDED_DURATION,
+            [
+                'task' => $taskContext,
+                'stats' => $stats,
+                'response' => $aiRecommendation,
+            ],
+            (string) ($aiRecommendation['source'] ?? 'rule')
+        );
+
         return new JsonResponse([
             'success' => true,
             'task_id' => $task->getId(),
             'priority' => $task->getPriority(),
-            'recommended_duration' => $this->getDurationForTaskPriority($task->getPriority()),
+            'recommended_duration' => (int) ($aiRecommendation['duration'] ?? $this->getDurationForTaskPriority($task->getPriority())),
+            'reason' => (string) ($aiRecommendation['reason'] ?? ''),
+            'source' => (string) ($aiRecommendation['source'] ?? 'rule'),
         ]);
+    }
+
+    #[Route('/focus-timer/api/tips/{taskId}', name: 'guardian_focus_timer_api_tips', methods: ['GET'])]
+    public function focusTimerApiTips(
+        int $taskId,
+        TaskRepository $taskRepository,
+        FocusSessionRepository $focusSessionRepository,
+        GuardianAiAssistant $guardianAiAssistant,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return new JsonResponse(['success' => false, 'message' => 'Authentication required.'], 401);
+        }
+
+        $task = $taskRepository->findOneBy([
+            'id' => $taskId,
+            'owner' => $user,
+        ]);
+
+        if (!$task) {
+            return new JsonResponse(['success' => false, 'message' => 'Selected task was not found.'], 404);
+        }
+
+        $stats = [
+            'today_sessions' => $focusSessionRepository->getTodaySessionCountByUser($user),
+            'week_focus_minutes' => $focusSessionRepository->getWeekDurationByUser($user),
+            'total_focus_minutes' => $focusSessionRepository->getTotalDurationByUser($user),
+        ];
+
+        $taskContext = [
+            'id' => $task->getId(),
+            'title' => $task->getTitle(),
+            'priority' => $task->getPriority(),
+            'estimated_minutes' => $task->getEstimatedMinutes(),
+            'actual_minutes' => $task->getActualMinutes(),
+        ];
+
+        $tipsPayload = $guardianAiAssistant->getFocusTips($taskContext, $stats);
+
+        $this->persistAiInsight(
+            $em,
+            $user,
+            $task,
+            AiInsight::TYPE_FOCUS_TIPS,
+            [
+                'task' => $taskContext,
+                'stats' => $stats,
+                'response' => $tipsPayload,
+            ],
+            (string) ($tipsPayload['source'] ?? 'rule')
+        );
+
+        return new JsonResponse([
+            'success' => true,
+            'task_id' => $task->getId(),
+            'tips' => $tipsPayload['tips'] ?? [],
+            'motivation' => (string) ($tipsPayload['motivation'] ?? ''),
+            'source' => (string) ($tipsPayload['source'] ?? 'rule'),
+        ]);
+    }
+
+    #[Route('/focus-timer/api/daily-plan', name: 'guardian_focus_timer_api_daily_plan', methods: ['GET'])]
+    public function focusTimerApiDailyPlan(
+        TaskRepository $taskRepository,
+        FocusSessionRepository $focusSessionRepository,
+        GuardianAiAssistant $guardianAiAssistant,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return new JsonResponse(['success' => false, 'message' => 'Authentication required.'], 401);
+        }
+
+        $tasks = $taskRepository->findBy(['owner' => $user], ['createdAt' => 'DESC'], 12);
+        $taskPayload = array_map(static function ($task): array {
+            return [
+                'id' => $task->getId(),
+                'title' => $task->getTitle(),
+                'priority' => $task->getPriority(),
+                'status' => $task->getStatus(),
+                'estimated_minutes' => $task->getEstimatedMinutes(),
+                'actual_minutes' => $task->getActualMinutes(),
+            ];
+        }, $tasks);
+
+        $stats = [
+            'today_sessions' => $focusSessionRepository->getTodaySessionCountByUser($user),
+            'week_focus_minutes' => $focusSessionRepository->getWeekDurationByUser($user),
+            'total_focus_minutes' => $focusSessionRepository->getTotalDurationByUser($user),
+            'per_task_totals' => $focusSessionRepository->getPerTaskTotalsByUser($user, 6),
+        ];
+
+        $planPayload = $guardianAiAssistant->buildDailyPlan($taskPayload, $stats);
+
+        $this->persistAiInsight(
+            $em,
+            $user,
+            null,
+            AiInsight::TYPE_DAILY_PLAN,
+            [
+                'tasks' => $taskPayload,
+                'stats' => $stats,
+                'response' => $planPayload,
+            ],
+            (string) ($planPayload['source'] ?? 'rule')
+        );
+
+        return new JsonResponse([
+            'success' => true,
+            'plan' => $planPayload['plan'] ?? [],
+            'source' => (string) ($planPayload['source'] ?? 'rule'),
+        ]);
+    }
+
+    #[Route('/focus-timer/api/weekly-review', name: 'guardian_focus_timer_api_weekly_review', methods: ['GET'])]
+    public function focusTimerApiWeeklyReview(
+        FocusSessionRepository $focusSessionRepository,
+        GuardianAiAssistant $guardianAiAssistant,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return new JsonResponse(['success' => false, 'message' => 'Authentication required.'], 401);
+        }
+
+        $stats = [
+            'today_sessions' => $focusSessionRepository->getTodaySessionCountByUser($user),
+            'week_focus_minutes' => $focusSessionRepository->getWeekDurationByUser($user),
+            'total_focus_minutes' => $focusSessionRepository->getTotalDurationByUser($user),
+            'per_task_totals' => $focusSessionRepository->getPerTaskTotalsByUser($user, 6),
+        ];
+
+        $recent = $focusSessionRepository->findRecentByUser($user, 8);
+        $recentPayload = array_map(static function (FocusSession $session): array {
+            return [
+                'task' => $session->getTask()?->getTitle(),
+                'duration' => $session->getDuration(),
+                'timestamp' => $session->getTimestamp()?->format(DATE_ATOM),
+            ];
+        }, $recent);
+
+        $review = $guardianAiAssistant->buildWeeklyReview($stats, $recentPayload);
+
+        $this->persistAiInsight(
+            $em,
+            $user,
+            null,
+            AiInsight::TYPE_WEEKLY_REVIEW,
+            [
+                'stats' => $stats,
+                'recent_sessions' => $recentPayload,
+                'response' => $review,
+            ],
+            (string) ($review['source'] ?? 'rule')
+        );
+
+        return new JsonResponse([
+            'success' => true,
+            'summary' => (string) ($review['summary'] ?? ''),
+            'wins' => $review['wins'] ?? [],
+            'next_action' => (string) ($review['next_action'] ?? ''),
+            'source' => (string) ($review['source'] ?? 'rule'),
+        ]);
+    }
+
+    private function persistAiInsight(
+        EntityManagerInterface $em,
+        User $user,
+        ?Task $task,
+        string $type,
+        array $payload,
+        string $source
+    ): void {
+        $insight = new AiInsight();
+        $insight
+            ->setUser($user)
+            ->setTask($task)
+            ->setType($type)
+            ->setSource($source)
+            ->setPayload((string) json_encode($payload, JSON_UNESCAPED_UNICODE));
+
+        $em->persist($insight);
+        $em->flush();
     }
 
     #[Route('/focus-timer/api/log', name: 'guardian_focus_timer_api_log', methods: ['POST'])]
@@ -454,9 +918,13 @@ class GuardianController extends AbstractController
             return $this->redirectToRoute('guardian_focus_timer');
         }
 
-        $duration = $this->getDurationForTaskPriority($task->getPriority());
+        $requestedDuration = (int) ($payload['duration'] ?? 0);
+        $targetDuration = $requestedDuration > 0
+            ? max(1, min(240, $requestedDuration))
+            : $this->getDurationForTaskPriority($task->getPriority());
+        $effectiveDuration = max(1, min(240, min($elapsedMinutes, $targetDuration)));
 
-        if ($focusSessionRepository->hasRecentDuplicate($user, $task, $duration, 20)) {
+        if ($focusSessionRepository->hasRecentDuplicate($user, $task, $effectiveDuration, 20)) {
             $message = 'Duplicate session detected. Please wait a few seconds before saving again.';
 
             if ($expectsJson) {
@@ -471,14 +939,27 @@ class GuardianController extends AbstractController
         $focusSession
             ->setUser($user)
             ->setTask($task)
-            ->setDuration($duration)
+            ->setDuration($effectiveDuration)
             ->setTimestamp(new \DateTimeImmutable())
             ->setSessionType('pomodoro');
 
-        $task->setActualMinutes(($task->getActualMinutes() ?? 0) + $duration);
+        $newActualMinutes = ($task->getActualMinutes() ?? 0) + $effectiveDuration;
+        $task->setActualMinutes($newActualMinutes);
+
+        $previousStatus = $task->getStatus();
+        if ($task->getEstimatedMinutes() !== null
+            && $task->getEstimatedMinutes() > 0
+            && $newActualMinutes >= $task->getEstimatedMinutes()
+            && $task->getStatus() !== Task::STATUS_DONE) {
+            $task->setStatus(Task::STATUS_DONE);
+        } elseif ($task->getStatus() === Task::STATUS_TODO && $newActualMinutes >= 10) {
+            $task->setStatus(Task::STATUS_IN_PROGRESS);
+        }
+
+        $statusChanged = $previousStatus !== $task->getStatus();
 
         $em->persist($focusSession);
-        $gamificationPayload = $gamificationService->processFocusSession($user, $duration);
+        $gamificationPayload = $gamificationService->processFocusSession($user, $effectiveDuration);
 
         if ($clientSessionId !== '') {
             $processedSessions = $request->getSession()->get('guardian_focus_processed', []);
@@ -493,14 +974,28 @@ class GuardianController extends AbstractController
                 'message' => 'Focus session saved successfully.',
                 'session' => [
                     'task' => $task->getTitle(),
-                    'duration' => $duration,
+                    'duration' => $effectiveDuration,
+                    'target_duration' => $targetDuration,
                     'timestamp' => $focusSession->getTimestamp()?->format(DATE_ATOM),
+                ],
+                'task_progress' => [
+                    'status' => $task->getStatus(),
+                    'actual_minutes' => $newActualMinutes,
+                    'estimated_minutes' => $task->getEstimatedMinutes(),
+                    'status_changed' => $statusChanged,
                 ],
                 'gamification' => $gamificationPayload,
             ]);
         }
 
-        $this->addFlash('success', 'Focus session saved successfully.');
+        $successMessage = 'Focus session saved successfully.';
+        if ($statusChanged && $task->getStatus() === Task::STATUS_DONE) {
+            $successMessage .= ' Task auto-marked as done.';
+        } elseif ($statusChanged && $task->getStatus() === Task::STATUS_IN_PROGRESS) {
+            $successMessage .= ' Task moved to in progress.';
+        }
+
+        $this->addFlash('success', $successMessage);
         return $this->redirectToRoute('guardian_focus_timer');
     }
 
