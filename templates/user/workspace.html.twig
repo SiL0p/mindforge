@@ -115,9 +115,53 @@
             border: 1px solid #e1e3ef;
             border-radius: 10px;
             padding: 10px;
+            position: relative;
+        }
+        .user-box-toggle {
+            width: 100%;
+            border: 0;
+            background: transparent;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            text-align: left;
+            color: inherit;
+            cursor: pointer;
+        }
+        .user-box-main {
             display: flex;
             align-items: center;
             gap: 10px;
+            min-width: 0;
+        }
+        .user-box-caret {
+            color: #8a92ad;
+            font-size: 12px;
+        }
+        .user-menu {
+            display: none;
+            margin-top: 8px;
+            border-top: 1px solid #eef1fb;
+            padding-top: 8px;
+        }
+        .user-menu.open {
+            display: block;
+        }
+        .user-menu a {
+            display: block;
+            text-decoration: none;
+            color: #5b647f;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 7px 8px;
+            margin-bottom: 4px;
+        }
+        .user-menu a:hover {
+            background: #eef2ff;
+            color: #33416f;
         }
         .user-avatar {
             width: 34px;
@@ -529,19 +573,29 @@
         </div>
 
         <div>
-            <div class="small-title">Quick Links</div>
-            <a class="small-item" href="{{ path('app_workspace_network_hub') }}"><span>Network Hub</span><span class="value">Open</span></a>
-            <a class="small-item" href="{{ path('guardian_library') }}"><span>Library</span><span class="value">Open</span></a>
-            <a class="small-item" href="{{ path('guardian_rooms') }}"><span>Virtual Rooms</span><span class="value">Open</span></a>
-            <a class="small-item" href="{{ path('app_analyst_leaderboard') }}"><span>Leaderboard</span><span class="value">Lvl {{ myLevel }}</span></a>
-            <a class="small-item" href="{{ 'ROLE_COMPANY' in app.user.roles ? path('app_carriere_opportunite_my_opportunites') : path('app_carriere_opportunite_index') }}"><span>Careers</span><span class="value">Open</span></a>
+            <div class="small-title">Study Pulse</div>
+            <a class="small-item" href="{{ path('app_planner_tasks') }}"><span>Total Tasks</span><span class="value">{{ myTaskCount }}</span></a>
+            <a class="small-item" href="{{ path('app_planner_tasks') }}"><span>Completion</span><span class="value">{{ myTaskCount > 0 ? ((myDoneTaskCount * 100 / myTaskCount)|round(0, 'floor')) ~ '%' : '0%' }}</span></a>
+            <a class="small-item" href="{{ path('community_challenge_inbox') }}"><span>Challenges</span><span class="value">{{ myReceivedChallenges + mySentChallenges }}</span></a>
+            <a class="small-item" href="{{ path('app_analyst_leaderboard') }}"><span>Current Level</span><span class="value">Lvl {{ myLevel }}</span></a>
+            <a class="small-item" href="{{ path('app_profile_view') }}"><span>XP Progress</span><span class="value">XP {{ myXp }}</span></a>
         </div>
 
         <div class="user-box">
-            <span class="user-avatar">{{ app.user.userIdentifier|slice(0,1)|upper }}</span>
-            <div>
-                <div class="user-name">{{ app.user.userIdentifier }}</div>
-                <small class="user-meta">XP {{ myXp }} · Lvl {{ myLevel }}</small>
+            <button type="button" class="user-box-toggle" id="workspace-user-toggle" aria-expanded="false" aria-controls="workspace-user-menu">
+                <span class="user-box-main">
+                    <span class="user-avatar">{{ app.user.userIdentifier|slice(0,1)|upper }}</span>
+                    <span>
+                        <span class="user-name">{{ app.user.userIdentifier }}</span>
+                        <small class="user-meta">XP {{ myXp }} · Lvl {{ myLevel }}</small>
+                    </span>
+                </span>
+                <i class="fa fa-chevron-up user-box-caret" aria-hidden="true"></i>
+            </button>
+            <div id="workspace-user-menu" class="user-menu">
+                <a href="{{ path('app_profile_view') }}"><i class="fa fa-user" style="width:14px;margin-right:7px;"></i>My Profile</a>
+                <a href="{{ path('app_profile_edit') }}"><i class="fa fa-cog" style="width:14px;margin-right:7px;"></i>Settings</a>
+                <a href="{{ path('app_logout') }}"><i class="fa fa-sign-out" style="width:14px;margin-right:7px;"></i>Logout</a>
             </div>
         </div>
     </aside>
@@ -639,6 +693,9 @@
                     <a class="btn btn-default btn-sm" href="{{ path('admin_planner_overview') }}">Planner</a>
                     <a class="btn btn-default btn-sm" href="{{ path('admin_analyst_overview') }}">Analyst</a>
                     <a class="btn btn-default btn-sm" href="{{ path('admin_community_claims') }}">Claims</a>
+                    <a class="btn btn-default btn-sm" href="{{ path('admin_resource_index') }}">Resources</a>
+                    <a class="btn btn-default btn-sm" href="{{ path('admin_room_index') }}">Rooms</a>
+                    <a class="btn btn-default btn-sm" href="{{ path('admin_guardian_ai_insight_index') }}">AI Insights</a>
                 </div>
             </section>
         {% endif %}
@@ -1049,6 +1106,29 @@
             openFriendProfile(friendId);
         });
     });
+
+    const userToggleBtn = document.getElementById('workspace-user-toggle');
+    const userMenu = document.getElementById('workspace-user-menu');
+
+    if (userToggleBtn && userMenu) {
+        userToggleBtn.addEventListener('click', function () {
+            const open = userMenu.classList.toggle('open');
+            userToggleBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!userMenu.classList.contains('open')) {
+                return;
+            }
+
+            if (userToggleBtn.contains(event.target) || userMenu.contains(event.target)) {
+                return;
+            }
+
+            userMenu.classList.remove('open');
+            userToggleBtn.setAttribute('aria-expanded', 'false');
+        });
+    }
 
     chatSendBtn.addEventListener('click', sendMessage);
     chatInput.addEventListener('keydown', function (event) {

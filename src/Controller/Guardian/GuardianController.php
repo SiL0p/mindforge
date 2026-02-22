@@ -174,9 +174,26 @@ class GuardianController extends AbstractController
             ], 404);
         }
 
-        $allowedTypes = ['pdf', 'summary', 'cheat_sheet', 'exercise'];
+        $allowedTypes = $guardianAiAssistant->getAllowedResourceTypes();
         if (!in_array($type, $allowedTypes, true)) {
-            $type = 'summary';
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Type is not allowed. Allowed types: '.implode(', ', $allowedTypes).'.',
+            ], 422);
+        }
+
+        $validation = $guardianAiAssistant->validateLearningResourceRequest(
+            $subject->getName(),
+            $description,
+            $studentDemand,
+            $type
+        );
+
+        if (($validation['valid'] ?? false) !== true) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => (string) ($validation['message'] ?? 'This request is not allowed.'),
+            ], 422);
         }
 
         $draft = $guardianAiAssistant->generateLearningResource([
