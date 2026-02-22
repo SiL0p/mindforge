@@ -36,7 +36,10 @@
             </div>
             <div class="col-md-3">
                 <label for="duration-input" class="form-label">Duration (auto by priority)</label>
-                <input id="duration-input" type="number" class="form-control" min="1" max="240" value="25" readonly>
+                <div class="d-flex gap-2">
+                    <input id="duration-input" type="number" class="form-control" min="1" max="240" value="25" readonly>
+                    <button id="refresh-duration-btn" class="btn btn-outline-secondary" type="button" title="Refresh duration"><i class="fas fa-rotate-right"></i></button>
+                </div>
             </div>
             <div class="col-md-3 d-flex align-items-end">
                 <a href="{{ path('app_planner_task_new', {redirect: 'guardian_focus_timer'}) }}" class="btn btn-outline-primary w-100">Create task</a>
@@ -46,7 +49,9 @@
         <div class="guardian-card p-4 mt-4 text-center">
             <div id="timer-display" style="font-size: 54px; font-weight: 700; color: #3f2fbf; line-height: 1;">25:00</div>
             <p id="timer-status" class="text-muted" style="margin-top: 12px;">Ready to focus</p>
+            <p id="timer-ai-reason" class="text-muted" style="min-height: 20px;"></p>
             <div id="timer-gamification" class="text-muted" style="min-height: 20px;"></div>
+            <div id="timer-task-progress" class="text-muted" style="min-height: 20px;"></div>
 
             <div class="d-flex flex-wrap justify-content-center gap-2" style="margin-top: 16px;">
                 <button id="start-btn" class="btn btn-success"><i class="fas fa-play"></i> Start</button>
@@ -55,6 +60,38 @@
                 <button id="complete-btn" class="btn btn-primary"><i class="fas fa-check"></i> Save session</button>
             </div>
             <small class="text-muted" style="display:block; margin-top: 10px;">A session is stored with task, duration, and timestamp.</small>
+        </div>
+
+        <div class="row g-3 mt-1">
+            <div class="col-lg-6">
+                <div class="guardian-card p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 style="margin-top:0; margin-bottom:0;">AI Focus Tips</h5>
+                        <button id="refresh-tips-btn" class="btn btn-xs btn-outline-secondary" type="button"><i class="fas fa-rotate-right"></i> Refresh</button>
+                    </div>
+                    <ul id="ai-tips-list" class="mb-2" style="padding-left: 18px;"></ul>
+                    <div id="ai-motivation" class="text-muted small"></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="guardian-card p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 style="margin-top:0; margin-bottom:0;">AI Daily Plan</h5>
+                        <button id="refresh-plan-btn" class="btn btn-xs btn-outline-secondary" type="button"><i class="fas fa-rotate-right"></i> Refresh</button>
+                    </div>
+                    <ul id="ai-plan-list" class="mb-0" style="padding-left: 18px;"></ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="guardian-card p-3 mt-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 style="margin-top:0; margin-bottom:0;">AI Weekly Review</h5>
+                <button id="refresh-weekly-review-btn" class="btn btn-xs btn-outline-secondary" type="button"><i class="fas fa-rotate-right"></i> Refresh</button>
+            </div>
+            <p id="ai-weekly-summary" class="text-muted" style="margin-top: 8px; margin-bottom: 8px;"></p>
+            <ul id="ai-weekly-wins" class="mb-2" style="padding-left: 18px;"></ul>
+            <div id="ai-weekly-next-action" class="text-muted small"></div>
         </div>
     </section>
 
@@ -127,18 +164,66 @@
     const timerDisplay = document.getElementById('timer-display');
     const timerStatus = document.getElementById('timer-status');
     const timerGamification = document.getElementById('timer-gamification');
+    const timerTaskProgress = document.getElementById('timer-task-progress');
+    const timerAiReason = document.getElementById('timer-ai-reason');
+    const aiTipsList = document.getElementById('ai-tips-list');
+    const aiMotivation = document.getElementById('ai-motivation');
+    const aiPlanList = document.getElementById('ai-plan-list');
+    const aiWeeklySummary = document.getElementById('ai-weekly-summary');
+    const aiWeeklyWins = document.getElementById('ai-weekly-wins');
+    const aiWeeklyNextAction = document.getElementById('ai-weekly-next-action');
 
     const startBtn = document.getElementById('start-btn');
     const pauseBtn = document.getElementById('pause-btn');
     const resetBtn = document.getElementById('reset-btn');
     const completeBtn = document.getElementById('complete-btn');
+    const refreshDurationBtn = document.getElementById('refresh-duration-btn');
+    const refreshTipsBtn = document.getElementById('refresh-tips-btn');
+    const refreshPlanBtn = document.getElementById('refresh-plan-btn');
+    const refreshWeeklyReviewBtn = document.getElementById('refresh-weekly-review-btn');
 
     let timerId = null;
     let remainingSeconds = 25 * 60;
     let sessionStartedAt = null;
     let currentTargetDuration = 25;
     const API_RECOMMENDED_DURATION = '{{ path('guardian_focus_timer_api_recommended_duration', {taskId: '__TASK_ID__'}) }}';
+    const API_TIPS = '{{ path('guardian_focus_timer_api_tips', {taskId: '__TASK_ID__'}) }}';
+    const API_DAILY_PLAN = '{{ path('guardian_focus_timer_api_daily_plan') }}';
+    const API_WEEKLY_REVIEW = '{{ path('guardian_focus_timer_api_weekly_review') }}';
     const API_LOG = '{{ path('guardian_focus_timer_api_log') }}';
+    const API_SOCIAL_FOCUS = '{{ path('app_workspace_network_status_focus') }}';
+
+    async function updateFocusMode(focusMode) {
+        try {
+            await fetch(API_SOCIAL_FOCUS, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ focus_mode: focusMode })
+            });
+        } catch (error) {
+        }
+    }
+
+    function renderList(container, items, fallbackText) {
+        container.innerHTML = '';
+
+        if (!Array.isArray(items) || items.length === 0) {
+            const li = document.createElement('li');
+            li.textContent = fallbackText;
+            container.appendChild(li);
+            return;
+        }
+
+        items.forEach((item) => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            container.appendChild(li);
+        });
+    }
 
     function formatTime(totalSeconds) {
         const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
@@ -164,6 +249,9 @@
 
         if (!taskId) {
             currentTargetDuration = 25;
+            timerAiReason.textContent = '';
+            renderList(aiTipsList, [], 'Select a task to load AI tips.');
+            aiMotivation.textContent = '';
             resetToInputDuration();
             return;
         }
@@ -179,14 +267,97 @@
             const data = await response.json();
             if (!response.ok || !data.success) {
                 currentTargetDuration = 35;
+                timerAiReason.textContent = 'Fallback duration applied.';
             } else {
                 currentTargetDuration = Number(data.recommended_duration || 35);
+                timerAiReason.textContent = data.reason ? `AI: ${data.reason}` : '';
             }
         } catch (error) {
             currentTargetDuration = 35;
+            timerAiReason.textContent = 'Fallback duration applied.';
         }
 
         resetToInputDuration();
+    }
+
+    async function loadTipsForTask() {
+        const taskId = Number(taskSelect.value);
+
+        if (!taskId) {
+            renderList(aiTipsList, [], 'Select a task to load AI tips.');
+            aiMotivation.textContent = '';
+            return;
+        }
+
+        try {
+            const response = await fetch(API_TIPS.replace('__TASK_ID__', String(taskId)), {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                renderList(aiTipsList, [], 'Unable to load AI tips right now.');
+                aiMotivation.textContent = '';
+                return;
+            }
+
+            renderList(aiTipsList, data.tips || [], 'No tips available.');
+            aiMotivation.textContent = data.motivation || '';
+        } catch (error) {
+            renderList(aiTipsList, [], 'Unable to load AI tips right now.');
+            aiMotivation.textContent = '';
+        }
+    }
+
+    async function loadDailyPlan() {
+        try {
+            const response = await fetch(API_DAILY_PLAN, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                renderList(aiPlanList, [], 'Unable to build the plan right now.');
+                return;
+            }
+
+            renderList(aiPlanList, data.plan || [], 'No plan available.');
+        } catch (error) {
+            renderList(aiPlanList, [], 'Unable to build the plan right now.');
+        }
+    }
+
+    async function loadWeeklyReview() {
+        try {
+            const response = await fetch(API_WEEKLY_REVIEW, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                aiWeeklySummary.textContent = 'Unable to load weekly review right now.';
+                renderList(aiWeeklyWins, [], 'No highlights available.');
+                aiWeeklyNextAction.textContent = '';
+                return;
+            }
+
+            aiWeeklySummary.textContent = data.summary || 'No summary available.';
+            renderList(aiWeeklyWins, data.wins || [], 'No highlights available.');
+            aiWeeklyNextAction.textContent = data.next_action ? `Next action: ${data.next_action}` : '';
+        } catch (error) {
+            aiWeeklySummary.textContent = 'Unable to load weekly review right now.';
+            renderList(aiWeeklyWins, [], 'No highlights available.');
+            aiWeeklyNextAction.textContent = '';
+        }
     }
 
     function startTimer() {
@@ -195,6 +366,7 @@
         }
 
         timerStatus.textContent = 'Focus in progress';
+        updateFocusMode(true);
         if (!sessionStartedAt) {
             sessionStartedAt = new Date();
         }
@@ -219,6 +391,7 @@
         clearInterval(timerId);
         timerId = null;
         timerStatus.textContent = 'Paused';
+        updateFocusMode(false);
     }
 
     async function saveSession() {
@@ -276,7 +449,20 @@
                 timerGamification.textContent = `+${data.gamification.xp_gained} XP | Streak: ${data.gamification.streak_days} day(s)${unlockedText}`;
             }
 
+            if (data.task_progress) {
+                const status = String(data.task_progress.status || '').replace('_', ' ');
+                const actual = Number(data.task_progress.actual_minutes || 0);
+                const estimated = Number(data.task_progress.estimated_minutes || 0);
+                const changed = Boolean(data.task_progress.status_changed);
+                const changeText = changed ? ' | Status updated automatically' : '';
+                const estimateText = estimated > 0 ? ` / ${estimated} min` : '';
+                timerTaskProgress.textContent = `Task status: ${status || 'unknown'} | Progress: ${actual}${estimateText} min${changeText}`;
+            } else {
+                timerTaskProgress.textContent = '';
+            }
+
             timerStatus.textContent = 'Session saved. Reloading...';
+            updateFocusMode(false);
             window.location.reload();
         } catch (error) {
             timerStatus.textContent = 'Network error while saving session.';
@@ -287,22 +473,44 @@
     pauseBtn.addEventListener('click', pauseTimer);
     resetBtn.addEventListener('click', () => {
         pauseTimer();
+        updateFocusMode(false);
         resetToInputDuration();
         sessionStartedAt = null;
         timerStatus.textContent = 'Ready to focus';
         timerGamification.textContent = '';
+        timerTaskProgress.textContent = '';
     });
     completeBtn.addEventListener('click', saveSession);
+    refreshDurationBtn.addEventListener('click', () => {
+        if (timerId) {
+            timerStatus.textContent = 'Pause the timer before refreshing duration.';
+            return;
+        }
+
+        applyDurationFromTask();
+    });
+    refreshTipsBtn.addEventListener('click', loadTipsForTask);
+    refreshPlanBtn.addEventListener('click', loadDailyPlan);
+    refreshWeeklyReviewBtn.addEventListener('click', loadWeeklyReview);
     taskSelect.addEventListener('change', () => {
         if (!timerId) {
             applyDurationFromTask();
+            loadTipsForTask();
             sessionStartedAt = null;
             timerStatus.textContent = 'Ready to focus';
             timerGamification.textContent = '';
+            timerTaskProgress.textContent = '';
         }
     });
 
     applyDurationFromTask();
+    loadTipsForTask();
+    loadDailyPlan();
+    loadWeeklyReview();
+
+    window.addEventListener('beforeunload', () => {
+        updateFocusMode(false);
+    });
 })();
 </script>
 {% endblock %}

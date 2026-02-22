@@ -71,9 +71,14 @@
                                 <h5 class="mb-1">{{ resource.title }}</h5>
                                 <div class="text-muted small">{{ resource.subject.name }}</div>
                             </div>
-                            <span class="guardian-badge" style="background: rgba(72,198,239,0.2); color: #1b4d6b;">
-                                {{ resource.type|upper }}
-                            </span>
+                            <div class="d-flex flex-column align-items-end" style="gap:6px;">
+                                <span class="guardian-badge" style="background: rgba(72,198,239,0.2); color: #1b4d6b;">
+                                    {{ resource.type|upper }}
+                                </span>
+                                <span class="guardian-badge" style="background: {{ resource.aiGenerated ? 'rgba(34,197,94,0.2)' : 'rgba(148,163,184,0.2)' }}; color: {{ resource.aiGenerated ? '#166534' : '#475569' }};">
+                                    {{ resource.aiGenerated ? 'AI' : 'Manual' }}
+                                </span>
+                            </div>
                         </div>
                         <p class="text-muted">{{ resource.description ? resource.description|slice(0, 110) ~ '…' : 'No description yet.' }}</p>
                         <div class="d-flex justify-content-between align-items-center text-muted small mb-3">
@@ -103,5 +108,74 @@
             {% endfor %}
         </div>
     {% endif %}
+
+    <section class="guardian-panel p-4 mt-2">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 style="margin:0;">External Suggestions (Open Library)</h4>
+            <button id="load-external-suggestions" class="btn btn-sm btn-outline-primary" type="button">Refresh</button>
+        </div>
+        <p class="text-muted small" id="external-suggestions-query" style="margin-bottom: 10px;"></p>
+        <div id="external-suggestions-list" class="row"></div>
+    </section>
 </div>
+
+<script>
+(function () {
+    const endpoint = '{{ path('guardian_library_api_external_suggestions') }}';
+    const refreshBtn = document.getElementById('load-external-suggestions');
+    const queryLabel = document.getElementById('external-suggestions-query');
+    const container = document.getElementById('external-suggestions-list');
+    const searchInput = document.getElementById('search');
+
+    function renderCards(items) {
+        container.innerHTML = '';
+
+        if (!Array.isArray(items) || items.length === 0) {
+            container.innerHTML = '<div class="col-12"><p class="text-muted" style="margin:0;">No external suggestions available right now.</p></div>';
+            return;
+        }
+
+        items.forEach((item) => {
+            const col = document.createElement('div');
+            col.className = 'col-md-6 col-lg-4 mb-3';
+
+            const yearText = item.year ? ` (${item.year})` : '';
+            col.innerHTML = `
+                <div class="guardian-card p-3 h-100">
+                    <div class="fw-semibold mb-1">${item.title}</div>
+                    <div class="text-muted small mb-2">${item.author}${yearText}</div>
+                    <a class="btn btn-sm btn-outline-dark" href="${item.url}" target="_blank" rel="noopener noreferrer">Open source</a>
+                </div>
+            `;
+
+            container.appendChild(col);
+        });
+    }
+
+    async function loadSuggestions() {
+        const query = (searchInput?.value || '').trim() || 'study skills';
+        queryLabel.textContent = `Query: ${query}`;
+
+        try {
+            const response = await fetch(`${endpoint}?q=${encodeURIComponent(query)}&limit=6`, {
+                method: 'GET',
+                headers: { Accept: 'application/json' }
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                renderCards([]);
+                return;
+            }
+
+            renderCards(data.suggestions || []);
+        } catch (error) {
+            renderCards([]);
+        }
+    }
+
+    refreshBtn?.addEventListener('click', loadSuggestions);
+    loadSuggestions();
+})();
+</script>
 {% endblock %}

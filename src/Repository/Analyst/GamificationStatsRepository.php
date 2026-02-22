@@ -33,4 +33,53 @@ class GamificationStatsRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @param User[] $users
+     * @return array<int, GamificationStats>
+     */
+    public function findByUsersIndexed(array $users): array
+    {
+        if ($users === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('g')
+            ->leftJoin('g.user', 'u')->addSelect('u')
+            ->where('g.user IN (:users)')
+            ->setParameter('users', $users)
+            ->getQuery()
+            ->getResult();
+
+        $indexed = [];
+        foreach ($rows as $row) {
+            $user = $row->getUser();
+            if ($user && $user->getId() !== null) {
+                $indexed[(int) $user->getId()] = $row;
+            }
+        }
+
+        return $indexed;
+    }
+
+    public function findLeaderboardPosition(User $user): ?int
+    {
+        $self = $this->findOneByUser($user);
+        if (!$self) {
+            return null;
+        }
+
+        $higherCount = (int) $this->createQueryBuilder('g')
+            ->select('COUNT(g.id)')
+            ->where('g.totalXp > :xp')
+            ->orWhere('g.totalXp = :xp AND g.currentLevel > :level')
+            ->orWhere('g.totalXp = :xp AND g.currentLevel = :level AND g.tasksCompleted > :tasks')
+            ->setParameter('xp', $self->getTotalXp())
+            ->setParameter('level', $self->getCurrentLevel())
+            ->setParameter('tasks', $self->getTasksCompleted())
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $higherCount + 1;
+    }
 }

@@ -1,0 +1,46 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Workspace Network{% endblock %}
+{% block body_class %}guardian-ui{% endblock %}
+
+{% block module_title %}Workspace Network{% endblock %}
+{% block module_subtitle %}Friends status, ranking, and private chat entry points.{% endblock %}
+
+{% block module_content %}
+<div class="guardian-shell">
+    <section class="guardian-panel p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 style="margin:0;">Friends</h4>
+            <a href="{{ path('app_workspace') }}" class="btn btn-outline-primary btn-sm">Back to workspace</a>
+        </div>
+
+        {% if friendCards is empty %}
+            <div class="text-muted">No friends yet. Add friends from your profile and come back here.</div>
+        {% else %}
+            <div class="row g-3">
+                {% for friend in friendCards %}
+                    <div class="col-md-6">
+                        <div class="guardian-card p-3 h-100">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 style="margin:0;">{{ friend.label }}</h5>
+                                    <small class="text-muted">Level {{ friend.level }} · XP {{ friend.xp }}</small>
+                                </div>
+                                <span class="guardian-badge" style="background: {{ friend.online ? 'rgba(34,197,94,0.2)' : 'rgba(148,163,184,0.2)' }}; color: {{ friend.online ? '#166534' : '#475569' }};">
+                                    {{ friend.online ? 'Online' : 'Offline' }}
+                                </span>
+                            </div>
+                            <div class="text-muted" style="margin-top:8px; font-size:13px;">
+                                Leaderboard: #{{ friend.leaderboard_position ?? 'N/A' }} · {{ friend.focus_mode ? 'In focus mode' : 'Available' }}
+                            </div>
+                            <div style="margin-top:10px;">
+                                <a class="btn btn-primary btn-sm" href="{{ path('app_workspace') }}">Chat from workspace</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

@@ -8,6 +8,9 @@ use App\Entity\Community\Claim;
 use App\Entity\Community\SharedTask;
 use App\Entity\Planner\Exam;
 use App\Entity\Planner\Task;
+use App\Repository\Analyst\GamificationStatsRepository;
+use App\Service\FriendService;
+use App\Service\WorkspaceSocialService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -70,7 +73,12 @@ final class UserController extends AbstractController
     }
 
     #[Route('/workspace', name: 'app_workspace')]
-    public function workspace(EntityManagerInterface $em): Response
+    public function workspace(
+        EntityManagerInterface $em,
+        FriendService $friendService,
+        WorkspaceSocialService $workspaceSocialService,
+        GamificationStatsRepository $gamificationStatsRepository
+    ): Response
     {
         $user = $this->getUser();
 
@@ -98,6 +106,49 @@ final class UserController extends AbstractController
 
         $myStats = $statsRepo->findOneBy(['user' => $user]);
 
+        $workspaceSocialService->touchPresence($user);
+
+        $friendIds = $friendService->getFriends($user);
+        $friends = [];
+        foreach ($friendIds as $friendId) {
+            $friend = $em->getRepository(User::class)->find((int) $friendId);
+            if ($friend) {
+                $friends[] = $friend;
+            }
+        }
+
+        $friendsStatsByUserId = $gamificationStatsRepository->findByUsersIndexed($friends);
+        $presenceByUserId = $workspaceSocialService->getPresenceByUsers($friends);
+
+        $workspaceFriends = [];
+        foreach ($friends as $friend) {
+            $friendId = (int) $friend->getId();
+            $friendStats = $friendsStatsByUserId[$friendId] ?? null;
+            $presence = $presenceByUserId[(string) $friendId] ?? ['online' => false, 'focus_mode' => false];
+
+            $workspaceFriends[] = [
+                'id' => $friendId,
+                'label' => $friend->getUserIdentifier(),
+                'level' => $friendStats?->getCurrentLevel() ?? 1,
+                'xp' => $friendStats?->getTotalXp() ?? 0,
+                'leaderboard_position' => $gamificationStatsRepository->findLeaderboardPosition($friend),
+                'online' => (bool) ($presence['online'] ?? false),
+                'focus_mode' => (bool) ($presence['focus_mode'] ?? false),
+            ];
+        }
+
+        usort($workspaceFriends, static function (array $left, array $right): int {
+            if ($left['online'] !== $right['online']) {
+                return $left['online'] ? -1 : 1;
+            }
+
+            if ($left['focus_mode'] !== $right['focus_mode']) {
+                return $left['focus_mode'] ? 1 : -1;
+            }
+
+            return ($left['leaderboard_position'] ?? PHP_INT_MAX) <=> ($right['leaderboard_position'] ?? PHP_INT_MAX);
+        });
+
         return $this->render('user/workspace.html.twig', [
             'myTaskCount' => $myTaskCount,
             'myDoneTaskCount' => $myDoneTaskCount,
@@ -111,6 +162,7 @@ final class UserController extends AbstractController
             'recentTasks' => $recentTasks,
             'recentChallenges' => $recentChallenges,
             'recentClaims' => $recentClaims,
+            'workspaceFriends' => $workspaceFriends,
         ]);
     }
     #[Route('/signup', name: 'app_signup')]

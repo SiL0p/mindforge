@@ -48,6 +48,9 @@ class Resource
     )]
     private ?string $type = null;
 
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $aiGenerated = false;
+
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
     private int $downloadCount = 0;
 
@@ -108,6 +111,8 @@ class Resource
     public function setFilePath(string $filePath): self { $this->filePath = $filePath; return $this; }
     public function getType(): ?string { return $this->type; }
     public function setType(string $type): self { $this->type = $type; return $this; }
+    public function isAiGenerated(): bool { return $this->aiGenerated; }
+    public function setAiGenerated(bool $aiGenerated): self { $this->aiGenerated = $aiGenerated; return $this; }
     public function getDownloadCount(): int { return $this->downloadCount; }
     public function incrementDownloadCount(): self { $this->downloadCount++; return $this; }
     public function getRating(): int { return $this->rating; }

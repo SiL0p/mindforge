@@ -7,7 +7,7 @@
     {{ parent() }}
     <style>
         body.workspace-body {
-            background: #ececf2;
+            background: #eff1f8;
         }
         body.workspace-body #header,
         body.workspace-body #footer {
@@ -21,39 +21,61 @@
         .workspace-app {
             min-height: 100vh;
             display: grid;
-            grid-template-columns: 210px 1fr 300px;
+            grid-template-columns: 224px 1fr 300px;
             gap: 0;
             color: #3b4257;
         }
         .app-left,
         .app-main,
         .app-right {
-            background: #f5f5fa;
+            background: #f7f8fc;
             border-right: 1px solid #e1e3ef;
         }
         .app-left {
-            padding: 14px 12px;
+            padding: 16px 12px;
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 16px;
         }
         .brand {
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 28px;
             font-weight: 700;
-            padding: 6px 8px;
+            padding: 8px 10px;
             color: #21273b;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: background .2s ease;
+        }
+        .brand:hover {
+            background: #eceffa;
+            color: #21273b;
+            text-decoration: none;
+        }
+        .brand img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+        .brand span {
+            font-size: 22px;
+            line-height: 1;
         }
         .nav-block a {
             display: block;
             color: #6d748a;
             text-decoration: none;
-            padding: 10px 12px;
+            padding: 9px 10px;
             border-radius: 10px;
             font-weight: 600;
             margin-bottom: 5px;
+            font-size: 13px;
+        }
+        .nav-block a i {
+            width: 16px;
+            text-align: center;
+            margin-right: 8px;
         }
         .nav-block a:hover,
         .nav-block a.active {
@@ -66,7 +88,7 @@
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: .08em;
-            margin: 4px 8px 6px;
+            margin: 6px 8px 8px;
         }
         .small-item {
             display: flex;
@@ -75,11 +97,17 @@
             color: #6a7186;
             text-decoration: none;
             font-size: 13px;
-            padding: 7px 10px;
+            padding: 8px 10px;
             border-radius: 8px;
+            margin-bottom: 2px;
         }
         .small-item:hover {
             background: #eceffa;
+        }
+        .small-item .value {
+            color: #8a92ad;
+            font-size: 12px;
+            font-weight: 700;
         }
         .user-box {
             margin-top: auto;
@@ -102,35 +130,47 @@
             justify-content: center;
             font-weight: 700;
         }
+        .user-name {
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .user-meta {
+            color: #9aa2b8;
+            font-size: 11px;
+        }
         .app-main {
-            padding: 18px 16px;
+            padding: 20px 18px;
         }
         .main-header {
-            margin-bottom: 16px;
-            color: #555d75;
+            margin-bottom: 14px;
+            color: #5f6781;
             font-weight: 600;
+            font-size: 14px;
         }
         .folder-grid {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 14px;
-            margin-bottom: 14px;
+            gap: 12px;
+            margin-bottom: 12px;
         }
         .folder-card {
             background: #fff;
             border: 1px solid #dfe2ef;
             border-radius: 10px;
-            min-height: 112px;
-            padding: 14px;
+            min-height: 106px;
+            padding: 12px;
             color: #454d67;
             text-decoration: none;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            box-shadow: 0 6px 14px rgba(26, 36, 80, 0.05);
+            transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
         }
         .folder-card:hover {
             border-color: #8795ff;
-            box-shadow: 0 10px 22px rgba(75, 89, 180, 0.12);
+            box-shadow: 0 14px 24px rgba(75, 89, 180, 0.16);
+            transform: translateY(-1px);
         }
         .dot {
             width: 12px;
@@ -141,22 +181,24 @@
         }
         .folder-title {
             font-weight: 700;
-            font-size: 16px;
+            font-size: 15px;
         }
         .folder-date {
             font-size: 12px;
-            color: #a0a6ba;
+            color: #7f88a3;
+            font-weight: 600;
         }
         .hero-strip {
             background: linear-gradient(120deg, #eb5fac 0%, #8185ff 54%, #86d8ea 100%);
             border-radius: 12px;
             color: #fff;
-            padding: 16px;
-            margin-bottom: 14px;
+            padding: 14px;
+            margin-bottom: 12px;
             display: grid;
             grid-template-columns: 1.3fr repeat(3, 1fr);
             gap: 10px;
             align-items: center;
+            box-shadow: 0 12px 26px rgba(74, 92, 211, 0.2);
         }
         .hero-strip .meta small {
             text-transform: uppercase;
@@ -170,23 +212,24 @@
             margin-top: 4px;
         }
         .board {
-            background: #fff;
-            border: 1px solid #dfe2ef;
+            background: #f9faff;
+            border: 1px solid #e2e6f4;
             border-radius: 12px;
-            padding: 10px;
+            padding: 12px;
+            box-shadow: 0 8px 18px rgba(26, 36, 80, 0.05);
         }
         .board-head {
             display: flex;
             gap: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         .pill {
-            background: #f0f2fb;
-            color: #66719a;
+            background: #e9edff;
+            color: #4f5d8e;
             border-radius: 999px;
             font-size: 11px;
             font-weight: 700;
-            padding: 5px 10px;
+            padding: 6px 11px;
         }
         .cols {
             display: grid;
@@ -194,15 +237,16 @@
             gap: 10px;
         }
         .col {
-            background: #f8f9fe;
-            border: 1px solid #eceef9;
+            background: #f2f5ff;
+            border: 1px solid #e4e9fb;
             border-radius: 10px;
-            padding: 8px;
+            padding: 10px;
         }
         .col h5 {
             margin: 0 0 8px;
             font-size: 12px;
-            color: #757d95;
+            color: #667194;
+            font-weight: 700;
         }
         .task-card {
             display: block;
@@ -210,33 +254,74 @@
             background: #fff;
             border: 1px solid #e5e8f4;
             border-radius: 8px;
-            padding: 8px;
+            padding: 9px;
             margin-bottom: 7px;
-            color: #4e556d;
+            color: #4a5475;
             font-size: 12px;
         }
         .task-card:hover {
             border-color: #8c98ff;
         }
         .app-right {
-            padding: 12px;
+            padding: 14px 12px;
             border-right: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
         .widget {
             background: #fff;
             border: 1px solid #e0e3ef;
             border-radius: 10px;
-            margin-bottom: 12px;
+            box-shadow: 0 8px 18px rgba(26, 36, 80, 0.06);
+            overflow: hidden;
         }
         .widget h4 {
             margin: 0;
-            padding: 10px;
+            padding: 10px 12px;
             border-bottom: 1px solid #edf0fb;
-            font-size: 14px;
-            color: #565f79;
+            font-size: 15px;
+            color: #4f5978;
+            font-weight: 700;
+        }
+        .widget-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            border-bottom: 1px solid #edf0fb;
+        }
+        .widget-title {
+            font-size: 15px;
+            color: #4f5978;
+            font-weight: 700;
+        }
+        .widget-tools {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .widget-count {
+            background: #edf1ff;
+            color: #4e5f98;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 7px;
+            line-height: 1;
+        }
+        .widget-link {
+            font-size: 11px;
+            color: #6475ad;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .widget-link:hover {
+            color: #3f56a3;
+            text-decoration: underline;
         }
         .widget-body {
-            padding: 8px;
+            padding: 10px;
             max-height: 240px;
             overflow: auto;
         }
@@ -245,9 +330,9 @@
             background: #fbfcff;
             border: 1px solid #ebedf7;
             border-radius: 8px;
-            padding: 8px;
+            padding: 9px;
             text-decoration: none;
-            color: #59607a;
+            color: #4f597a;
             margin-bottom: 7px;
             font-size: 12px;
         }
@@ -255,6 +340,153 @@
             display: block;
             color: #9aa1b8;
             margin-top: 4px;
+        }
+        .mini-card-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+        .friend-card {
+            background: #fbfcff;
+            border: 1px solid #e6eaf8;
+            border-radius: 9px;
+            padding: 9px;
+            margin-bottom: 8px;
+        }
+        .friend-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .friend-name {
+            font-size: 12px;
+            color: #445074;
+            font-weight: 700;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 120px;
+        }
+        .status-pill {
+            display: inline-block;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+        }
+        .status-online { background: rgba(34,197,94,.16); color: #166534; }
+        .status-offline { background: rgba(148,163,184,.18); color: #475569; }
+        .status-focus { background: rgba(251,191,36,.2); color: #92400e; }
+        .friend-meta {
+            color: #7782a3;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+        .friend-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .friend-actions .btn {
+            padding: 4px 8px;
+            font-size: 11px;
+            line-height: 1.3;
+        }
+        .chat-panel {
+            border: 1px solid #dfe4f5;
+            border-radius: 10px;
+            background: #f8faff;
+            overflow: hidden;
+        }
+        .chat-head {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e5e9f8;
+            font-size: 12px;
+            color: #49557d;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-log {
+            height: 180px;
+            overflow: auto;
+            padding: 8px;
+            background: #fff;
+        }
+        .chat-bubble {
+            max-width: 88%;
+            padding: 7px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            margin-bottom: 6px;
+            color: #445074;
+            border: 1px solid #e5e8f4;
+            background: #f8faff;
+        }
+        .chat-bubble.me {
+            margin-left: auto;
+            background: #eaf0ff;
+            border-color: #cedafe;
+        }
+        .chat-input-wrap {
+            display: flex;
+            gap: 6px;
+            padding: 8px;
+            border-top: 1px solid #e5e9f8;
+            background: #f7f9ff;
+        }
+        .chat-input-wrap input {
+            flex: 1;
+            min-width: 0;
+            height: 32px;
+            font-size: 12px;
+        }
+        .chat-system {
+            font-size: 11px;
+            color: #6f79a0;
+            padding: 0 8px 8px;
+        }
+        .unread-badge {
+            background: #ef4444;
+            color: #fff;
+            border-radius: 999px;
+            font-size: 10px;
+            line-height: 1;
+            padding: 3px 6px;
+            font-weight: 700;
+            display: none;
+        }
+        .toast-stack {
+            position: fixed;
+            right: 16px;
+            bottom: 16px;
+            z-index: 1300;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: min(320px, calc(100vw - 24px));
+        }
+        .chat-toast {
+            background: #1f2a44;
+            color: #fff;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24);
+            padding: 10px 12px;
+            font-size: 12px;
+            animation: toastIn .2s ease;
+        }
+        .chat-toast strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         @media (max-width: 1180px) {
             .workspace-app { grid-template-columns: 190px 1fr; }
@@ -274,42 +506,48 @@
 {% endblock %}
 
 {% block body %}
+{% set currentRoute = app.request.attributes.get('_route') %}
 <div class="workspace-app">
     <aside class="app-left">
-        <div class="brand">MindForge</div>
+        <a class="brand" href="{{ path('app_workspace') }}" aria-label="Go to workspace home">
+            <img src="{{ asset('user/img/logo.png') }}" alt="MindForge logo">
+            <span>MindForge</span>
+        </a>
         <nav class="nav-block">
-            <a href="{{ path('app_workspace') }}" class="active"><i class="fa fa-th-large"></i> Overview</a>
-            <a href="{{ path('app_planner_calendar') }}"><i class="fa fa-calendar"></i> Calendar</a>
-            <a href="{{ path('app_analyst_gamification') }}"><i class="fa fa-pie-chart"></i> Analytics</a>
-            <a href="{{ path('community_index') }}"><i class="fa fa-users"></i> Community</a>
-            <a href="{{ path('app_planner_tasks') }}"><i class="fa fa-folder"></i> Tasks</a>
+            <a href="{{ path('app_workspace') }}" class="{{ currentRoute == 'app_workspace' ? 'active' : '' }}"><i class="fa fa-th-large"></i>Overview</a>
+            <a href="{{ path('app_planner_calendar') }}" class="{{ currentRoute starts with 'app_planner_' ? 'active' : '' }}"><i class="fa fa-calendar"></i>Planner</a>
+            <a href="{{ path('app_analyst_gamification') }}" class="{{ currentRoute starts with 'app_analyst_' ? 'active' : '' }}"><i class="fa fa-pie-chart"></i>Analytics</a>
+            <a href="{{ path('community_index') }}" class="{{ currentRoute starts with 'community_' ? 'active' : '' }}"><i class="fa fa-users"></i>Community</a>
+            <a href="{{ path('guardian_library') }}" class="{{ currentRoute starts with 'guardian_' ? 'active' : '' }}"><i class="fa fa-book"></i>Guardian</a>
         </nav>
 
         <div>
-            <div class="small-title">Folders</div>
-            <a class="small-item" href="{{ path('guardian_library') }}"><span>Library</span><span>{{ myExamCount }}</span></a>
-            <a class="small-item" href="{{ path('guardian_rooms') }}"><span>Virtual Rooms</span><span>{{ myReceivedChallenges }}</span></a>
-            <a class="small-item" href="{{ path('community_claim_list') }}"><span>Support</span><span>{{ myClaimCount }}</span></a>
+            <div class="small-title">Workspace Stats</div>
+            <a class="small-item" href="{{ path('app_planner_tasks') }}"><span>Tasks Done</span><span class="value">{{ myDoneTaskCount }}</span></a>
+            <a class="small-item" href="{{ path('app_planner_calendar') }}"><span>Exams</span><span class="value">{{ myExamCount }}</span></a>
+            <a class="small-item" href="{{ path('community_claim_list') }}"><span>Open Tickets</span><span class="value">{{ myOpenClaimCount }}</span></a>
         </div>
 
         <div>
             <div class="small-title">Quick Links</div>
-            <a class="small-item" href="{{ path('app_friends') }}"><span>Friends</span><span></span></a>
-            <a class="small-item" href="{{ path('app_analyst_leaderboard') }}"><span>Leaderboard</span><span>Lvl {{ myLevel }}</span></a>
-            <a class="small-item" href="{{ 'ROLE_COMPANY' in app.user.roles ? path('app_carriere_opportunite_my_opportunites') : path('app_carriere_opportunite_index') }}"><span>Careers</span><span></span></a>
+            <a class="small-item" href="{{ path('app_workspace_network_hub') }}"><span>Network Hub</span><span class="value">Open</span></a>
+            <a class="small-item" href="{{ path('guardian_library') }}"><span>Library</span><span class="value">Open</span></a>
+            <a class="small-item" href="{{ path('guardian_rooms') }}"><span>Virtual Rooms</span><span class="value">Open</span></a>
+            <a class="small-item" href="{{ path('app_analyst_leaderboard') }}"><span>Leaderboard</span><span class="value">Lvl {{ myLevel }}</span></a>
+            <a class="small-item" href="{{ 'ROLE_COMPANY' in app.user.roles ? path('app_carriere_opportunite_my_opportunites') : path('app_carriere_opportunite_index') }}"><span>Careers</span><span class="value">Open</span></a>
         </div>
 
         <div class="user-box">
             <span class="user-avatar">{{ app.user.userIdentifier|slice(0,1)|upper }}</span>
             <div>
-                <div style="font-size:12px;font-weight:700;">{{ app.user.userIdentifier }}</div>
-                <small style="color:#9aa2b8;">XP {{ myXp }} · Lvl {{ myLevel }}</small>
+                <div class="user-name">{{ app.user.userIdentifier }}</div>
+                <small class="user-meta">XP {{ myXp }} · Lvl {{ myLevel }}</small>
             </div>
         </div>
     </aside>
 
     <main class="app-main">
-        <div class="main-header">Welcome back! Here is your all-in-one productivity board.</div>
+        <div class="main-header">Welcome back. Your workspace is ready.</div>
 
         <div class="folder-grid">
             <a href="{{ path('app_planner_tasks') }}" class="folder-card">
@@ -349,10 +587,7 @@
         </div>
 
         <section class="board">
-            <div class="board-head">
-                <span class="pill">Kanban</span>
-                <span class="pill">List</span>
-            </div>
+            <div class="board-head"><span class="pill">Task Board</span></div>
             <div class="cols">
                 <div class="col">
                     <h5>Open</h5>
@@ -411,15 +646,79 @@
 
     <aside class="app-right">
         <section class="widget">
-            <h4>Todos</h4>
+            <div class="widget-head">
+                <div class="widget-title">Network</div>
+                <div class="widget-tools">
+                    <span class="widget-count">{{ workspaceFriends|length }}</span>
+                    <a class="widget-link" href="{{ path('app_workspace_network_hub') }}">Hub</a>
+                </div>
+            </div>
+            <div class="widget-body">
+                {% if workspaceFriends is empty %}
+                    <div class="mini-card">No friends yet. Add friends from the Friends page.</div>
+                {% else %}
+                    {% for friend in workspaceFriends %}
+                        <div class="friend-card">
+                            <div class="friend-head">
+                                <div class="friend-name" title="{{ friend.label }}">{{ friend.label }}</div>
+                                <span class="status-pill {{ friend.online ? 'status-online' : 'status-offline' }}">{{ friend.online ? 'Online' : 'Offline' }}</span>
+                            </div>
+                            <div class="friend-meta">Lvl {{ friend.level }} · Rank #{{ friend.leaderboard_position ?? 'N/A' }} · {{ friend.focus_mode ? 'Focus mode' : 'Available' }}</div>
+                            <div class="friend-actions">
+                                <button
+                                    class="btn btn-primary btn-xs js-open-chat"
+                                    type="button"
+                                    data-friend-id="{{ friend.id }}"
+                                    data-friend-name="{{ friend.label }}"
+                                    data-focus-mode="{{ friend.focus_mode ? '1' : '0' }}"
+                                >Chat</button>
+                                <span class="unread-badge" id="unread-{{ friend.id }}">New</span>
+                                <button
+                                    class="btn btn-default btn-xs js-open-profile"
+                                    type="button"
+                                    data-friend-id="{{ friend.id }}"
+                                >Stats</button>
+                                {% if friend.focus_mode %}
+                                    <span class="status-pill status-focus">Focus</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div id="private-chat-panel" class="chat-panel" style="display:none; margin-top:8px;">
+                    <div class="chat-head">
+                        <span id="chat-head-title">Private chat</span>
+                        <button type="button" id="chat-close-btn" class="btn btn-default btn-xs">Close</button>
+                    </div>
+                    <div id="chat-log" class="chat-log"></div>
+                    <div class="chat-input-wrap">
+                        <input id="chat-input" type="text" class="form-control" maxlength="1200" placeholder="Write a private message...">
+                        <button id="chat-send-btn" type="button" class="btn btn-primary btn-xs">Send</button>
+                    </div>
+                    <div id="chat-system-note" class="chat-system"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="widget">
+            <div class="widget-head">
+                <div class="widget-title">Todos</div>
+                <div class="widget-tools">
+                    <span class="widget-count">{{ recentTasks|length }}</span>
+                    <a class="widget-link" href="{{ path('app_planner_tasks') }}">Open</a>
+                </div>
+            </div>
             <div class="widget-body">
                 {% if recentTasks is empty %}
                     <div class="mini-card">No tasks yet.</div>
                 {% else %}
                     {% for task in recentTasks %}
                         <a class="mini-card" href="{{ path('app_planner_tasks') }}">
-                            {{ task.title }}
-                            <small>{{ task.status|replace({'_': ' '})|title }}</small>
+                            <div class="mini-card-row">
+                                <span>{{ task.title }}</span>
+                                <span class="status-pill status-offline">{{ task.status|replace({'_': ' '})|title }}</span>
+                            </div>
                         </a>
                     {% endfor %}
                 {% endif %}
@@ -427,7 +726,13 @@
         </section>
 
         <section class="widget">
-            <h4>Challenges</h4>
+            <div class="widget-head">
+                <div class="widget-title">Challenges</div>
+                <div class="widget-tools">
+                    <span class="widget-count">{{ recentChallenges|length }}</span>
+                    <a class="widget-link" href="{{ path('community_challenge_inbox') }}">Inbox</a>
+                </div>
+            </div>
             <div class="widget-body">
                 {% if recentChallenges is empty %}
                     <div class="mini-card">No challenges yet.</div>
@@ -441,22 +746,333 @@
                 {% endif %}
             </div>
         </section>
-
-        <section class="widget">
-            <h4>Notes / Support</h4>
-            <div class="widget-body">
-                {% if recentClaims is empty %}
-                    <div class="mini-card">No support tickets yet.</div>
-                {% else %}
-                    {% for claim in recentClaims %}
-                        <a class="mini-card" href="{{ path('community_claim_view', {id: claim.id}) }}">
-                            {{ claim.title }}
-                            <small>{{ claim.status|replace({'_': ' '})|title }}</small>
-                        </a>
-                    {% endfor %}
-                {% endif %}
-            </div>
-        </section>
     </aside>
 </div>
+<div id="chat-toast-stack" class="toast-stack"></div>
+
+<script>
+(function () {
+    const pingUrl = '{{ path('app_workspace_network_status_ping') }}';
+    const friendProfileUrlTemplate = '{{ path('app_workspace_network_friend_profile', {id: '__FRIEND_ID__'}) }}';
+    const chatMessagesUrlTemplate = '{{ path('app_workspace_network_private_chat_messages', {id: '__FRIEND_ID__'}) }}';
+    const chatSendUrlTemplate = '{{ path('app_workspace_network_private_chat_send', {id: '__FRIEND_ID__'}) }}';
+    const inboxUpdatesUrl = '{{ path('app_workspace_network_private_chat_inbox_updates') }}';
+    const seenStoreKey = 'workspace_seen_chat_ids_{{ app.user.id }}';
+
+    let activeFriendId = null;
+    let chatRefreshTimer = null;
+    let inboxRefreshTimer = null;
+    const seenIncomingByFriend = JSON.parse(localStorage.getItem(seenStoreKey) || '{}');
+
+    const chatPanel = document.getElementById('private-chat-panel');
+    const chatHeadTitle = document.getElementById('chat-head-title');
+    const chatLog = document.getElementById('chat-log');
+    const chatInput = document.getElementById('chat-input');
+    const chatSendBtn = document.getElementById('chat-send-btn');
+    const chatCloseBtn = document.getElementById('chat-close-btn');
+    const chatSystemNote = document.getElementById('chat-system-note');
+    const chatToastStack = document.getElementById('chat-toast-stack');
+
+    function saveSeenIncoming() {
+        localStorage.setItem(seenStoreKey, JSON.stringify(seenIncomingByFriend));
+    }
+
+    function endpoint(template, friendId) {
+        return template.replace('__FRIEND_ID__', String(friendId));
+    }
+
+    function setUnreadBadge(friendId, visible) {
+        const badge = document.getElementById(`unread-${friendId}`);
+        if (!badge) {
+            return;
+        }
+
+        badge.style.display = visible ? 'inline-block' : 'none';
+    }
+
+    function showChatToast(title, message) {
+        const toast = document.createElement('div');
+        toast.className = 'chat-toast';
+        toast.innerHTML = `<strong>${title}</strong><span>${message}</span>`;
+        chatToastStack.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 4200);
+    }
+
+    function requestBrowserNotificationPermission() {
+        if (!('Notification' in window)) {
+            return;
+        }
+
+        if (Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }
+
+    function showBrowserNotification(title, body) {
+        if (!('Notification' in window)) {
+            return;
+        }
+
+        if (Notification.permission !== 'granted') {
+            return;
+        }
+
+        const notification = new Notification(title, {
+            body,
+            icon: '{{ asset('user/img/logo.png') }}',
+            tag: 'workspace-private-chat'
+        });
+
+        setTimeout(() => notification.close(), 4500);
+    }
+
+    async function pingPresence() {
+        try {
+            await fetch(pingUrl, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+        } catch (error) {
+        }
+    }
+
+    function renderMessages(messages) {
+        chatLog.innerHTML = '';
+
+        if (!Array.isArray(messages) || messages.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'chat-system';
+            empty.textContent = 'No messages yet. Start the conversation.';
+            chatLog.appendChild(empty);
+            return;
+        }
+
+        messages.forEach((message) => {
+            const bubble = document.createElement('div');
+            const isMine = Number(message.from_user_id) === Number({{ app.user.id }});
+            bubble.className = isMine ? 'chat-bubble me' : 'chat-bubble';
+            bubble.textContent = message.content || '';
+            chatLog.appendChild(bubble);
+        });
+
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    async function loadChatMessages(friendId) {
+        if (!friendId) {
+            return;
+        }
+
+        try {
+            const response = await fetch(endpoint(chatMessagesUrlTemplate, friendId), {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                chatSystemNote.textContent = data.message || 'Unable to load private chat.';
+                return;
+            }
+
+            renderMessages(data.messages || []);
+            chatSystemNote.textContent = '';
+            setUnreadBadge(friendId, false);
+            if (Array.isArray(data.messages) && data.messages.length > 0) {
+                const lastMessage = data.messages[data.messages.length - 1];
+                if (lastMessage && Number(lastMessage.to_user_id) === Number({{ app.user.id }})) {
+                    seenIncomingByFriend[String(friendId)] = String(lastMessage.id || '');
+                    saveSeenIncoming();
+                }
+            }
+        } catch (error) {
+            chatSystemNote.textContent = 'Network issue while loading messages.';
+        }
+    }
+
+    async function pollInboxUpdates() {
+        try {
+            const response = await fetch(inboxUpdatesUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                return;
+            }
+
+            const updates = data.updates || {};
+            const userFocusMode = Boolean(data.user_focus_mode);
+
+            Object.keys(updates).forEach((friendId) => {
+                const update = updates[friendId] || {};
+                const messageId = String(update.id || '');
+                if (!messageId) {
+                    return;
+                }
+
+                const previousId = seenIncomingByFriend[friendId] || null;
+                const isNew = previousId !== messageId;
+                seenIncomingByFriend[friendId] = messageId;
+                saveSeenIncoming();
+
+                if (!isNew) {
+                    return;
+                }
+
+                if (Number(activeFriendId) === Number(friendId)) {
+                    loadChatMessages(friendId);
+                    return;
+                }
+
+                setUnreadBadge(friendId, true);
+
+                if (!userFocusMode) {
+                    const preview = String(update.content || '').slice(0, 90);
+                    showChatToast(update.from_label || 'New message', preview);
+                    if (document.hidden) {
+                        showBrowserNotification(update.from_label || 'New message', preview);
+                    }
+                }
+            });
+        } catch (error) {
+        }
+    }
+
+    async function openFriendProfile(friendId) {
+        try {
+            const response = await fetch(endpoint(friendProfileUrlTemplate, friendId), {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                chatSystemNote.textContent = data.message || 'Unable to load friend stats.';
+                return;
+            }
+
+            const friend = data.friend || {};
+            chatSystemNote.textContent = `Friend: #${friend.leaderboard_position ?? 'N/A'} · Lvl ${friend.level ?? 1} · ${friend.online ? 'Online' : 'Offline'} · ${friend.focus_mode ? 'Focus mode' : 'Available'}`;
+        } catch (error) {
+            chatSystemNote.textContent = 'Network issue while loading friend stats.';
+        }
+    }
+
+    async function sendMessage() {
+        if (!activeFriendId) {
+            return;
+        }
+
+        const content = (chatInput.value || '').trim();
+        if (!content) {
+            chatSystemNote.textContent = 'Write a message before sending.';
+            return;
+        }
+
+        chatSendBtn.disabled = true;
+        chatSystemNote.textContent = 'Sending...';
+
+        try {
+            const response = await fetch(endpoint(chatSendUrlTemplate, activeFriendId), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ content })
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                chatSystemNote.textContent = data.message || 'Unable to send message.';
+                chatSendBtn.disabled = false;
+                return;
+            }
+
+            chatInput.value = '';
+            await loadChatMessages(activeFriendId);
+
+            if (data.silent_delivery) {
+                chatSystemNote.textContent = 'Friend is in focus mode: delivered silently (no popup).';
+            } else {
+                chatSystemNote.textContent = 'Message sent.';
+            }
+        } catch (error) {
+            chatSystemNote.textContent = 'Network issue while sending message.';
+        }
+
+        chatSendBtn.disabled = false;
+    }
+
+    function openChat(friendId, friendName) {
+        activeFriendId = Number(friendId);
+        chatHeadTitle.textContent = `Chat with ${friendName}`;
+        chatPanel.style.display = 'block';
+        loadChatMessages(activeFriendId);
+        setUnreadBadge(friendId, false);
+
+        if (chatRefreshTimer) {
+            clearInterval(chatRefreshTimer);
+        }
+
+        chatRefreshTimer = setInterval(function () {
+            loadChatMessages(activeFriendId);
+        }, 8000);
+    }
+
+    document.querySelectorAll('.js-open-chat').forEach((button) => {
+        button.addEventListener('click', function () {
+            const friendId = this.getAttribute('data-friend-id');
+            const friendName = this.getAttribute('data-friend-name') || 'Friend';
+            openChat(friendId, friendName);
+        });
+    });
+
+    document.querySelectorAll('.js-open-profile').forEach((button) => {
+        button.addEventListener('click', function () {
+            const friendId = this.getAttribute('data-friend-id');
+            openFriendProfile(friendId);
+        });
+    });
+
+    chatSendBtn.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+
+    chatCloseBtn.addEventListener('click', function () {
+        chatPanel.style.display = 'none';
+        activeFriendId = null;
+        chatSystemNote.textContent = '';
+        if (chatRefreshTimer) {
+            clearInterval(chatRefreshTimer);
+            chatRefreshTimer = null;
+        }
+    });
+
+    pingPresence();
+    requestBrowserNotificationPermission();
+    setInterval(pingPresence, 45000);
+    pollInboxUpdates();
+    inboxRefreshTimer = setInterval(pollInboxUpdates, 7000);
+})();
+</script>
 {% endblock %}
