@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!document.getElementById('typing-style')) {
                 const style = document.createElement('style');
                 style.id = 'typing-style';
-                style.innerHTML = \`
+                style.innerHTML = `
                     @keyframes typing-dot {
                         0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
                         40% { transform: scale(1); opacity: 1; }
@@ -349,7 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     #tutor-chat-history::-webkit-scrollbar-thumb:hover {
                         background: rgba(0,0,0,0.3);
                     }
-                \`;
+                `;
                 document.head.appendChild(style);
             }
 
