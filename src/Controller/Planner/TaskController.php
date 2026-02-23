@@ -55,7 +55,8 @@ class TaskController extends AbstractController
     public function new(
         Request $request,
         EntityManagerInterface $em,
-        DifficultyClassifierService $difficultyClassifierService
+        DifficultyClassifierService $difficultyClassifierService,
+        TaskRepository $taskRepository
     ): Response
     {
         $task = new Task();
@@ -73,6 +74,23 @@ class TaskController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if ($task->getSubject()) {
+                $stats = $taskRepository->getSubjectStatsForDate($this->getUser(), $task->getSubject(), $task->getDueDate());
+                
+                $willExceedCount = $stats['count'] >= 3;
+                $willExceedTime = ($stats['minutes'] + (int)$task->getEstimatedMinutes()) > 180;
+
+                if ($willExceedCount || $willExceedTime) {
+                    $this->addFlash('danger', 'Limit reached: You cannot schedule more than 3 tasks or exceed 180 minutes for the same subject on the same day. Please do another subject!');
+                    // Render the form again with the error flash
+                    return $this->render('planner/task/new.html.twig', [
+                        'form' => $form->createView(),
+                        'task' => $task,
+                        'isVoice' => $request->query->has('voice'),
+                    ]);
+                }
+            }
+
             $task->setPriority($difficultyClassifierService->classifyTask($task));
             $em->persist($task);
             $em->flush();
@@ -98,7 +116,9 @@ class TaskController extends AbstractController
         DifficultyClassifierService $difficultyClassifierService
     ): Response
     {
-        $this->denyAccessUnlessGranted('TASK_EDIT', $task);
+        if ($task->getOwner() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas modifier cette tâche.');
+        }
 
         $form = $this->createForm(TaskType::class, $task);
         $form->handleRequest($request);
@@ -162,7 +182,9 @@ class TaskController extends AbstractController
     #[Route('/{id}/delete', name: 'app_planner_task_delete', methods: ['POST'])]
     public function delete(Request $request, Task $task, EntityManagerInterface $em): Response
     {
-        $this->denyAccessUnlessGranted('TASK_DELETE', $task);
+        if ($task->getOwner() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer cette tâche.');
+        }
 
         if ($this->isCsrfTokenValid('delete'.$task->getId(), $request->request->get('_token'))) {
             $em->remove($task);

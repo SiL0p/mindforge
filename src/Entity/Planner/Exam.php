@@ -50,6 +50,9 @@ class Exam
     #[ORM\ManyToOne(inversedBy: 'exams')]
     private ?Subject $subject = null;
 
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $aiRevisionPlan = null;
+
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
@@ -60,6 +63,8 @@ class Exam
 
     // Getters & Setters
     public function getId(): ?int { return $this->id; }
+    public function getAiRevisionPlan(): ?array { return $this->aiRevisionPlan; }
+    public function setAiRevisionPlan(?array $aiRevisionPlan): static { $this->aiRevisionPlan = $aiRevisionPlan; return $this; }
     public function getTitle(): ?string { return $this->title; }
     public function setTitle(string $title): static { $this->title = $title; return $this; }
     public function getDescription(): ?string { return $this->description; }

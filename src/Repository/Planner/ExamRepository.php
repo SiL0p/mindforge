@@ -25,4 +25,20 @@ class ExamRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findExamsByDate(User $user, \DateTimeImmutable $date): array
+    {
+        $startOfDay = $date->setTime(0, 0, 0);
+        $endOfDay = $startOfDay->modify('+1 day');
+
+        return $this->createQueryBuilder('e')
+            ->where('e.owner = :user')
+            ->andWhere('e.examDate >= :start')
+            ->andWhere('e.examDate < :end')
+            ->setParameter('user', $user)
+            ->setParameter('start', $startOfDay)
+            ->setParameter('end', $endOfDay)
+            ->getQuery()
+            ->getResult();
+    }
 }

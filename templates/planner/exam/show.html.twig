@@ -1,0 +1,434 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Exam Details - {{ exam.title }}{% endblock %}
+
+{% block module_title %}Exam Details{% endblock %}
+{% block module_subtitle %}Review your AI-generated preparation plan.{% endblock %}
+{% block module_content %}
+<div class="container-fluid" style="margin-top: 20px;">
+    <div class="row">
+        {% include 'components/_sidebar_planner.html.twig' %}
+
+        <main class="col-md-9 col-lg-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ exam.title }}</h1>
+                <div>
+                    <a href="{{ path('app_planner_exam_edit', {'id': exam.id}) }}" class="btn btn-warning"><i class="fa fa-edit"></i> Edit</a>
+                    <a href="{{ path('app_planner_exams') }}" class="btn btn-secondary"><i class="fa fa-arrow-left"></i> Back to Exams</a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Exam Info Card -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="mb-0 text-primary"><i class="fa fa-info-circle"></i> Exam Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between px-0">
+                                    <span><strong>Subject:</strong></span>
+                                    <span>{{ exam.subject ? exam.subject.name : 'N/A' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between px-0">
+                                    <span><strong>Date:</strong></span>
+                                    <span>{{ exam.examDate|date('M d, Y H:i') }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between px-0">
+                                    <span><strong>Duration:</strong></span>
+                                    <span>{{ exam.durationMinutes ? exam.durationMinutes ~ ' min' : 'N/A' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between px-0">
+                                    <span><strong>Importance:</strong></span>
+                                    <span><span class="badge bg-danger rounded-pill">{{ exam.importance }}/10</span></span>
+                                </li>
+                                {% if exam.location %}
+                                <li class="list-group-item px-0">
+                                    <strong>Location:</strong><br>
+                                    <span class="text-muted">{{ exam.location }}</span>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Insights Card -->
+                <div class="col-md-8 mb-4">
+                    <div class="card shadow-sm border-info h-100">
+                        <div class="card-header bg-info text-white border-bottom d-flex align-items-center">
+                            <h5 class="mb-0"><i class="fa fa-robot me-2"></i> AI Preparation Analyst</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-4 text-center">
+                                <div class="col-6 border-end">
+                                    <h6 class="text-muted text-uppercase small font-weight-bold">Preparation Score</h6>
+                                    <div class="display-4 font-weight-bold {% if prepScore >= 70 %}text-success{% elseif prepScore >= 40 %}text-warning{% else %}text-danger{% endif %}">
+                                        {{ prepScore }}%
+                                    </div>
+                                    <div class="progress mt-2" style="height: 10px;">
+                                        <div class="progress-bar {% if prepScore >= 70 %}bg-success{% elseif prepScore >= 40 %}bg-warning{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ prepScore }}%" aria-valuenow="{{ prepScore }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="text-muted text-uppercase small font-weight-bold">Success Probability</h6>
+                                    <div class="display-4 font-weight-bold text-primary">
+                                        {{ successProbability }}%
+                                    </div>
+                                    <p class="small text-muted mt-2 mb-0">Based on task completion and importance.</p>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+                                <h5><i class="fa fa-calendar-check text-primary"></i> Suggested Revision Plan</h5>
+                                {% if exam.aiRevisionPlan %}
+                                <button type="button" id="btn-read-plan" class="btn btn-sm btn-outline-primary">
+                                    <i class="fa fa-volume-up"></i> Read Aloud
+                                </button>
+                                {% endif %}
+                            </div>
+                            
+                            {% if exam.aiRevisionPlan %}
+                                <div class="timeline">
+                                    {% for step in exam.aiRevisionPlan %}
+                                    <div class="d-flex mb-3">
+                                        <div class="me-3 text-end" style="min-width: 80px;">
+                                            <span class="badge bg-light text-dark border">{{ step.day }}</span>
+                                        </div>
+                                        <div class="flex-grow-1 border-start ps-3 border-primary" style="border-width: 3px !important;">
+                                            <p class="mb-0">{{ step.action }}</p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-secondary">
+                                    <i class="fa fa-info-circle"></i> Edit this exam and save to lazily generate the AI plan.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Text AI Tutor Card -->
+            <div class="card shadow-lg mb-4 text-tutor-container" id="tutor-section" style="border: none; border-radius: 16px; overflow: hidden;">
+                
+                <!-- Header -->
+                <div style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); padding: 20px; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="background: rgba(255,255,255,0.2); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa fa-robot fa-lg text-white"></i>
+                        </div>
+                        <div>
+                            <h5 style="margin: 0; font-weight: bold; color: white;">AI Tutor Chat</h5>
+                            <small style="color: rgba(255,255,255,0.7);">Ask about <strong>{{ exam.subject ? exam.subject.name|capitalize : 'this exam' }}</strong></small>
+                        </div>
+                    </div>
+                    <div style="background: white; color: #0d6efd; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <i class="fa fa-bolt text-warning" style="margin-right: 5px;"></i> Groq Fast AI
+                    </div>
+                </div>
+                
+                <!-- Body -->
+                <div style="display: flex; flex-direction: column; height: 500px; background-color: #f8f9fc;">
+                    
+                    <!-- Chat History -->
+                    <div id="tutor-chat-history" style="padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; flex-grow: 1; scroll-behavior: smooth;">
+                        <!-- Initial message -->
+                        <div style="display: flex; align-items: flex-end; width: 100%; margin-bottom: 10px;">
+                            <div style="background: #0d6efd; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                                <i class="fa fa-robot" style="font-size: 0.85rem;"></i>
+                            </div>
+                            <div style="background: white; border-radius: 18px; border-bottom-left-radius: 2px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); padding: 15px 20px; max-width: 80%;">
+                                <div style="color: #333; font-size: 0.95rem; line-height: 1.5;">Hello! I am your AI Tutor. I'm here to help you study and prepare for your <strong>{{ exam.subject ? exam.subject.name : exam.title }}</strong> exam. What would you like to know?</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Input Area -->
+                    <div style="background: white; padding: 15px 20px; border-top: 1px solid #eaeaea; display: flex; flex-direction: row; gap: 15px; align-items: center;">
+                        <input type="text" id="tutor-input" placeholder="Type your question..." autocomplete="off" style="flex-grow: 1; border: none; background: #f0f2f5; border-radius: 24px; padding: 14px 20px; font-size: 0.95rem; outline: none; transition: 0.2s box-shadow;" onfocus="this.style.boxShadow='0 0 0 3px rgba(13, 110, 253, 0.2)'" onblur="this.style.boxShadow='none'" />
+                        <button id="btn-tutor-send" style="background: #0d6efd; border: none; border-radius: 50%; width: 50px; height: 50px; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(13, 110, 253, 0.3);" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 10px rgba(13, 110, 253, 0.4)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 6px rgba(13, 110, 253, 0.3)'">
+                            <i class="fa fa-paper-plane" style="font-size: 1.2rem; transform: translateX(-1px);"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {% if exam.description %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Description</h5>
+                </div>
+                <div class="card-body">
+                    {{ exam.description|nl2br }}
+                </div>
+            </div>
+            {% endif %}
+
+        </main>
+    </div>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const btnRead = document.getElementById('btn-read-plan');
+    if (!btnRead) return;
+
+    if (!('speechSynthesis' in window)) {
+        btnRead.style.display = 'none';
+        return;
+    }
+
+    let isPlaying = false;
+
+    btnRead.addEventListener('click', () => {
+        if (isPlaying) {
+            window.speechSynthesis.cancel();
+            isPlaying = false;
+            btnRead.innerHTML = '<i class="fa fa-volume-up"></i> Read Aloud';
+            return;
+        }
+
+        const title = "{{ exam.title|escape('js') }}";
+        const importance = {{ exam.importance|default(5) }};
+        const dateStr = "{{ exam.examDate|date('Y-m-d') }}";
+        
+        const examDate = new Date(dateStr);
+        const today = new Date();
+        const diffTime = examDate.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        
+        let importanceText = "important";
+        if (importance >= 8) importanceText = "highly important";
+        else if (importance <= 3) importanceText = "not very important";
+
+        let textToRead = `Your ${title} is in ${Math.max(0, diffDays)} days. This exam is ${importanceText}. `;
+        
+        const steps = document.querySelectorAll('.timeline .d-flex');
+        if (steps.length > 0) {
+            textToRead += "Here is your suggested plan. ";
+            steps.forEach(step => {
+                const day = step.querySelector('.badge').innerText;
+                const action = step.querySelector('p').innerText;
+                textToRead += `For ${day}: ${action}. `;
+            });
+        }
+
+        const utterance = new SpeechSynthesisUtterance(textToRead);
+        utterance.lang = 'en-US'; // Set explicit language
+        
+        // Wait for voices to load or get them immediately
+        let voices = window.speechSynthesis.getVoices();
+        if (voices.length > 0) {
+            const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+            if (englishVoices.length > 0) {
+                // Try to favor specific high-quality English voices (Google US/UK, Microsoft Zira/David, etc)
+                utterance.voice = englishVoices.find(v => v.name.includes('Google') || v.name.includes('Zira') || v.name.includes('Mark')) || englishVoices[0];
+            }
+        }
+        
+        utterance.onend = () => {
+            isPlaying = false;
+            btnRead.innerHTML = '<i class="fa fa-volume-up"></i> Read Aloud';
+        };
+
+        isPlaying = true;
+        btnRead.innerHTML = '<i class="fa fa-stop"></i> Stop';
+        window.speechSynthesis.speak(utterance);
+    });
+    
+    // Voices might load asynchronously depending on OS/Browser
+    window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+    };
+
+    // Text AI Tutor Logic
+    const tutorInput = document.getElementById('tutor-input');
+    const btnTutorSend = document.getElementById('btn-tutor-send');
+    const chatHistory = document.getElementById('tutor-chat-history');
+    
+    if (chatHistory) {
+        // Auto-scroll to bottom of chat
+        function scrollToBottom() {
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        // Add message to chat UI
+        function addMessage(sender, text, isError = false) {
+            const msgDiv = document.createElement('div');
+            const isUser = sender === 'user';
+            
+            msgDiv.style.display = 'flex';
+            msgDiv.style.alignItems = 'flex-end';
+            msgDiv.style.width = '100%';
+            msgDiv.style.marginBottom = '10px';
+            
+            if (isUser) {
+                msgDiv.style.justifyContent = 'flex-end';
+            }
+            
+            let htmlContent = '';
+            
+            if (isUser) {
+                htmlContent = `
+                    <div style="background: #0d6efd; color: white; border-radius: 18px; border-bottom-right-radius: 2px; box-shadow: 0 2px 6px rgba(13, 110, 253, 0.2); padding: 15px 20px; max-width: 80%;">
+                        <div style="white-space: pre-wrap; font-size: 0.95rem; line-height: 1.5;">${text}</div>
+                    </div>
+                `;
+            } else {
+                let bgStyle = isError ? '#dc3545' : 'white';
+                let textColor = isError ? 'white' : '#333';
+                let iconClass = isError ? 'fa-exclamation-triangle' : 'fa-robot';
+                
+                htmlContent = `
+                    <div style="background: #0d6efd; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <i class="fa ${iconClass}" style="font-size: 0.85rem;"></i>
+                    </div>
+                    <div style="background: ${bgStyle}; color: ${textColor}; border-radius: 18px; border-bottom-left-radius: 2px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); padding: 15px 20px; max-width: 80%;">
+                        <div style="white-space: pre-wrap; font-size: 0.95rem; line-height: 1.5;">${text}</div>
+                    </div>
+                `;
+            }
+
+            msgDiv.innerHTML = htmlContent;
+            
+            chatHistory.appendChild(msgDiv);
+            scrollToBottom();
+        }
+
+        async function processQuestion(question) {
+            btnTutorSend.disabled = true;
+            tutorInput.disabled = true;
+            
+            // Setup typing indicator
+            const typingId = 'typing-' + Date.now();
+            const typingDiv = document.createElement('div');
+            typingDiv.style.display = 'flex';
+            typingDiv.style.alignItems = 'flex-end';
+            typingDiv.style.width = '100%';
+            typingDiv.style.marginBottom = '10px';
+            typingDiv.id = typingId;
+            typingDiv.innerHTML = `
+                <div style="background: #e9ecef; color: #6c757d; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <i class="fa fa-circle-notch fa-spin" style="font-size: 0.85rem;"></i>
+                </div>
+                <div style="background: white; border-radius: 18px; border-bottom-left-radius: 2px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); padding: 15px 25px; height: 50px; display: flex; align-items: center;">
+                    <div style="display: flex; gap: 5px;">
+                        <span style="background: #adb5bd; border-radius: 50%; width: 6px; height: 6px; animation: typing-dot 1.4s infinite ease-in-out both;"></span>
+                        <span style="background: #adb5bd; border-radius: 50%; width: 6px; height: 6px; animation: typing-dot 1.4s infinite ease-in-out both; animation-delay: 0.2s;"></span>
+                        <span style="background: #adb5bd; border-radius: 50%; width: 6px; height: 6px; animation: typing-dot 1.4s infinite ease-in-out both; animation-delay: 0.4s;"></span>
+                    </div>
+                </div>
+            `;
+            
+            // Inject styles for scrollbar and animation if not already present
+            if (!document.getElementById('typing-style')) {
+                const style = document.createElement('style');
+                style.id = 'typing-style';
+                style.innerHTML = `
+                    @keyframes typing-dot {
+                        0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
+                        40% { transform: scale(1); opacity: 1; }
+                    }
+                    #tutor-chat-history::-webkit-scrollbar {
+                        width: 8px;
+                    }
+                    #tutor-chat-history::-webkit-scrollbar-track {
+                        background: transparent;
+                    }
+                    #tutor-chat-history::-webkit-scrollbar-thumb {
+                        background: rgba(0,0,0,0.15);
+                        border-radius: 10px;
+                    }
+                    #tutor-chat-history::-webkit-scrollbar-thumb:hover {
+                        background: rgba(0,0,0,0.3);
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            chatHistory.appendChild(typingDiv);
+            scrollToBottom();
+            
+            const apiKey = '{{ groq_api_key }}';
+            const subject = "{{ exam.subject ? exam.subject.name|escape('js') : exam.title|escape('js') }}";
+            
+            const systemPrompt = "You are a helpful, expert AI tutor text messaging a student preparing for an exam. The specific subject of this exam is: '" + subject + "'. CRITICAL RULES: 1. ONLY answer questions related to '" + subject + "' or general study techniques. 2. If the user asks a question COMPLETELY UNRELATED to '" + subject + "', you MUST politely decline and remind them that you are specifically here to help with '" + subject + "'. 3. Keep your answers concise, encouraging, and clear. Note that the student is interacting with you via a chat interface.";
+
+            // Collect history from DOM (optional enhancement: we could just send the latest question, but a chat usually includes context)
+            const messages = [
+                { role: 'system', content: systemPrompt }
+            ];
+            
+            // Just send the user's latest query for now to guarantee the schema is correct without hitting token limits
+            messages.push({ role: 'user', content: question });
+
+            try {
+                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'llama-3.1-8b-instant',
+                        messages: messages,
+                        max_tokens: 400,
+                        temperature: 0.7
+                    })
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    console.error("Groq API Error Details:", errData);
+                    throw new Error(`API error: ${response.status} - ${errData.error?.message || 'Unknown error'}`);
+                }
+
+                const data = await response.json();
+                const answer = data.choices[0].message.content;
+                
+                // Remove typing indicator
+                const typingEl = document.getElementById(typingId);
+                if (typingEl) typingEl.remove();
+                
+                // Add real answer
+                addMessage('ai', answer);
+                
+            } catch (error) {
+                console.error("API Error:", error);
+                const typingEl = document.getElementById(typingId);
+                if (typingEl) typingEl.remove();
+                addMessage('ai', "Failed to get a response. Please check your connection and try again.", true);
+            } finally {
+                btnTutorSend.disabled = false;
+                tutorInput.disabled = false;
+                tutorInput.focus();
+            }
+        }
+
+        function handleSend() {
+            const text = tutorInput.value.trim();
+            if (text) {
+                addMessage('user', text);
+                tutorInput.value = '';
+                processQuestion(text);
+            }
+        }
+
+        btnTutorSend?.addEventListener('click', handleSend);
+        tutorInput?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
