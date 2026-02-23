@@ -73,49 +73,66 @@ final class UserController extends AbstractController
     }
 
     #[Route('/workspace', name: 'app_workspace')]
-    public function workspace(EntityManagerInterface $em): Response
-    {
-        $user = $this->getUser();
+public function workspace(EntityManagerInterface $em): Response
+{
+    /** @var User|null $user */
+    $user = $this->getUser();
 
-        if (!$user) {
-            return $this->redirectToRoute('app_login');
-        }
-
-        $taskRepo = $em->getRepository(Task::class);
-        $claimRepo = $em->getRepository(Claim::class);
-        $challengeRepo = $em->getRepository(SharedTask::class);
-        $examRepo = $em->getRepository(Exam::class);
-        $statsRepo = $em->getRepository(GamificationStats::class);
-
-        $myTaskCount = $taskRepo->count(['owner' => $user]);
-        $myDoneTaskCount = $taskRepo->count(['owner' => $user, 'status' => Task::STATUS_DONE]);
-        $myClaimCount = $claimRepo->count(['createdBy' => $user]);
-        $myOpenClaimCount = $claimRepo->count(['createdBy' => $user, 'status' => 'open']);
-        $myReceivedChallenges = $challengeRepo->count(['sharedWith' => $user]);
-        $mySentChallenges = $challengeRepo->count(['sharedBy' => $user]);
-        $myExamCount = $examRepo->count(['owner' => $user]);
-
-        $recentTasks = $taskRepo->findBy(['owner' => $user], ['createdAt' => 'DESC'], 5);
-        $recentChallenges = $challengeRepo->findBy(['sharedWith' => $user], ['createdAt' => 'DESC'], 5);
-        $recentClaims = $claimRepo->findBy(['createdBy' => $user], ['createdAt' => 'DESC'], 5);
-
-        $myStats = $statsRepo->findOneBy(['user' => $user]);
-
-        return $this->render('user/workspace.html.twig', [
-            'myTaskCount' => $myTaskCount,
-            'myDoneTaskCount' => $myDoneTaskCount,
-            'myClaimCount' => $myClaimCount,
-            'myOpenClaimCount' => $myOpenClaimCount,
-            'myReceivedChallenges' => $myReceivedChallenges,
-            'mySentChallenges' => $mySentChallenges,
-            'myExamCount' => $myExamCount,
-            'myXp' => $myStats?->getTotalXp() ?? 0,
-            'myLevel' => $myStats?->getCurrentLevel() ?? 1,
-            'recentTasks' => $recentTasks,
-            'recentChallenges' => $recentChallenges,
-            'recentClaims' => $recentClaims,
-        ]);
+    if (!$user) {
+        return $this->redirectToRoute('app_login');
     }
+
+    // Repositories
+    $taskRepo = $em->getRepository(Task::class);
+    $claimRepo = $em->getRepository(Claim::class);
+    $challengeRepo = $em->getRepository(SharedTask::class);
+    $examRepo = $em->getRepository(Exam::class);
+    $statsRepo = $em->getRepository(GamificationStats::class);
+    $userRepo = $em->getRepository(User::class);
+
+    // User stats
+    $myTaskCount = $taskRepo->count(['owner' => $user]);
+    $myDoneTaskCount = $taskRepo->count(['owner' => $user, 'status' => Task::STATUS_DONE]);
+    $myClaimCount = $claimRepo->count(['createdBy' => $user]);
+    $myOpenClaimCount = $claimRepo->count(['createdBy' => $user, 'status' => 'open']);
+    $myReceivedChallenges = $challengeRepo->count(['sharedWith' => $user]);
+    $mySentChallenges = $challengeRepo->count(['sharedBy' => $user]);
+    $myExamCount = $examRepo->count(['owner' => $user]);
+
+    $recentTasks = $taskRepo->findBy(['owner' => $user], ['createdAt' => 'DESC'], 5);
+    $recentChallenges = $challengeRepo->findBy(['sharedWith' => $user], ['createdAt' => 'DESC'], 5);
+    $recentClaims = $claimRepo->findBy(['createdBy' => $user], ['createdAt' => 'DESC'], 5);
+
+    $myStats = $statsRepo->findOneBy(['user' => $user]);
+
+    // --- NEW: fetch friends for workspace ---
+    // Assuming you have a method getFriends() in your User entity or service
+    $workspaceFriends = [];
+    if (method_exists($user, 'getFriends')) {
+        foreach ($user->getFriends() as $friend) {
+            $workspaceFriends[] = $friend;
+        }
+    }
+
+    // If you don’t have getFriends(), you may need a repository query here
+    // Example: $workspaceFriends = $userRepo->findFriends($user);
+
+    return $this->render('user/workspace.html.twig', [
+        'myTaskCount' => $myTaskCount,
+        'myDoneTaskCount' => $myDoneTaskCount,
+        'myClaimCount' => $myClaimCount,
+        'myOpenClaimCount' => $myOpenClaimCount,
+        'myReceivedChallenges' => $myReceivedChallenges,
+        'mySentChallenges' => $mySentChallenges,
+        'myExamCount' => $myExamCount,
+        'myXp' => $myStats?->getTotalXp() ?? 0,
+        'myLevel' => $myStats?->getCurrentLevel() ?? 1,
+        'recentTasks' => $recentTasks,
+        'recentChallenges' => $recentChallenges,
+        'recentClaims' => $recentClaims,
+        'workspaceFriends' => $workspaceFriends, 
+    ]);
+}
     #[Route('/signup', name: 'app_signup')]
     public function signup(
         Request $request,

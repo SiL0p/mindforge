@@ -130,7 +130,7 @@ public function workspace(EntityManagerInterface $em): Response
         'recentTasks' => $recentTasks,
         'recentChallenges' => $recentChallenges,
         'recentClaims' => $recentClaims,
-        'workspaceFriends' => $workspaceFriends, // ✅ pass to Twig
+        'workspaceFriends' => $workspaceFriends, 
     ]);
 }
     #[Route('/signup', name: 'app_signup')]
