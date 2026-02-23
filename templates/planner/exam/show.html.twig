@@ -115,43 +115,46 @@
             </div>
 
             <!-- Text AI Tutor Card -->
-            <div class="card shadow-lg mb-4 rounded-4 border-0" id="tutor-section" style="overflow: hidden;">
-                <div class="card-header p-4 d-flex align-items-center justify-content-between border-0 shadow-sm" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
-                    <div class="d-flex align-items-center">
-                        <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 48px; height: 48px;">
+            <div class="card shadow-lg mb-4 text-tutor-container" id="tutor-section" style="border: none; border-radius: 16px; overflow: hidden;">
+                
+                <!-- Header -->
+                <div style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); padding: 20px; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="background: rgba(255,255,255,0.2); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                             <i class="fa fa-robot fa-lg text-white"></i>
                         </div>
                         <div>
-                            <h5 class="mb-0 fw-bold text-white">AI Tutor Chat</h5>
-                            <small class="text-white-50">Ask about <strong>{{ exam.subject ? exam.subject.name|capitalize : 'this exam' }}</strong></small>
+                            <h5 style="margin: 0; font-weight: bold; color: white;">AI Tutor Chat</h5>
+                            <small style="color: rgba(255,255,255,0.7);">Ask about <strong>{{ exam.subject ? exam.subject.name|capitalize : 'this exam' }}</strong></small>
                         </div>
                     </div>
-                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 shadow"><i class="fa fa-bolt text-warning me-1"></i> Groq Fast AI</span>
+                    <div style="background: white; color: #0d6efd; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <i class="fa fa-bolt text-warning" style="margin-right: 5px;"></i> Groq Fast AI
+                    </div>
                 </div>
                 
-                <div class="card-body d-flex flex-column p-0" style="height: 500px; background-color: #f8f9fc;">
+                <!-- Body -->
+                <div style="display: flex; flex-direction: column; height: 500px; background-color: #f8f9fc;">
+                    
                     <!-- Chat History -->
-                    <div id="tutor-chat-history" class="p-4" style="display: flex; flex-direction: column; gap: 20px; overflow-y: auto; flex-grow: 1; scroll-behavior: smooth;">
-                        
+                    <div id="tutor-chat-history" style="padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; flex-grow: 1; scroll-behavior: smooth;">
                         <!-- Initial message -->
-                        <div class="d-flex align-items-end w-100 mb-2">
-                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2 shadow-sm flex-shrink-0" style="width: 36px; height: 36px;">
-                                <i class="fa fa-robot small"></i>
+                        <div style="display: flex; align-items: flex-end; width: 100%; margin-bottom: 10px;">
+                            <div style="background: #0d6efd; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                                <i class="fa fa-robot" style="font-size: 0.85rem;"></i>
                             </div>
-                            <div class="bg-white border-0 rounded-4 rounded-bottom-0 shadow-sm p-3" style="max-width: 80%; border-bottom-left-radius: 0 !important;">
-                                <div class="text-dark" style="font-size: 0.95rem; line-height: 1.5;">Hello! I am your AI Tutor. I'm here to help you study and prepare for your <strong>{{ exam.subject ? exam.subject.name : exam.title }}</strong> exam. What would you like to know?</div>
+                            <div style="background: white; border-radius: 18px; border-bottom-left-radius: 2px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); padding: 15px 20px; max-width: 80%;">
+                                <div style="color: #333; font-size: 0.95rem; line-height: 1.5;">Hello! I am your AI Tutor. I'm here to help you study and prepare for your <strong>{{ exam.subject ? exam.subject.name : exam.title }}</strong> exam. What would you like to know?</div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Text Input -->
-                    <div class="bg-white p-3 border-top mt-auto shadow-sm">
-                        <div class="input-group">
-                            <input type="text" id="tutor-input" class="form-control border-0 bg-light rounded-pill ps-4 py-3" placeholder="Type your question..." autocomplete="off" style="box-shadow: none;" onfocus="this.style.boxShadow='0 0 0 0.25rem rgba(13, 110, 253, 0.15)'" onblur="this.style.boxShadow='none'" />
-                            <button class="btn btn-primary rounded-circle ms-2 shadow-sm d-flex align-items-center justify-content-center" id="btn-tutor-send" style="width: 54px; height: 54px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                                <i class="fa fa-paper-plane fa-lg"></i>
-                            </button>
-                        </div>
+                    <!-- Input Area -->
+                    <div style="background: white; padding: 15px 20px; border-top: 1px solid #eaeaea; display: flex; flex-direction: row; gap: 15px; align-items: center;">
+                        <input type="text" id="tutor-input" placeholder="Type your question..." autocomplete="off" style="flex-grow: 1; border: none; background: #f0f2f5; border-radius: 24px; padding: 14px 20px; font-size: 0.95rem; outline: none; transition: 0.2s box-shadow;" onfocus="this.style.boxShadow='0 0 0 3px rgba(13, 110, 253, 0.2)'" onblur="this.style.boxShadow='none'" />
+                        <button id="btn-tutor-send" style="background: #0d6efd; border: none; border-radius: 50%; width: 50px; height: 50px; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(13, 110, 253, 0.3);" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 10px rgba(13, 110, 253, 0.4)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 6px rgba(13, 110, 253, 0.3)'">
+                            <i class="fa fa-paper-plane" style="font-size: 1.2rem; transform: translateX(-1px);"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -261,25 +264,33 @@ document.addEventListener('DOMContentLoaded', () => {
             const msgDiv = document.createElement('div');
             const isUser = sender === 'user';
             
-            msgDiv.className = `d-flex align-items-end w-100 mb-2 ${isUser ? 'justify-content-end' : ''}`;
+            msgDiv.style.display = 'flex';
+            msgDiv.style.alignItems = 'flex-end';
+            msgDiv.style.width = '100%';
+            msgDiv.style.marginBottom = '10px';
+            
+            if (isUser) {
+                msgDiv.style.justifyContent = 'flex-end';
+            }
             
             let htmlContent = '';
             
             if (isUser) {
                 htmlContent = `
-                    <div class="bg-primary text-white border-0 rounded-4 shadow-sm p-3 me-2" style="max-width: 80%; border-bottom-right-radius: 0 !important;">
+                    <div style="background: #0d6efd; color: white; border-radius: 18px; border-bottom-right-radius: 2px; box-shadow: 0 2px 6px rgba(13, 110, 253, 0.2); padding: 15px 20px; max-width: 80%;">
                         <div style="white-space: pre-wrap; font-size: 0.95rem; line-height: 1.5;">${text}</div>
                     </div>
                 `;
             } else {
-                let bubbleClass = isError ? 'bg-danger text-white' : 'bg-white text-dark';
+                let bgStyle = isError ? '#dc3545' : 'white';
+                let textColor = isError ? 'white' : '#333';
                 let iconClass = isError ? 'fa-exclamation-triangle' : 'fa-robot';
                 
                 htmlContent = `
-                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2 shadow-sm flex-shrink-0" style="width: 36px; height: 36px;">
-                        <i class="fa ${iconClass} small"></i>
+                    <div style="background: #0d6efd; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <i class="fa ${iconClass}" style="font-size: 0.85rem;"></i>
                     </div>
-                    <div class="${bubbleClass} border-0 rounded-4 shadow-sm p-3" style="max-width: 80%; border-bottom-left-radius: 0 !important;">
+                    <div style="background: ${bgStyle}; color: ${textColor}; border-radius: 18px; border-bottom-left-radius: 2px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); padding: 15px 20px; max-width: 80%;">
                         <div style="white-space: pre-wrap; font-size: 0.95rem; line-height: 1.5;">${text}</div>
                     </div>
                 `;
@@ -298,17 +309,20 @@ document.addEventListener('DOMContentLoaded', () => {
             // Setup typing indicator
             const typingId = 'typing-' + Date.now();
             const typingDiv = document.createElement('div');
-            typingDiv.className = 'd-flex align-items-end w-100 mb-2';
+            typingDiv.style.display = 'flex';
+            typingDiv.style.alignItems = 'flex-end';
+            typingDiv.style.width = '100%';
+            typingDiv.style.marginBottom = '10px';
             typingDiv.id = typingId;
             typingDiv.innerHTML = `
-                <div class="bg-light text-secondary rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0 shadow-sm" style="width: 36px; height: 36px;">
-                    <i class="fa fa-circle-notch fa-spin small"></i>
+                <div style="background: #e9ecef; color: #6c757d; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <i class="fa fa-circle-notch fa-spin" style="font-size: 0.85rem;"></i>
                 </div>
-                <div class="bg-white border-0 rounded-4 shadow-sm p-3 d-flex align-items-center" style="max-width: 80%; border-bottom-left-radius: 0 !important; height: 50px;">
-                    <div class="typing-dots d-flex gap-1">
-                        <span class="bg-secondary rounded-circle" style="width: 6px; height: 6px; opacity: 0.5; animation: typing-dot 1.4s infinite ease-in-out both;"></span>
-                        <span class="bg-secondary rounded-circle" style="width: 6px; height: 6px; opacity: 0.5; animation: typing-dot 1.4s infinite ease-in-out both; animation-delay: 0.2s;"></span>
-                        <span class="bg-secondary rounded-circle" style="width: 6px; height: 6px; opacity: 0.5; animation: typing-dot 1.4s infinite ease-in-out both; animation-delay: 0.4s;"></span>
+                <div style="background: white; border-radius: 18px; border-bottom-left-radius: 2px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); padding: 15px 25px; height: 50px; display: flex; align-items: center;">
+                    <div style="display: flex; gap: 5px;">
+                        <span style="background: #adb5bd; border-radius: 50%; width: 6px; height: 6px; animation: typing-dot 1.4s infinite ease-in-out both;"></span>
+                        <span style="background: #adb5bd; border-radius: 50%; width: 6px; height: 6px; animation: typing-dot 1.4s infinite ease-in-out both; animation-delay: 0.2s;"></span>
+                        <span style="background: #adb5bd; border-radius: 50%; width: 6px; height: 6px; animation: typing-dot 1.4s infinite ease-in-out both; animation-delay: 0.4s;"></span>
                     </div>
                 </div>
             `;
@@ -319,21 +333,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 style.id = 'typing-style';
                 style.innerHTML = \`
                     @keyframes typing-dot {
-                        0%, 80%, 100% { transform: scale(0); }
-                        40% { transform: scale(1); }
+                        0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
+                        40% { transform: scale(1); opacity: 1; }
                     }
                     #tutor-chat-history::-webkit-scrollbar {
-                        width: 6px;
+                        width: 8px;
                     }
                     #tutor-chat-history::-webkit-scrollbar-track {
                         background: transparent;
                     }
                     #tutor-chat-history::-webkit-scrollbar-thumb {
-                        background: rgba(0,0,0,0.1);
+                        background: rgba(0,0,0,0.15);
                         border-radius: 10px;
                     }
                     #tutor-chat-history::-webkit-scrollbar-thumb:hover {
-                        background: rgba(0,0,0,0.25);
+                        background: rgba(0,0,0,0.3);
                     }
                 \`;
                 document.head.appendChild(style);
