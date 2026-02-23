@@ -1,0 +1,530 @@
+{% extends 'base.html.twig' %}
+{% block title %}Avatar Builder{% endblock %}
+{% block body %}
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+    --ink: #0f0e17;
+    --paper: #fffcf5;
+    --accent: #e8572a;
+    --accent2: #3d5af1;
+    --muted: #9e9e9e;
+    --border: #e8e4dc;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+.page {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    min-height: 100vh;
+    padding: 36px 20px 80px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 2px solid var(--ink); padding-bottom: 18px; margin-bottom: 36px;
+}
+.title { font-family: 'Syne', sans-serif; font-size: clamp(24px,4vw,38px); font-weight: 800; letter-spacing: -1px; }
+.title span { color: var(--accent); }
+
+.back-btn {
+    font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 2px; color: var(--ink);
+    text-decoration: none; padding: 9px 18px; border: 2px solid var(--ink);
+    border-radius: 100px; transition: all 0.2s;
+}
+.back-btn:hover { background: var(--ink); color: white; }
+
+.layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 28px;
+    align-items: start;
+}
+
+/* Preview */
+.preview-card {
+    background: var(--ink); border-radius: 22px;
+    padding: 32px 22px; text-align: center;
+    position: sticky; top: 20px;
+}
+.ring {
+    width: 164px; height: 164px; border-radius: 50%;
+    margin: 0 auto 18px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    padding: 4px;
+    animation: glow 3s ease-in-out infinite;
+}
+@keyframes glow {
+    0%,100% { box-shadow: 0 0 0 0 rgba(232,87,42,0.5); }
+    50% { box-shadow: 0 0 0 14px rgba(232,87,42,0); }
+}
+.ring img { width:100%; height:100%; border-radius:50%; background:#fff; display:block; }
+.p-name { color:white; font-family:'Syne',sans-serif; font-size:17px; font-weight:700; margin-bottom:6px; }
+.p-sub { color:rgba(255,255,255,0.4); font-size:12px; font-family:monospace; margin-bottom:20px; word-break:break-all; }
+
+.save-btn {
+    width:100%; padding:13px; background:var(--accent); color:white;
+    border:none; border-radius:11px; font-family:'Syne',sans-serif;
+    font-size:14px; font-weight:700; cursor:pointer; transition:all 0.2s;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.save-btn:hover { background:#d14420; transform:translateY(-1px); }
+.save-btn:disabled { opacity:0.6; pointer-events:none; }
+
+.upload-lbl {
+    display:block; margin-top:11px; padding:11px;
+    border:2px dashed rgba(255,255,255,0.2); border-radius:11px;
+    color:rgba(255,255,255,0.45); font-size:12px; cursor:pointer;
+    transition:all 0.2s; text-align:center;
+}
+.upload-lbl:hover { border-color:rgba(255,255,255,0.6); color:white; }
+.upload-lbl input { display:none; }
+
+/* Builder */
+.sec-lbl {
+    font-family:'Syne',sans-serif; font-size:10px; font-weight:700;
+    text-transform:uppercase; letter-spacing:3px; color:var(--muted);
+    margin-bottom:12px; display:flex; align-items:center; gap:10px;
+}
+.sec-lbl::after { content:''; flex:1; height:1px; background:var(--border); }
+.sec { margin-bottom:26px; }
+
+/* Option pills */
+.pill-row {
+    display: flex; flex-wrap: wrap; gap: 8px;
+}
+.pill {
+    padding: 7px 14px;
+    border: 2px solid var(--border);
+    border-radius: 100px;
+    font-size: 13px;
+    cursor: pointer;
+    background: white;
+    transition: all 0.18s;
+    white-space: nowrap;
+}
+.pill:hover { border-color: var(--accent2); color: var(--accent2); }
+.pill.active { border-color: var(--accent); background: var(--accent); color: white; font-weight: 600; }
+
+/* Color swatches */
+.swatch-row { display:flex; flex-wrap:wrap; gap:10px; }
+.swatch {
+    width:32px; height:32px; border-radius:50%;
+    cursor:pointer; border:3px solid transparent; transition:all 0.18s;
+    position: relative;
+}
+.swatch:hover { transform:scale(1.2); }
+.swatch.active { border-color:var(--ink); box-shadow:0 0 0 2px white, 0 0 0 4px var(--ink); }
+.swatch[title]::after {
+    content: attr(title);
+    position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
+    font-size: 9px; color: var(--muted); white-space: nowrap; pointer-events: none;
+    opacity: 0; transition: opacity 0.2s;
+}
+.swatch:hover::after { opacity: 1; }
+
+/* Toast */
+.toast {
+    position:fixed; bottom:26px; right:26px;
+    background:var(--ink); color:white; padding:13px 20px;
+    border-radius:11px; font-family:'Syne',sans-serif;
+    font-size:13px; font-weight:600;
+    transform:translateY(80px); opacity:0;
+    transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    z-index:9999; box-shadow:0 8px 28px rgba(0,0,0,0.2);
+}
+.toast.show { transform:translateY(0); opacity:1; }
+.toast.ok { border-left:4px solid #2ecc71; }
+.toast.err { border-left:4px solid var(--accent); }
+
+@media(max-width:768px){
+    .layout { grid-template-columns:1fr; }
+    .preview-card { position:static; }
+}
+</style>
+
+<div class="page">
+    <div class="header">
+        <h1 class="title">Avatar <span>Builder</span></h1>
+        <a href="{{ path('app_profile_view') }}" class="back-btn">← Back</a>
+    </div>
+
+    <div class="layout">
+
+        <!-- PREVIEW -->
+        <div>
+            <div class="preview-card">
+                <div class="ring">
+                    <img id="avatarImg" src="" alt="Your avatar">
+                </div>
+                <div class="p-name">{{ app.user.profile.firstName ?? '' }} {{ app.user.profile.lastName ?? 'You' }}</div>
+                <div class="p-sub" id="urlPreview">Building…</div>
+                <button class="save-btn" id="saveBtn" onclick="saveAvatar()">💾 Save Avatar</button>
+                <label class="upload-lbl">
+                    <input type="file" id="uploadFile" accept="image/*" onchange="doUpload(this)">
+                    📁 Upload custom image
+                </label>
+            </div>
+        </div>
+
+        <!-- BUILDER -->
+        <div id="builder">
+
+            <div class="sec">
+                <div class="sec-lbl">Skin Tone</div>
+                <div class="swatch-row" id="skinRow"></div>
+            </div>
+
+            <div class="sec">
+                <div class="sec-lbl">Hair Style</div>
+                <div class="pill-row" id="hairRow"></div>
+            </div>
+
+            <div class="sec">
+                <div class="sec-lbl">Hair Color</div>
+                <div class="swatch-row" id="hairColorRow"></div>
+            </div>
+
+            <div class="sec">
+                <div class="sec-lbl">Eyes</div>
+                <div class="pill-row" id="eyesRow"></div>
+            </div>
+
+            <div class="sec">
+                <div class="sec-lbl">Eyebrows</div>
+                <div class="pill-row" id="eyebrowsRow"></div>
+            </div>
+
+            <div class="sec">
+                <div class="sec-lbl">Mouth</div>
+                <div class="pill-row" id="mouthRow"></div>
+            </div>
+
+            <div class="sec">
+                <div class="sec-lbl">Facial Hair</div>
+                <div class="pill-row" id="facialHairRow"></div>
+            </div>
+
+            <div class="sec">
+                <div class="sec-lbl">Facial Hair Color</div>
+                <div class="swatch-row" id="facialHairColorRow"></div>
+            </div>
+
+            <div class="sec">
+                <div class="sec-lbl">Clothes</div>
+                <div class="pill-row" id="clothesRow"></div>
+            </div>
+
+            <div class="sec">
+                <div class="sec-lbl">Clothes Color</div>
+                <div class="swatch-row" id="clothesColorRow"></div>
+            </div>
+
+            <div class="sec">
+                <div class="sec-lbl">Accessories</div>
+                <div class="pill-row" id="accessoriesRow"></div>
+            </div>
+
+            <div class="sec">
+                <div class="sec-lbl">Background Color</div>
+                <div class="swatch-row" id="bgRow"></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// All Avataaars options
+const OPTIONS = {
+    skin: {
+        type: 'swatch',
+        param: 'skinColor',
+        values: [
+            { val:'tanned',   hex:'#FD9841', label:'Tanned' },
+            { val:'yellow',   hex:'#F8D25C', label:'Yellow' },
+            { val:'pale',     hex:'#FFDBB4', label:'Pale' },
+            { val:'light',    hex:'#EDB98A', label:'Light' },
+            { val:'brown',    hex:'#D08B5B', label:'Brown' },
+            { val:'darkBrown',hex:'#AE5D29', label:'Dark Brown' },
+            { val:'black',    hex:'#614335', label:'Deep' },
+        ]
+    },
+    hair: {
+        type: 'pill',
+        param: 'top',
+        values: [
+            'noHair','eyepatch','hat','hijab','turban','winterHat1','winterHat2','winterHat3','winterHat4',
+            'longHairBigHair','longHairBob','longHairBun','longHairCurly','longHairCurvy','longHairDreads',
+            'longHairFrida','longHairFro','longHairFroBand','longHairNotTooLong','longHairShavedSides',
+            'longHairMiaWallace','longHairStraight','longHairStraight2','longHairStraightStrand',
+            'shortHairDreads01','shortHairDreads02','shortHairFrizzle','shortHairShaggyMullet',
+            'shortHairShortCurly','shortHairShortFlat','shortHairShortRound','shortHairShortWaved',
+            'shortHairSides','shortHairTheCaesar','shortHairTheCaesarSidePart',
+        ]
+    },
+    hairColor: {
+        type: 'swatch',
+        param: 'hairColor',
+        values: [
+            { val:'auburn',      hex:'#A55728', label:'Auburn' },
+            { val:'black',       hex:'#2C1B18', label:'Black' },
+            { val:'blonde',      hex:'#B58143', label:'Blonde' },
+            { val:'blondeGolden',hex:'#D6B370', label:'Golden' },
+            { val:'brown',       hex:'#724133', label:'Brown' },
+            { val:'brownDark',   hex:'#4A312C', label:'Dark Brown' },
+            { val:'pastelPink',  hex:'#F59797', label:'Pink' },
+            { val:'platinum',    hex:'#ECDCBF', label:'Platinum' },
+            { val:'red',         hex:'#C93305', label:'Red' },
+            { val:'silverGray',  hex:'#E8E1E1', label:'Silver' },
+        ]
+    },
+    eyes: {
+        type: 'pill',
+        param: 'eyes',
+        values: [
+            'close','cry','default','dizzy','eyeRoll','happy','hearts',
+            'side','squint','surprised','wink','winkWacky','xDiscoball',
+        ]
+    },
+    eyebrows: {
+        type: 'pill',
+        param: 'eyebrows',
+        values: [
+            'angry','angryNatural','default','defaultNatural','flatNatural',
+            'frownNatural','raisedExcited','raisedExcitedNatural','sadConcerned',
+            'sadConcernedNatural','unibrow','upDown','upDownNatural',
+        ]
+    },
+    mouth: {
+        type: 'pill',
+        param: 'mouth',
+        values: [
+            'concerned','default','disbelief','eating','grimace','sad',
+            'screamOpen','serious','smile','tongue','twinkle','vomit',
+        ]
+    },
+    facialHair: {
+        type: 'pill',
+        param: 'facialHair',
+        values: [
+            'blank','beardMedium','beardLight','beardMagestic','moustacheFancy','moustacheMagnum',
+        ]
+    },
+    facialHairColor: {
+        type: 'swatch',
+        param: 'facialHairColor',
+        values: [
+            { val:'auburn',      hex:'#A55728', label:'Auburn' },
+            { val:'black',       hex:'#2C1B18', label:'Black' },
+            { val:'blonde',      hex:'#B58143', label:'Blonde' },
+            { val:'brown',       hex:'#724133', label:'Brown' },
+            { val:'pastelPink',  hex:'#F59797', label:'Pink' },
+            { val:'platinum',    hex:'#ECDCBF', label:'Platinum' },
+            { val:'red',         hex:'#C93305', label:'Red' },
+            { val:'silverGray',  hex:'#E8E1E1', label:'Silver' },
+        ]
+    },
+    clothes: {
+        type: 'pill',
+        param: 'clothing',
+        values: [
+            'blazerAndShirt','blazerAndSweater','collarAndSweater','graphicShirt',
+            'hoodie','overall','shirtCrewNeck','shirtScoopNeck','shirtVNeck',
+        ]
+    },
+    clothesColor: {
+        type: 'swatch',
+        param: 'clothesColor',
+        values: [
+            { val:'black',        hex:'#262E33', label:'Black' },
+            { val:'blue01',       hex:'#65C9FF', label:'Sky' },
+            { val:'blue02',       hex:'#5199E4', label:'Blue' },
+            { val:'blue03',       hex:'#25557C', label:'Navy' },
+            { val:'gray01',       hex:'#E6E6E6', label:'Light Gray' },
+            { val:'gray02',       hex:'#929598', label:'Gray' },
+            { val:'heather',      hex:'#3C4F5C', label:'Heather' },
+            { val:'pastelBlue',   hex:'#B1E2FF', label:'Pastel Blue' },
+            { val:'pastelGreen',  hex:'#A7FFC4', label:'Pastel Green' },
+            { val:'pastelOrange', hex:'#FFDEB5', label:'Pastel Orange' },
+            { val:'pastelRed',    hex:'#FFAFB9', label:'Pastel Red' },
+            { val:'pastelYellow', hex:'#FFFFB1', label:'Pastel Yellow' },
+            { val:'pink',         hex:'#FF488E', label:'Pink' },
+            { val:'red',          hex:'#FF5C5C', label:'Red' },
+            { val:'white',        hex:'#FFFFFF', label:'White' },
+        ]
+    },
+    accessories: {
+        type: 'pill',
+        param: 'accessories',
+        values: [
+            'blank','kurt','prescription01','prescription02','round','sunglasses','wayfarers',
+        ]
+    },
+    bg: {
+        type: 'swatch',
+        param: 'backgroundColor',
+        values: [
+            { val:'b6e3f4', hex:'#b6e3f4', label:'Sky' },
+            { val:'ffd5dc', hex:'#ffd5dc', label:'Rose' },
+            { val:'d1f7c4', hex:'#d1f7c4', label:'Mint' },
+            { val:'ffeaa7', hex:'#ffeaa7', label:'Sun' },
+            { val:'dfe6e9', hex:'#dfe6e9', label:'Fog' },
+            { val:'c0392b', hex:'#c0392b', label:'Red' },
+            { val:'8e44ad', hex:'#8e44ad', label:'Purple' },
+            { val:'2980b9', hex:'#2980b9', label:'Blue' },
+            { val:'27ae60', hex:'#27ae60', label:'Green' },
+            { val:'f39c12', hex:'#f39c12', label:'Orange' },
+            { val:'ffffff', hex:'#ffffff', label:'White' },
+            { val:'transparent', hex:'transparent', label:'None' },
+        ]
+    }
+};
+
+// Current selections
+const sel = {
+    skinColor:       'light',
+    top:             'shortHairShortFlat',
+    hairColor:       'brown',
+    eyes:            'default',
+    eyebrows:        'default',
+    mouth:           'smile',
+    facialHair:      'blank',
+    facialHairColor: 'brown',
+    clothing:        'shirtCrewNeck',
+    clothesColor:    'blue03',
+    accessories:     'blank',
+    backgroundColor: 'b6e3f4',
+};
+
+function buildUrl() {
+    const base = 'https://api.dicebear.com/7.x/avataaars/svg';
+    const p = new URLSearchParams({
+        skinColor:       sel.skinColor,
+        top:             sel.top,
+        hairColor:       sel.hairColor,
+        eyes:            sel.eyes,
+        eyebrows:        sel.eyebrows,
+        mouth:           sel.mouth,
+        facialHair:      sel.facialHair,
+        facialHairColor: sel.facialHairColor,
+        clothing:        sel.clothing,
+        clothesColor:    sel.clothesColor,
+        accessories:     sel.accessories,
+        backgroundColor: sel.backgroundColor === 'transparent' ? '' : sel.backgroundColor,
+    });
+    return base + '?' + p.toString();
+}
+
+function update() {
+    const url = buildUrl();
+    document.getElementById('avatarImg').src = url;
+    document.getElementById('urlPreview').textContent = 'avataaars • ' + sel.top.replace(/([A-Z])/g,' $1').trim();
+}
+
+function buildSection(key, containerId) {
+    const cfg = OPTIONS[key];
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    const currentVal = sel[cfg.param];
+
+    if (cfg.type === 'pill') {
+        cfg.values.forEach(v => {
+            const el = document.createElement('div');
+            el.className = 'pill' + (v === currentVal ? ' active' : '');
+            // Pretty label
+            el.textContent = v.replace(/([A-Z])/g,' $1').replace(/^./,s=>s.toUpperCase()).trim() || 'None';
+            el.onclick = () => {
+                sel[cfg.param] = v;
+                container.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+                el.classList.add('active');
+                update();
+            };
+            container.appendChild(el);
+        });
+    } else {
+        cfg.values.forEach(c => {
+            const el = document.createElement('div');
+            el.className = 'swatch' + (c.val === currentVal ? ' active' : '');
+            el.style.background = c.hex === 'transparent' ? 'repeating-conic-gradient(#ccc 0% 25%, white 0% 50%) 0 0 / 10px 10px' : c.hex;
+            el.title = c.label;
+            if (c.hex === '#ffffff' || c.hex === '#FFFFFF') {
+                el.style.border = '3px solid #ddd';
+            }
+            el.onclick = () => {
+                sel[cfg.param] = c.val;
+                container.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+                el.classList.add('active');
+                update();
+            };
+            container.appendChild(el);
+        });
+    }
+}
+
+function init() {
+    buildSection('skin',           'skinRow');
+    buildSection('hair',           'hairRow');
+    buildSection('hairColor',      'hairColorRow');
+    buildSection('eyes',           'eyesRow');
+    buildSection('eyebrows',       'eyebrowsRow');
+    buildSection('mouth',          'mouthRow');
+    buildSection('facialHair',     'facialHairRow');
+    buildSection('facialHairColor','facialHairColorRow');
+    buildSection('clothes',        'clothesRow');
+    buildSection('clothesColor',   'clothesColorRow');
+    buildSection('accessories',    'accessoriesRow');
+    buildSection('bg',             'bgRow');
+    update();
+}
+
+async function saveAvatar() {
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.textContent = '⏳ Saving...';
+    try {
+        const res = await fetch('{{ path("app_generate_avatar") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ style: 'avataaars', avatarUrl: buildUrl(), selections: sel })
+        });
+        const ct = res.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+            console.error('Non-JSON:', await res.text());
+            toast('✗ Server error', 'err'); return;
+        }
+        const data = await res.json();
+        data.success ? toast('✓ Avatar saved!', 'ok') : toast('✗ ' + (data.error||'Failed'), 'err');
+    } catch(e) { toast('✗ ' + e.message, 'err'); }
+    finally { btn.disabled = false; btn.textContent = '💾 Save Avatar'; }
+}
+
+async function doUpload(input) {
+    if (!input.files[0]) return;
+    const fd = new FormData();
+    fd.append('avatar', input.files[0]);
+    try {
+        const res = await fetch('{{ path("app_upload_avatar") }}', {
+            method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:fd
+        });
+        const data = await res.json();
+        if (data.success) { document.getElementById('avatarImg').src = data.avatar+'?t='+Date.now(); toast('✓ Uploaded!','ok'); }
+        else toast('✗ Upload failed','err');
+    } catch(e) { toast('✗ '+e.message,'err'); }
+}
+
+function toast(msg,type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast '+type+' show';
+    setTimeout(()=>t.className='toast',3000);
+}
+
+init();
+</script>
+{% endblock %}
