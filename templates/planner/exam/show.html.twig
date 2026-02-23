@@ -114,6 +114,36 @@
                 </div>
             </div>
 
+            <!-- Text AI Tutor Card -->
+            <div class="card shadow-sm border-primary mb-4" id="tutor-section" style="border-width: 2px !important;">
+                <div class="card-header bg-primary text-white border-bottom d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0"><i class="fa fa-comments me-2"></i> AI Tutor Chat</h5>
+                    <span class="badge bg-light text-primary"><i class="fa fa-bolt text-warning"></i> Powered by Groq</span>
+                </div>
+                <div class="card-body d-flex flex-column" style="height: 440px;">
+                    <p class="mb-3 text-muted small">Ask me anything about <strong>{{ exam.subject ? exam.subject.name : 'this exam' }}</strong>.</p>
+                    
+                    <!-- Chat History -->
+                    <div id="tutor-chat-history" class="bg-light rounded p-3 mb-3 border shadow-inner" style="display: flex; flex-direction: column; gap: 15px; overflow-y: auto; flex-grow: 1;">
+                        <!-- Initial message -->
+                        <div class="d-flex align-items-start w-100 mb-2">
+                            <div class="bg-white border rounded p-2 shadow-sm" style="max-width: 85%;">
+                                <div class="text-primary fw-bold small mb-1"><i class="fa fa-robot"></i> AI Tutor</div>
+                                <div class="text-dark small">Hello! I am here to help you study for your {{ exam.subject ? exam.subject.name : exam.title }} exam. What would you like to know?</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Text Input -->
+                    <div class="input-group mt-auto">
+                        <input type="text" id="tutor-input" class="form-control focus-ring" placeholder="Type your question here..." autocomplete="off" />
+                        <button class="btn btn-primary" id="btn-tutor-send">
+                            <i class="fa fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             {% if exam.description %}
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white">
@@ -202,6 +232,134 @@ document.addEventListener('DOMContentLoaded', () => {
     window.speechSynthesis.onvoiceschanged = () => {
         window.speechSynthesis.getVoices();
     };
+
+    // Text AI Tutor Logic
+    const tutorInput = document.getElementById('tutor-input');
+    const btnTutorSend = document.getElementById('btn-tutor-send');
+    const chatHistory = document.getElementById('tutor-chat-history');
+    
+    if (chatHistory) {
+        // Auto-scroll to bottom of chat
+        function scrollToBottom() {
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        // Add message to chat UI
+        function addMessage(sender, text, isError = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `d-flex align-items-start w-100 ${sender === 'user' ? 'justify-content-end mb-2' : 'mb-2'}`;
+            
+            let headerLabel = sender === 'user' ? 'You' : 'AI Tutor';
+            let headerIcon = sender === 'user' ? 'fa-user' : 'fa-robot';
+            let headerColor = sender === 'user' ? 'text-light' : 'text-primary';
+            let bubbleClass = sender === 'user' ? 'bg-primary text-white border-primary border' : 'bg-white border text-dark';
+            
+            if (isError) {
+                headerColor = 'text-white';
+                bubbleClass = 'bg-danger text-white border-danger border';
+            }
+
+            msgDiv.innerHTML = `
+                <div class="${bubbleClass} rounded p-2 shadow-sm" style="max-width: 85%;">
+                    <div class="${headerColor} fw-bold small mb-1"><i class="fa ${headerIcon}"></i> ${headerLabel}</div>
+                    <div style="white-space: pre-wrap; font-size: 0.9rem;">${text}</div>
+                </div>
+            `;
+            
+            chatHistory.appendChild(msgDiv);
+            scrollToBottom();
+        }
+
+        async function processQuestion(question) {
+            btnTutorSend.disabled = true;
+            tutorInput.disabled = true;
+            
+            // Setup typing indicator
+            const typingId = 'typing-' + Date.now();
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'd-flex align-items-start w-100 mb-2';
+            typingDiv.id = typingId;
+            typingDiv.innerHTML = `
+                <div class="bg-light border rounded p-2 shadow-sm text-center" style="max-width: 85%; min-width: 100px;">
+                    <div class="text-muted small"><i class="fa fa-circle-notch fa-spin me-1"></i> AI is typing...</div>
+                </div>
+            `;
+            chatHistory.appendChild(typingDiv);
+            scrollToBottom();
+            
+            const apiKey = '{{ groq_api_key }}';
+            const subject = "{{ exam.subject ? exam.subject.name|escape('js') : exam.title|escape('js') }}";
+            
+            const systemPrompt = "You are a helpful, expert AI tutor text messaging a student preparing for an exam. The specific subject of this exam is: '" + subject + "'. CRITICAL RULES: 1. ONLY answer questions related to '" + subject + "' or general study techniques. 2. If the user asks a question COMPLETELY UNRELATED to '" + subject + "', you MUST politely decline and remind them that you are specifically here to help with '" + subject + "'. 3. Keep your answers concise, encouraging, and clear. Note that the student is interacting with you via a chat interface.";
+
+            // Collect history from DOM (optional enhancement: we could just send the latest question, but a chat usually includes context)
+            const messages = [
+                { role: 'system', content: systemPrompt }
+            ];
+            
+            // Just send the user's latest query for now to guarantee the schema is correct without hitting token limits
+            messages.push({ role: 'user', content: question });
+
+            try {
+                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'llama-3.1-8b-instant',
+                        messages: messages,
+                        max_tokens: 400,
+                        temperature: 0.7
+                    })
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    console.error("Groq API Error Details:", errData);
+                    throw new Error(`API error: ${response.status} - ${errData.error?.message || 'Unknown error'}`);
+                }
+
+                const data = await response.json();
+                const answer = data.choices[0].message.content;
+                
+                // Remove typing indicator
+                const typingEl = document.getElementById(typingId);
+                if (typingEl) typingEl.remove();
+                
+                // Add real answer
+                addMessage('ai', answer);
+                
+            } catch (error) {
+                console.error("API Error:", error);
+                const typingEl = document.getElementById(typingId);
+                if (typingEl) typingEl.remove();
+                addMessage('ai', "Failed to get a response. Please check your connection and try again.", true);
+            } finally {
+                btnTutorSend.disabled = false;
+                tutorInput.disabled = false;
+                tutorInput.focus();
+            }
+        }
+
+        function handleSend() {
+            const text = tutorInput.value.trim();
+            if (text) {
+                addMessage('user', text);
+                tutorInput.value = '';
+                processQuestion(text);
+            }
+        }
+
+        btnTutorSend?.addEventListener('click', handleSend);
+        tutorInput?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+    }
 });
 </script>
 {% endblock %}
