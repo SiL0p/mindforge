@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (generateBtn) {
         generateBtn.addEventListener('click', function(e) {
             e.preventDefault();
-
+            
             // Show loading state
             const originalText = generateBtn.innerHTML;
             generateBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Generating...';
@@ -136,14 +136,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     // Update avatar preview
                     avatarPreview.src = data.avatar + '?t=' + new Date().getTime();
-
+                    
                     // Show success message
                     const alertDiv = document.createElement('div');
                     alertDiv.className = 'alert alert-success';
                     alertDiv.style.marginBottom = '15px';
                     alertDiv.innerHTML = '<i class="fa fa-check-circle"></i> ' + data.message;
                     generateBtn.parentElement.insertBefore(alertDiv, generateBtn);
-
+                    
                     // Remove message after 3 seconds
                     setTimeout(() => alertDiv.remove(), 3000);
                 } else {
