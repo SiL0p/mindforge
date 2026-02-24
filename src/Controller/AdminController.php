@@ -18,7 +18,7 @@ class AdminController extends AbstractController
     private HttpClientInterface $client;
     private string $groqApiKey;
 
-    private const GROQ_MODEL    = 'llama3-70b-8192';
+    private const GROQ_MODEL    = 'llama-3.3-70b-versatile';
     private const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 
     public function __construct(HttpClientInterface $client, string $groqApiKey)
@@ -489,21 +489,35 @@ PROMPT;
 
         $data = json_decode($request->getContent(), true) ?? [];
 
-        $prompt = <<<PROMPT
-You are a senior operations analyst writing a weekly admin report for MindForge.
-Write a clear, professional, data-driven narrative report in plain paragraphs (NO bullet points, NO markdown headers).
+        // Extract each value safely with defaults
+        $totalUsers    = (int)($data['total_users']    ?? 0);
+        $verifiedUsers = (int)($data['verified_users'] ?? 0);
+        $unvRate       = (float)($data['unverified_rate'] ?? 0);
+        $newToday      = (int)($data['new_today']      ?? 0);
+        $newWeek       = (int)($data['new_week']       ?? 0);
+        $newMonth      = (int)($data['new_month']      ?? 0);
+        $activeToday   = (int)($data['active_today']   ?? 0);
+        $activeWeek    = (int)($data['active_week']    ?? 0);
+        $avgFocus      = (int)($data['avg_focus_time'] ?? 0);
+        $pendingRoles  = (int)($data['pending_roles']  ?? 0);
+        $riskScore     = (int)($data['risk_score']     ?? 0);
 
-Use this data:
-{$request->getContent()}
-
-Write 3-4 paragraphs covering:
-1. Platform health & user growth overview
-2. Security and verification status
-3. Engagement quality and cohort insights
-4. Specific recommended priorities for this week
-
-Tone: professional, direct, data-referenced. Address the admin directly.
-PROMPT;
+        $prompt = "You are a senior operations analyst writing a weekly admin report for MindForge, a productivity and focus learning platform. "
+            . "Write a clear, professional, data-driven narrative in plain paragraphs only — NO bullet points, NO markdown, NO headers.\n\n"
+            . "Platform data as of today:\n"
+            . "- Total registered users: {$totalUsers}\n"
+            . "- Verified users: {$verifiedUsers} (unverified rate: {$unvRate}%)\n"
+            . "- New users today: {$newToday}, this week: {$newWeek}, this month: {$newMonth}\n"
+            . "- Users active today: {$activeToday}, active this week: {$activeWeek}\n"
+            . "- Average focus session time: {$avgFocus} minutes\n"
+            . "- Pending role upgrade requests: {$pendingRoles}\n"
+            . "- AI risk score: {$riskScore}/100\n\n"
+            . "Write exactly 4 paragraphs:\n"
+            . "1. Platform health and user growth overview\n"
+            . "2. Security and verification status\n"
+            . "3. Engagement quality and activity insights\n"
+            . "4. Top priorities the admin should act on this week\n\n"
+            . "Tone: professional, direct, data-referenced. Address the admin directly as 'you'.";
 
         try {
             $response = $this->client->request('POST', self::GROQ_ENDPOINT, [
@@ -514,18 +528,45 @@ PROMPT;
                 'json' => [
                     'model'       => self::GROQ_MODEL,
                     'messages'    => [
-                        ['role' => 'system', 'content' => 'You are a professional operations analyst. Write clearly and concisely.'],
-                        ['role' => 'user',   'content' => $prompt],
+                        [
+                            'role'    => 'system',
+                            'content' => 'You are a professional operations analyst. Write in clear plain paragraphs only. No markdown, no bullet points, no headers.',
+                        ],
+                        [
+                            'role'    => 'user',
+                            'content' => $prompt,
+                        ],
                     ],
                     'temperature' => 0.4,
-                    'max_tokens'  => 600,
+                    'max_tokens'  => 700,
                 ],
+                'timeout' => 15,
             ]);
 
-            $content = $response->toArray()['choices'][0]['message']['content'] ?? '';
-            return new JsonResponse(['report' => trim($content), 'generated_at' => date('Y-m-d H:i:s')]);
+            $body    = $response->toArray();
+            $content = $body['choices'][0]['message']['content'] ?? '';
 
-        } catch (\Exception $e) {
+            if (empty($content)) {
+                return new JsonResponse(['error' => 'Groq returned an empty response. Try again.'], 500);
+            }
+
+            return new JsonResponse([
+                'report'       => trim($content),
+                'generated_at' => date('Y-m-d H:i:s'),
+            ]);
+
+        } catch (\Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface $e) {
+            // Groq returned a 4xx/5xx — get the actual response body to see WHY
+            try {
+                $errorBody = $e->getResponse()->getContent(false);
+                $errorJson = json_decode($errorBody, true);
+                $errorMsg  = $errorJson['error']['message'] ?? $errorBody;
+            } catch (\Throwable $inner) {
+                $errorMsg = $e->getMessage();
+            }
+            return new JsonResponse(['error' => 'Groq API error: ' . $errorMsg], 500);
+
+        } catch (\Throwable $e) {
             return new JsonResponse(['error' => 'Report generation failed: ' . $e->getMessage()], 500);
         }
     }
