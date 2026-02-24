@@ -1,0 +1,107 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Quiz — {{ opportunity.title }} — MindForge{% endblock %}
+
+{% block hero %}
+<div class="hero-area section">
+	<div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/page-background.jpg') }})"></div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-10 col-md-offset-1 text-center">
+				<ul class="hero-area-tree">
+					<li><a href="{{ path('app_home') }}">Home</a></li>
+					<li><a href="{{ path('app_carriere_opportunite_index') }}">Careers</a></li>
+					<li><a href="{{ path('app_carriere_opportunite_show', {id: opportunity.id}) }}">{{ opportunity.title }}</a></li>
+					<li>Quiz</li>
+				</ul>
+				<h1 class="white-text">Application Quiz</h1>
+				<p class="white-text lead">Answer 4 out of 5 questions correctly to unlock your application</p>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block module_content %}
+<div class="section">
+	<div class="container">
+		<div class="row">
+
+			<!-- Quiz Form -->
+			<div class="col-md-8">
+				<div style="background: #fff; padding: 30px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+
+					<h3 style="margin-top: 0; margin-bottom: 5px;">{{ opportunity.title }}</h3>
+					<p style="color: #888; margin-bottom: 20px;">
+						{% if opportunity.company %}{{ opportunity.company.name }} — {% endif %}{{ opportunity.type|capitalize }}
+					</p>
+
+					{% set remaining = 3 - attempts %}
+					<div class="alert alert-{% if remaining == 1 %}danger{% else %}warning{% endif %}">
+						<i class="fa fa-info-circle"></i>
+						You have <strong>{{ remaining }}</strong> attempt{{ remaining != 1 ? 's' : '' }} remaining ({{ attempts }}/3 used).
+						You need <strong>4 out of 5</strong> correct answers to pass.
+					</div>
+
+					<form method="POST" action="{{ path('app_carriere_quiz_submit', {id: opportunity.id}) }}">
+						<input type="hidden" name="_token" value="{{ csrf_token('quiz_' ~ opportunity.id) }}">
+
+						{% for i, q in questions %}
+							<div style="margin-bottom: 30px; padding: 20px; border: 1px solid #e8e8e8; border-radius: 4px;">
+								<p style="font-weight: bold; margin-bottom: 12px;">
+									{{ i + 1 }}. {{ q.question }}
+								</p>
+								{% for j, option in q.options %}
+									<div style="margin-bottom: 8px;">
+										<label style="cursor: pointer; font-weight: normal;">
+											<input type="radio" name="answer_{{ i }}" value="{{ j }}" required style="margin-right: 8px;">
+											{{ option }}
+										</label>
+									</div>
+								{% endfor %}
+							</div>
+						{% endfor %}
+
+						<div style="margin-top: 10px;">
+							<button type="submit" class="main-button icon-button">
+								<i class="fa fa-check"></i> Submit Answers
+							</button>
+							<a href="{{ path('app_carriere_opportunite_show', {id: opportunity.id}) }}" style="color: #6C3BAA; margin-left: 15px;">Cancel</a>
+						</div>
+					</form>
+				</div>
+
+				<div style="margin-top: 30px;">
+					<a href="{{ path('app_carriere_opportunite_show', {id: opportunity.id}) }}" style="color: #6C3BAA;">
+						<i class="fa fa-arrow-left"></i> Back to {{ opportunity.title }}
+					</a>
+				</div>
+			</div>
+
+			<!-- Sidebar -->
+			<div class="col-md-4">
+				<div class="widget">
+					<h4 class="widget-title">How it works</h4>
+					<ul class="list-unstyled" style="line-height: 2.2;">
+						<li><i class="fa fa-check-circle" style="color: #5cb85c;"></i> 5 questions generated for this posting</li>
+						<li><i class="fa fa-check-circle" style="color: #5cb85c;"></i> Score 4/5 (80%) to pass</li>
+						<li><i class="fa fa-check-circle" style="color: #5cb85c;"></i> Maximum 3 attempts</li>
+						<li><i class="fa fa-check-circle" style="color: #5cb85c;"></i> Pass = unlocked application form</li>
+					</ul>
+				</div>
+
+				{% if opportunity.company %}
+				<div class="widget">
+					<h4 class="widget-title">Company</h4>
+					<h5><strong>{{ opportunity.company.name }}</strong></h5>
+					{% if opportunity.company.industry %}
+						<p><i class="fa fa-industry"></i> {{ opportunity.company.industry }}</p>
+					{% endif %}
+				</div>
+				{% endif %}
+			</div>
+
+		</div>
+	</div>
+</div>
+{% endblock %}
