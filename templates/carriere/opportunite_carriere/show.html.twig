@@ -76,9 +76,27 @@
 								<i class="fa fa-exclamation-triangle"></i> This opportunity is no longer active.
 							</div>
 						{% else %}
-							<a href="{{ path('app_carriere_demande_apply', {id: opportunity.id}) }}" class="main-button icon-button">
-								<i class="fa fa-send"></i> Apply Now
-							</a>
+							{% if app.session.get('quiz_' ~ opportunity.id ~ '_passed') %}
+								<a href="{{ path('app_carriere_demande_apply', {id: opportunity.id}) }}" class="main-button icon-button">
+									<i class="fa fa-send"></i> Apply Now
+								</a>
+							{% else %}
+								{% set quizAttempts = app.session.get('quiz_' ~ opportunity.id ~ '_attempts') ?? 0 %}
+								{% if quizAttempts >= 3 %}
+									<div class="alert alert-danger">
+										<i class="fa fa-lock"></i> You have exhausted all quiz attempts for this posting and cannot apply.
+									</div>
+								{% else %}
+									<a href="{{ path('app_carriere_quiz_show', {id: opportunity.id}) }}" class="main-button icon-button">
+										<i class="fa fa-pencil"></i> Take Quiz to Apply
+									</a>
+									{% if quizAttempts > 0 %}
+										<small class="text-muted" style="display: block; margin-top: 8px;">
+											<i class="fa fa-info-circle"></i> Attempt {{ quizAttempts }}/3 used
+										</small>
+									{% endif %}
+								{% endif %}
+							{% endif %}
 						{% endif %}
 					{% elseif not is_granted('IS_AUTHENTICATED_FULLY') %}
 						<div class="alert alert-info">

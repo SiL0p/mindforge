@@ -1,0 +1,86 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Quiz Result — {{ opportunity.title }} — MindForge{% endblock %}
+
+{% block hero %}
+<div class="hero-area section">
+	<div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/page-background.jpg') }})"></div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-10 col-md-offset-1 text-center">
+				<ul class="hero-area-tree">
+					<li><a href="{{ path('app_home') }}">Home</a></li>
+					<li><a href="{{ path('app_carriere_opportunite_index') }}">Careers</a></li>
+					<li><a href="{{ path('app_carriere_opportunite_show', {id: opportunity.id}) }}">{{ opportunity.title }}</a></li>
+					<li>Quiz Result</li>
+				</ul>
+				<h1 class="white-text">Quiz Result</h1>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block module_content %}
+<div class="section">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-6 col-md-offset-3">
+
+				{% if passed %}
+					{# ── Pass ── #}
+					<div style="background: #dff0d8; border: 1px solid #d6e9c6; border-radius: 4px; padding: 30px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+						<i class="fa fa-check-circle" style="font-size: 60px; color: #3c763d; margin-bottom: 15px; display: block;"></i>
+						<h2 style="color: #3c763d; margin-top: 0;">Congratulations!</h2>
+						<p style="font-size: 18px; color: #3c763d;">
+							You scored <strong>{{ score }}/5</strong> — you passed the quiz!
+						</p>
+						<p style="color: #5a8a5a;">You can now submit your application for <strong>{{ opportunity.title }}</strong>.</p>
+						<a href="{{ path('app_carriere_demande_apply', {id: opportunity.id}) }}" class="main-button icon-button" style="margin-top: 15px;">
+							<i class="fa fa-send"></i> Apply Now
+						</a>
+					</div>
+
+				{% elseif exhausted %}
+					{# ── All attempts used ── #}
+					<div style="background: #f2dede; border: 1px solid #ebccd1; border-radius: 4px; padding: 30px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+						<i class="fa fa-times-circle" style="font-size: 60px; color: #a94442; margin-bottom: 15px; display: block;"></i>
+						<h2 style="color: #a94442; margin-top: 0;">All Attempts Used</h2>
+						<p style="font-size: 16px; color: #a94442;">
+							You have used all 3 attempts for this posting.
+						</p>
+						<p style="color: #8a5050;">You cannot apply to <strong>{{ opportunity.title }}</strong> at this time.</p>
+						<a href="{{ path('app_carriere_opportunite_index') }}" class="main-button icon-button" style="margin-top: 15px; background: #888;">
+							<i class="fa fa-search"></i> Browse Other Opportunities
+						</a>
+					</div>
+
+				{% else %}
+					{# ── Fail with retries left ── #}
+					{% set remaining = 3 - attempts %}
+					<div style="background: #f2dede; border: 1px solid #ebccd1; border-radius: 4px; padding: 30px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+						<i class="fa fa-times-circle" style="font-size: 60px; color: #a94442; margin-bottom: 15px; display: block;"></i>
+						<h2 style="color: #a94442; margin-top: 0;">Not Quite There</h2>
+						<p style="font-size: 18px; color: #a94442;">
+							You scored <strong>{{ score }}/5</strong> — you need at least 4 to pass.
+						</p>
+						<p style="color: #8a5050;">
+							You have <strong>{{ remaining }}</strong> attempt{{ remaining != 1 ? 's' : '' }} remaining.
+						</p>
+						<a href="{{ path('app_carriere_quiz_show', {id: opportunity.id}) }}" class="main-button icon-button" style="margin-top: 15px;">
+							<i class="fa fa-refresh"></i> Try Again
+						</a>
+					</div>
+				{% endif %}
+
+				<div style="margin-top: 30px; text-align: center;">
+					<a href="{{ path('app_carriere_opportunite_show', {id: opportunity.id}) }}" style="color: #6C3BAA;">
+						<i class="fa fa-arrow-left"></i> Back to {{ opportunity.title }}
+					</a>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
