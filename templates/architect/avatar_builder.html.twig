@@ -42,7 +42,7 @@
 <div class="container">
 
 <!-- Violation Banner -->
-<div id="violationBanner" style="display:none; background:#fff0f0; border:1px solid #e63946; border-radius:8px; padding:14px 20px; margin-bottom:24px; color:#9b1d23; display:none; align-items:center; gap:12px;">
+<div id="violationBanner" style="display:none; background:#fff0f0; border:1px solid #e63946; border-radius:8px; padding:14px 20px; margin-bottom:24px; color:#9b1d23; align-items:center; gap:12px;">
     <i class="fa fa-ban fa-lg"></i>
     <div><strong>Content Policy Violation</strong><br><span id="violationMsg">Your upload did not meet our community guidelines.</span></div>
 </div>
@@ -222,83 +222,68 @@
 </style>
 
 <script>
-// ══════════════════════════════════════════════
-//  DiceBear free API — no key needed
-// ══════════════════════════════════════════════
 const SAVE_URL  = "{{ path('app_generate_avatar') }}";
 const DICE      = "https://api.dicebear.com/9.x";
 
-// ── Categories with icon + 12 seed variants each ──
 const CATEGORIES = [
-  // Human / Character
-  { id:"avataaars",        label:"Avataaars",    icon:"👤",  group:"Human"   },
-  { id:"lorelei",          label:"Lorelei",      icon:"🧑",  group:"Human"   },
-  { id:"personas",         label:"Personas",     icon:"🙂",  group:"Human"   },
-  { id:"micah",            label:"Micah",        icon:"🧍",  group:"Human"   },
-  { id:"adventurer",       label:"Adventurer",   icon:"⚔️",  group:"Human"   },
-  { id:"adventurer-neutral",label:"Adventurer·N",icon:"🧝", group:"Human"   },
-  { id:"open-peeps",       label:"Open Peeps",   icon:"🚶",  group:"Human"   },
-  // Cartoon / Fun
-  { id:"fun-emoji",        label:"Fun Emoji",    icon:"😄",  group:"Fun"     },
-  { id:"notionists",       label:"Notionists",   icon:"🎨",  group:"Fun"     },
-  { id:"notionists-neutral",label:"Notionists·N",icon:"🖌️", group:"Fun"     },
-  { id:"croodles",         label:"Croodles",     icon:"✏️",  group:"Fun"     },
-  { id:"croodles-neutral", label:"Croodles·N",   icon:"🖊️",  group:"Fun"     },
-  // Animals 🐾
-  { id:"bottts",           label:"Bottts",       icon:"🤖",  group:"Robot"   },
-  { id:"bottts-neutral",   label:"Bottts·N",     icon:"🦾",  group:"Robot"   },
-  { id:"pixel-art",        label:"Pixel Art",    icon:"🎮",  group:"Pixel"   },
-  { id:"pixel-art-neutral",label:"Pixel·N",      icon:"👾",  group:"Pixel"   },
-  // Animals
-  { id:"thumbs",           label:"Thumbs",       icon:"👍",  group:"Animals" },
-  { id:"lorelei-neutral",  label:"Lorelei·N",    icon:"🐱",  group:"Animals" },
-  // Abstract / Shape
-  { id:"initials",         label:"Initials",     icon:"🔠",  group:"Shape"   },
-  { id:"rings",            label:"Rings",        icon:"💍",  group:"Shape"   },
-  { id:"shapes",           label:"Shapes",       icon:"🔷",  group:"Shape"   },
-  { id:"icons",            label:"Icons",        icon:"⭐",  group:"Shape"   },
-  { id:"glass",            label:"Glass",        icon:"🔮",  group:"Shape"   },
-  { id:"identicon",        label:"Identicon",    icon:"🧩",  group:"Shape"   },
+  { id:"avataaars",         label:"Avataaars",     icon:"👤", group:"Human"   },
+  { id:"lorelei",           label:"Lorelei",       icon:"🧑", group:"Human"   },
+  { id:"personas",          label:"Personas",      icon:"🙂", group:"Human"   },
+  { id:"micah",             label:"Micah",         icon:"🧍", group:"Human"   },
+  { id:"adventurer",        label:"Adventurer",    icon:"⚔️", group:"Human"   },
+  { id:"adventurer-neutral",label:"Adventurer·N",  icon:"🧝", group:"Human"   },
+  { id:"open-peeps",        label:"Open Peeps",    icon:"🚶", group:"Human"   },
+  { id:"fun-emoji",         label:"Fun Emoji",     icon:"😄", group:"Fun"     },
+  { id:"notionists",        label:"Notionists",    icon:"🎨", group:"Fun"     },
+  { id:"notionists-neutral",label:"Notionists·N",  icon:"🖌️",group:"Fun"     },
+  { id:"croodles",          label:"Croodles",      icon:"✏️", group:"Fun"     },
+  { id:"croodles-neutral",  label:"Croodles·N",    icon:"🖊️", group:"Fun"     },
+  { id:"bottts",            label:"Bottts",        icon:"🤖", group:"Robot"   },
+  { id:"bottts-neutral",    label:"Bottts·N",      icon:"🦾", group:"Robot"   },
+  { id:"pixel-art",         label:"Pixel Art",     icon:"🎮", group:"Pixel"   },
+  { id:"pixel-art-neutral", label:"Pixel·N",       icon:"👾", group:"Pixel"   },
+  { id:"thumbs",            label:"Thumbs",        icon:"👍", group:"Animals" },
+  { id:"lorelei-neutral",   label:"Lorelei·N",     icon:"🐱", group:"Animals" },
+  { id:"initials",          label:"Initials",      icon:"🔠", group:"Shape"   },
+  { id:"rings",             label:"Rings",         icon:"💍", group:"Shape"   },
+  { id:"shapes",            label:"Shapes",        icon:"🔷", group:"Shape"   },
+  { id:"icons",             label:"Icons",         icon:"⭐", group:"Shape"   },
+  { id:"glass",             label:"Glass",         icon:"🔮", group:"Shape"   },
+  { id:"identicon",         label:"Identicon",     icon:"🧩", group:"Shape"   },
 ];
 
-// Extra animal-themed seeds we'll use for animal-feeling styles
-const ANIMAL_SEEDS = [
-  "bear","fox","wolf","panda","tiger","lion","rabbit","deer",
-  "owl","penguin","koala","cat","dog","dragon","unicorn","phoenix"
-];
+const ANIMAL_SEEDS = ["bear","fox","wolf","panda","tiger","lion","rabbit","deer","owl","penguin","koala","cat","dog","dragon","unicorn","phoenix"];
+const SEEDS        = ["alpha","beta","gamma","delta","epsilon","zeta","eta","theta","iota","kappa","lambda","mu"];
 
-const SEEDS = [
-  "alpha","beta","gamma","delta","epsilon","zeta",
-  "eta","theta","iota","kappa","lambda","mu"
-];
-
-// Palettes
 const BG_PALETTE   = ["#f2efe8","#ffd6c0","#c8e6ff","#c8ffd6","#ffc8e4","#fff3c0","#d6c8ff","#c8f4ff","#1a1a2e","#16213e","#e8f5e9","#fce4ec"];
 const SKIN_PALETTE = ["#fddbb4","#f1c27d","#e0ac69","#c68642","#8d5524","#ffcba4","#b5651d","#deb887","#ffffff","#333333","#ff9898","#a8d8a8"];
 const HAIR_PALETTE = ["#2c1503","#a0522d","#d2691e","#f4a460","#daa520","#ffd700","#c0c0c0","#808080","#333333","#ff4444","#4169e1","#9400d3"];
 const EYE_PALETTE  = ["#4169e1","#228b22","#8b4513","#808080","#000000","#20b2aa","#9370db","#ff8c00","#dc143c","#00ced1","#556b2f","#4b0082"];
 
-// ══════════════════════════════════════════════
-//  State
-// ══════════════════════════════════════════════
+// ── State ──
 let state = {
-  style:      "avataaars",
-  seed:       document.getElementById('seedInput').value.trim() || "user",
-  bgColor:    "#f2efe8",
-  skinColor:  "fddbb4",
-  hairColor:  "2c1503",
-  eyeColor:   "4169e1",
-  variantIdx: 0,
-  flip:       false,
-  scale:      100,
-  mode:       "dicebear",
+  style:           "avataaars",
+  seed:            document.getElementById('seedInput').value.trim() || "user",
+  bgColor:         "#f2efe8",
+  skinColor:       "fddbb4",
+  hairColor:       "2c1503",
+  eyeColor:        "4169e1",
+  variantIdx:      0,
+  flip:            false,
+  scale:           100,
+  mode:            "dicebear",
   uploadedDataUrl: null,
-  isBlocked:  false
+  isBlocked:       false,
+  // FIX: tracks the exact URL currently shown in the preview
+  lockedUrl:       ""
 };
 
-// ══════════════════════════════════════════════
-//  URL builder
-// ══════════════════════════════════════════════
+function isAnimalGroup() {
+  const cat = CATEGORIES.find(c => c.id === state.style);
+  return cat && cat.group === "Animals";
+}
+
+// ── URL builder ──
 function buildUrl(styleId, seed, extra) {
   const bg = state.bgColor.replace('#','');
   let params = `seed=${encodeURIComponent(seed)}&backgroundColor=${bg}&radius=50`;
@@ -312,30 +297,24 @@ function buildUrl(styleId, seed, extra) {
 
 function currentUrl() {
   const seeds = isAnimalGroup() ? ANIMAL_SEEDS : SEEDS;
-  const seed = seeds[state.variantIdx % seeds.length] + '_' + state.seed;
+  const seed  = seeds[state.variantIdx % seeds.length] + '_' + state.seed;
   return buildUrl(state.style, seed, { skin: state.skinColor, hair: state.hairColor, eye: state.eyeColor });
 }
 
-function isAnimalGroup() {
-  const cat = CATEGORIES.find(c => c.id === state.style);
-  return cat && cat.group === "Animals";
-}
-
-// ══════════════════════════════════════════════
-//  Preview
-// ══════════════════════════════════════════════
+// ── Preview — FIX: lock the URL into state.lockedUrl so Save always sends exactly this ──
 function updatePreview() {
   const img = document.getElementById('previewImg');
   if (state.mode === 'upload' && state.uploadedDataUrl) {
     img.src = state.uploadedDataUrl;
+    state.lockedUrl = '';
   } else {
-    img.src = currentUrl();
+    const url = currentUrl();
+    state.lockedUrl = url;   // ← lock it here
+    img.src = url;
   }
 }
 
-// ══════════════════════════════════════════════
-//  Grid
-// ══════════════════════════════════════════════
+// ── Grid ──
 function buildGrid() {
   const grid = document.getElementById('avatarGrid');
   grid.innerHTML = '';
@@ -362,9 +341,7 @@ function buildGrid() {
   }
 }
 
-// ══════════════════════════════════════════════
-//  Category Tabs
-// ══════════════════════════════════════════════
+// ── Category Tabs ──
 function buildTabs() {
   const container = document.getElementById('categoryTabs');
   container.innerHTML = '';
@@ -386,9 +363,7 @@ function buildTabs() {
   });
 }
 
-// ══════════════════════════════════════════════
-//  Colour Swatches
-// ══════════════════════════════════════════════
+// ── Colour Swatches ──
 function buildSwatches(containerId, palette, stateKey) {
   const c = document.getElementById(containerId);
   c.innerHTML = '';
@@ -427,11 +402,8 @@ function buildBgSwatches() {
   });
 }
 
-// ══════════════════════════════════════════════
-//  Violations / Moderation
-// ══════════════════════════════════════════════
+// ── Violations ──
 const BLOCKED_WORDS = [/nsfw/i,/nude/i,/naked/i,/porn/i,/xxx/i,/sex/i,/gore/i,/blood/i,/violence/i,/hate/i,/racist/i,/nazi/i];
-
 function checkFilename(name) { return BLOCKED_WORDS.some(r => r.test(name)); }
 
 function analyzeImage(dataUrl) {
@@ -460,9 +432,8 @@ function showViolation(msg) {
   state.isBlocked = true;
   state.mode = 'dicebear';
   state.uploadedDataUrl = null;
-  const b = document.getElementById('violationBanner');
   document.getElementById('violationMsg').textContent = msg;
-  b.style.display = 'flex';
+  document.getElementById('violationBanner').style.display = 'flex';
   const ring = document.getElementById('avatarRing');
   ring.style.borderColor = '#e63946';
   setTimeout(() => { ring.style.borderColor = '#e8572a'; }, 600);
@@ -476,9 +447,7 @@ function hideViolation() {
   state.isBlocked = false;
 }
 
-// ══════════════════════════════════════════════
-//  Toast
-// ══════════════════════════════════════════════
+// ── Toast ──
 function showToast(msg, bg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -488,9 +457,7 @@ function showToast(msg, bg) {
   setTimeout(() => { t.style.opacity='0'; t.style.transform='translateY(16px)'; }, 3400);
 }
 
-// ══════════════════════════════════════════════
-//  Upload handler
-// ══════════════════════════════════════════════
+// ── Upload handler ──
 document.getElementById('photoUpload').addEventListener('change', async function(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -523,14 +490,11 @@ document.getElementById('photoUpload').addEventListener('change', async function
   reader.readAsDataURL(file);
 });
 
-// Drag
 const zone = document.getElementById('uploadZone');
 zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor='#e8572a'; zone.style.background='#fff8f5'; });
 zone.addEventListener('dragleave', () => { zone.style.borderColor=''; zone.style.background=''; });
 
-// ══════════════════════════════════════════════
-//  Controls
-// ══════════════════════════════════════════════
+// ── Controls ──
 document.getElementById('seedInput').addEventListener('input', function() {
   state.seed = this.value.trim() || 'user';
   document.getElementById('displayName').textContent = state.seed;
@@ -558,9 +522,7 @@ document.getElementById('regenerateBtn').addEventListener('click', function() {
   buildGrid(); updatePreview();
 });
 
-// ══════════════════════════════════════════════
-//  Save
-// ══════════════════════════════════════════════
+// ── Save — FIX: sends state.lockedUrl (exactly what the preview shows) ──
 document.getElementById('saveBtn').addEventListener('click', async function() {
   if (state.isBlocked) { showToast('Please choose a valid avatar first.','#9b1d23'); return; }
   const btn = this;
@@ -571,7 +533,8 @@ document.getElementById('saveBtn').addEventListener('click', async function() {
   if (state.mode === 'upload' && state.uploadedDataUrl) {
     body = JSON.stringify({ mode:'upload', dataUrl: state.uploadedDataUrl });
   } else {
-    body = JSON.stringify({ mode:'dicebear', style: state.style, avatarUrl: currentUrl() });
+    // Use lockedUrl — the exact URL already rendered in the preview, not a new currentUrl() call
+    body = JSON.stringify({ mode:'dicebear', style: state.style, avatarUrl: state.lockedUrl || currentUrl() });
   }
 
   try {
@@ -582,8 +545,12 @@ document.getElementById('saveBtn').addEventListener('click', async function() {
     });
     const data = await res.json();
     if (data.success) {
-      if (data.avatar) document.getElementById('previewImg').src = data.avatar + '?t=' + Date.now();
-      showToast('Avatar saved!');
+      // Only update preview src if server returns a different URL (e.g. after processing/upload)
+      // For dicebear mode, keep showing the same avatar — don't let server response overwrite it
+      if (data.avatar && state.mode === 'upload') {
+        document.getElementById('previewImg').src = data.avatar + '?t=' + Date.now();
+      }
+      showToast('Avatar saved! ✓');
     } else {
       showToast('Error: ' + (data.error || 'Unknown error'), '#9b1d23');
     }
@@ -595,9 +562,7 @@ document.getElementById('saveBtn').addEventListener('click', async function() {
   }
 });
 
-// ══════════════════════════════════════════════
-//  Init
-// ══════════════════════════════════════════════
+// ── Init ──
 buildTabs();
 buildGrid();
 buildBgSwatches();

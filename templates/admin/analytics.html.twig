@@ -1,174 +1,517 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Admin Analytics{% endblock %}
+{% block title %}Admin Analytics — MindForge{% endblock %}
 
 {% block body %}
 <div id="layoutSidenav_content">
-    <main>
-        <div class="container-fluid px-4">
-            <h1 class="mt-4">Admin Analytics</h1>
-            <ol class="breadcrumb mb-4">
-                <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item active">Analytics</li>
-            </ol>
+<main>
+<div class="container-fluid px-4">
 
-            {# Flash Messages #}
-            {% for message in app.flashes('success') %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-            
-            {% for message in app.flashes('error') %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
+    <div class="d-flex align-items-center justify-content-between mt-4 mb-2">
+        <h1 class="mb-0">Admin Analytics</h1>
+        <div class="d-flex gap-2">
+            {# AI Report Generator Button #}
+            <button class="btn btn-dark btn-sm" id="btnGenerateReport">
+                <i class="fas fa-file-alt me-1"></i> Generate AI Report
+                <span id="reportSpinner" class="spinner-border spinner-border-sm ms-1 d-none" role="status"></span>
+            </button>
+            <span class="badge bg-secondary align-self-center">{{ "now"|date("d M Y H:i") }}</span>
+        </div>
+    </div>
 
-            {# User Stats Cards #}
-            <div class="row">
-                {% set cards = [
-                    {'title':'Total Users','value':userStats.total_users,'icon':'fas fa-users','color':'primary'},
-                    {'title':'Verified Users','value':userStats.verified_users,'icon':'fas fa-user-check','color':'success'},
-                    {'title':'New Today','value':userStats.new_today,'icon':'fas fa-calendar-day','color':'warning text-dark'},
-                    {'title':'New This Week','value':userStats.new_week,'icon':'fas fa-calendar-week','color':'info'},
-                    {'title':'Users with Profile','value':userStats.users_with_profile,'icon':'fas fa-id-badge','color':'secondary'},
-                    {'title':'Users with Avatar','value':userStats.users_with_avatar,'icon':'fas fa-image','color':'dark'},
-                    {'title':'Users with Bio','value':userStats.users_with_bio,'icon':'fas fa-pencil-alt','color':'warning text-dark'}
-                ] %}
-                
-                {% for card in cards %}
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card bg-{{ card.color }} text-white h-100">
-                            <div class="card-body d-flex justify-content-between align-items-center">
-                                <div>
-                                    <i class="{{ card.icon }} fa-2x me-2"></i>
-                                    <span>{{ card.title }}</span>
-                                </div>
-                                <h3>{{ card.value }}</h3>
-                            </div>
-                        </div>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item active">Analytics</li>
+    </ol>
+
+    {# Flash Messages #}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {# =================== AI REPORT OUTPUT =================== #}
+    <div id="reportCard" class="card mb-4 border-dark d-none">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-robot me-2"></i> AI Generated Admin Report</span>
+            <small id="reportTimestamp" class="text-secondary"></small>
+        </div>
+        <div class="card-body">
+            <p id="reportText" class="mb-0 lh-lg" style="white-space: pre-wrap;"></p>
+        </div>
+    </div>
+
+    {# =================== AI TOOL 1 — THREAT ANALYSIS =================== #}
+    {% if aiInsights is defined and aiInsights is not null %}
+    {% set riskColor = aiInsights.risk_level == 'critical' ? 'danger' : (aiInsights.risk_level == 'high' ? 'warning' : (aiInsights.risk_level == 'medium' ? 'info' : 'success')) %}
+    <div class="card mb-4 shadow-sm border-start border-5 border-{{ riskColor }}">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                <div>
+                    <p class="text-uppercase text-muted small fw-bold mb-1"><i class="fas fa-shield-alt me-1"></i> AI Security Analysis</p>
+                    <p class="h5 mb-0">{{ aiInsights.summary }}</p>
+                </div>
+                <div class="d-flex gap-2 flex-shrink-0">
+                    <div class="text-center">
+                        <div class="fw-bold fs-4 text-{{ riskColor }}">{{ aiInsights.risk_score }}/100</div>
+                        <div class="text-muted small">Risk Score</div>
                     </div>
-                {% endfor %}
+                    <div class="vr mx-1"></div>
+                    <div class="text-center">
+                        <div class="fw-bold fs-4 text-success">{{ aiInsights.health_score|default(85) }}/100</div>
+                        <div class="text-muted small">Health</div>
+                    </div>
+                </div>
             </div>
 
-            {# Activity Stats Cards #}
-            <h2 class="mt-5">Activity Stats</h2>
-            <div class="row">
-                {% set activity_cards = [
-                    {'title':'Active Today','value':activityStats.active_today,'icon':'fas fa-bolt','color':'primary'},
-                    {'title':'Active This Week','value':activityStats.active_week,'icon':'fas fa-calendar-week','color':'success'},
-                    {'title':'Avg Focus Time','value':activityStats.avg_focus_time|number_format(0) ~ ' min','icon':'fas fa-clock','color':'warning text-dark'},
-                    {'title':'Total Focus Time','value':activityStats.total_focus,'icon':'fas fa-hourglass-half','color':'info'}
-                ] %}
-                
-                {% for card in activity_cards %}
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card bg-{{ card.color }} text-white h-100">
-                            <div class="card-body d-flex justify-content-between align-items-center">
-                                <div>
-                                    <i class="{{ card.icon }} fa-2x me-2"></i>
-                                    <span>{{ card.title }}</span>
-                                </div>
-                                <h3>{{ card.value }}</h3>
-                            </div>
-                        </div>
-                    </div>
+            {% if aiInsights.alerts is defined and aiInsights.alerts is iterable and aiInsights.alerts|length > 0 %}
+            <div class="mt-3 d-flex flex-wrap gap-2">
+                {% for alert in aiInsights.alerts %}
+                    <span class="badge bg-{{ riskColor }} text-dark bg-opacity-10 border border-{{ riskColor }} text-{{ riskColor }} px-3 py-2">
+                        <i class="fas fa-exclamation-triangle me-1"></i>{{ alert }}
+                    </span>
                 {% endfor %}
             </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 
-            {# Recent Users Table #}
-            <h2 class="mt-5">Recent Users</h2>
-            <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fas fa-users me-1"></i>
-                    Latest Users
+    {# =================== AI TOOL 2 — ANOMALY DETECTION =================== #}
+    {% if anomalies is defined and anomalies.anomalies is defined %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-search me-1"></i> <strong>AI Anomaly Detector</strong></span>
+            <span class="badge bg-{{ anomalies.overall_status == 'critical' ? 'danger' : (anomalies.overall_status == 'warning' ? 'warning text-dark' : 'success') }}">
+                {{ anomalies.overall_status|upper }}
+                — {{ anomalies.total_anomalies }} finding{{ anomalies.total_anomalies == 1 ? '' : 's' }}
+            </span>
+        </div>
+        <div class="card-body">
+            {% if anomalies.anomalies|length == 0 %}
+                <div class="alert alert-success mb-0">
+                    <i class="fas fa-check-circle me-2"></i> No anomalies detected. All metrics are within expected ranges.
                 </div>
+            {% else %}
+                <div class="row g-3">
+                    {% for anomaly in anomalies.anomalies %}
+                        {% set aColor = anomaly.severity == 'high' ? 'danger' : (anomaly.severity == 'medium' ? 'warning' : 'info') %}
+                        <div class="col-md-6">
+                            <div class="border border-{{ aColor }} rounded-3 p-3 h-100 bg-{{ aColor }} bg-opacity-10">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <strong class="text-{{ aColor }}">{{ anomaly.metric }}</strong>
+                                    <span class="badge bg-{{ aColor }} ms-2">{{ anomaly.severity|upper }}</span>
+                                </div>
+                                <p class="mb-2 small">{{ anomaly.finding }}</p>
+                                <div class="d-flex gap-3 small text-muted mb-2">
+                                    <span><strong>Observed:</strong> {{ anomaly.observed }}</span>
+                                    <span><strong>Expected:</strong> {{ anomaly.expected }}</span>
+                                </div>
+                                <div class="border-top pt-2 mt-1 small text-{{ aColor }}">
+                                    <i class="fas fa-arrow-right me-1"></i> <strong>Action:</strong> {{ anomaly.action }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# =================== ROW: AI COHORTS + RECOMMENDATIONS =================== #}
+    <div class="row mb-4">
+
+        {# AI TOOL 3 — USER COHORT CLASSIFICATION #}
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header"><i class="fas fa-layer-group me-1"></i> <strong>AI User Cohort Classification</strong></div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Email</th>
-                                    <th>Name</th>
-                                    <th>Avatar</th>
-                                    <th>Last Focus</th>
-                                    <th>Focus Sessions</th>
-                                    <th>Total Focus Time</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for user in recentUsers %}
-                                    <tr>
-                                        <td>{{ user.email }}</td>
-                                        <td>{{ user.first_name }} {{ user.last_name }}</td>
-                                        <td>
-                                            {% if user.avatar %}
-                                                <img src="{{ asset('uploads/avatars/' ~ user.avatar) }}" width="40" class="rounded-circle">
-                                            {% else %}
-                                                <span class="text-muted">No avatar</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ user.last_focus ? user.last_focus|date('Y-m-d H:i') : 'Never' }}</td>
-                                        <td>{{ user.focus_sessions }}</td>
-                                        <td>{{ user.total_focus_time ?? 0 }} min</td>
-                                    </tr>
-                                {% else %}
-                                    <tr>
-                                        <td colspan="6" class="text-center">No users found</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                    {% if cohorts is defined and cohorts.cohorts is defined %}
+                        {% for cohort in cohorts.cohorts %}
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-semibold">{{ cohort.icon }} {{ cohort.name }}</span>
+                                    <span>
+                                        <span class="badge bg-{{ cohort.color }}">{{ cohort.estimated_count }} users</span>
+                                        <span class="text-muted small ms-1">{{ cohort.percentage }}%</span>
+                                    </span>
+                                </div>
+                                <div class="progress mb-1" style="height:8px;">
+                                    <div class="progress-bar bg-{{ cohort.color }}" style="width: {{ cohort.percentage }}%"></div>
+                                </div>
+                                <p class="text-muted small mb-0">{{ cohort.description }}</p>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Cohort data unavailable.</p>
+                    {% endif %}
                 </div>
-            </div>
-
-            {# Locales & Timezones #}
-            <div class="row mt-5">
-                <div class="col-md-6">
-                    <div class="card mb-4">
-                        <div class="card-header"><i class="fas fa-globe me-1"></i> Locales</div>
-                        <div class="card-body">
-                            <ul class="list-group">
-                                {% for locale, count in locales %}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        {{ locale }}
-                                        <span class="badge bg-primary rounded-pill">{{ count }}</span>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card mb-4">
-                        <div class="card-header"><i class="fas fa-clock me-1"></i> Timezones</div>
-                        <div class="card-body">
-                            <ul class="list-group">
-                                {% for tz, count in timezones %}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        {{ tz }}
-                                        <span class="badge bg-secondary rounded-pill">{{ count }}</span>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <footer class="py-4 bg-light mt-auto">
-        <div class="container-fluid px-4">
-            <div class="d-flex align-items-center justify-content-between small">
-             
             </div>
         </div>
-    </footer>
-</div>
+
+        {# AI TOOL 4 — ACTION RECOMMENDATIONS #}
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header"><i class="fas fa-tasks me-1"></i> <strong>AI Action Recommendations</strong></div>
+                <div class="card-body p-0">
+                    {% if recommendations is defined and recommendations.recommendations is defined %}
+                        <ul class="list-group list-group-flush">
+                            {% for rec in recommendations.recommendations %}
+                                <li class="list-group-item px-3 py-3">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="fs-4 pt-1">{{ rec.icon }}</div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                                <strong>{{ rec.title }}</strong>
+                                                <span class="badge bg-{{ rec.badge_color }}">{{ rec.priority|upper }}</span>
+                                                <span class="badge bg-light text-dark border">{{ rec.category }}</span>
+                                            </div>
+                                            <p class="mb-1 small">{{ rec.description }}</p>
+                                            <p class="mb-0 small text-success"><i class="fas fa-bullseye me-1"></i>{{ rec.impact }}</p>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted p-3">Recommendations unavailable.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# =================== CHARTS =================== #}
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header"><i class="fas fa-chart-pie me-1"></i> Verification Ratio</div>
+                <div class="card-body"><canvas id="verificationChart" height="200"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header"><i class="fas fa-chart-bar me-1"></i> User Growth</div>
+                <div class="card-body"><canvas id="growthChart" height="200"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header"><i class="fas fa-chart-line me-1"></i> 7-Day Registrations</div>
+                <div class="card-body"><canvas id="trendChart" height="200"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    {# =================== USER STATS CARDS =================== #}
+    <div class="row">
+        {% set cards = [
+            {'title':'Total Users','value':userStats.total_users,'icon':'fas fa-users','color':'primary'},
+            {'title':'Verified Users','value':userStats.verified_users,'icon':'fas fa-user-check','color':'success'},
+            {'title':'New Today','value':userStats.new_today,'icon':'fas fa-calendar-day','color':'warning text-dark'},
+            {'title':'New This Week','value':userStats.new_week,'icon':'fas fa-calendar-week','color':'info'},
+            {'title':'With Profile','value':userStats.users_with_profile,'icon':'fas fa-id-badge','color':'secondary'},
+            {'title':'With Avatar','value':userStats.users_with_avatar,'icon':'fas fa-image','color':'dark'},
+            {'title':'With Bio','value':userStats.users_with_bio,'icon':'fas fa-pencil-alt','color':'warning text-dark'},
+            {'title':'Unverified','value':userStats.unverified_users,'icon':'fas fa-user-times','color':'danger'},
+        ] %}
+        {% for card in cards %}
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card bg-{{ card.color }} text-white h-100">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div><i class="{{ card.icon }} fa-2x me-2"></i><span>{{ card.title }}</span></div>
+                        <h3>{{ card.value }}</h3>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {# =================== ACTIVITY STATS =================== #}
+    <h2 class="mt-2">Activity Stats</h2>
+    <div class="row">
+        {% set activity_cards = [
+            {'title':'Active Today','value':activityStats.active_today,'icon':'fas fa-bolt','color':'primary'},
+            {'title':'Active This Week','value':activityStats.active_week,'icon':'fas fa-calendar-week','color':'success'},
+            {'title':'Avg Focus Time','value':activityStats.avg_focus_time|number_format(0) ~ ' min','icon':'fas fa-clock','color':'warning text-dark'},
+            {'title':'Total Focus','value':activityStats.total_focus,'icon':'fas fa-hourglass-half','color':'info'}
+        ] %}
+        {% for card in activity_cards %}
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card bg-{{ card.color }} text-white h-100">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div><i class="{{ card.icon }} fa-2x me-2"></i><span>{{ card.title }}</span></div>
+                        <h3>{{ card.value }}</h3>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {# =================== AI SMART USER SEARCH =================== #}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header"><i class="fas fa-search me-1"></i> <strong>Smart User Search</strong></div>
+        <div class="card-body">
+            <div class="position-relative">
+                <input type="text" id="smartSearch" class="form-control form-control-lg"
+                       placeholder="Search users by name or email…" autocomplete="off">
+                <div id="searchResults"
+                     class="position-absolute top-100 start-0 end-0 bg-white border rounded-3 shadow z-3 d-none"
+                     style="max-height:300px;overflow-y:auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    {# =================== RECENT USERS TABLE =================== #}
+    <h2 class="mt-2">Recent Users</h2>
+    <div class="card mb-4">
+        <div class="card-header"><i class="fas fa-table me-1"></i> Latest Users</div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Email</th><th>Name</th><th>Avatar</th>
+                            <th>Last Focus</th><th>Sessions</th><th>Total Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in recentUsers %}
+                            <tr>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.first_name }} {{ user.last_name }}</td>
+                                <td>
+                                    {% if user.avatar %}
+                                        <img src="{{ asset('uploads/avatars/' ~ user.avatar) }}" width="40" height="40" class="rounded-circle border" alt="Avatar">
+                                    {% else %}
+                                        <span class="text-muted small">No avatar</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.last_focus ? user.last_focus|date('Y-m-d H:i') : 'Never' }}</td>
+                                <td>{{ user.focus_sessions }}</td>
+                                <td>{{ user.total_focus_time ?? 0 }} min</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="6" class="text-center">No users found</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {# =================== LOCALES & TIMEZONES =================== #}
+    <div class="row mt-3 mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header"><i class="fas fa-globe me-1"></i> Locales</div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for locale, count in locales %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ locale }}<span class="badge bg-primary rounded-pill">{{ count }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header"><i class="fas fa-clock me-1"></i> Timezones</div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for tz, count in timezones %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ tz }}<span class="badge bg-secondary rounded-pill">{{ count }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>{# /container #}
+</main>
+
+<footer class="py-4 bg-light mt-auto">
+    <div class="container-fluid px-4 text-center">
+        <span class="text-muted">MindForge Admin &copy; {{ "now"|date("Y") }}</span>
+    </div>
+</footer>
+</div>{# /layoutSidenav_content #}
+
+{# ================================================================
+   SCRIPTS
+================================================================= #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+/* ── 1. Verification Doughnut ────────────────────────────────── */
+new Chart(document.getElementById('verificationChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Verified', 'Unverified'],
+        datasets: [{
+            data: [{{ userStats.verified_users }}, {{ userStats.unverified_users }}],
+            backgroundColor: ['#198754', '#dc3545'],
+            borderWidth: 2
+        }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+
+/* ── 2. Growth Bar ───────────────────────────────────────────── */
+new Chart(document.getElementById('growthChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Total', 'This Month', 'This Week', 'Today'],
+        datasets: [{
+            label: 'Users',
+            data: [{{ userStats.total_users }}, {{ userStats.new_month }}, {{ userStats.new_week }}, {{ userStats.new_today }}],
+            backgroundColor: ['#0d6efd', '#6610f2', '#0dcaf0', '#ffc107'],
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+    }
+});
+
+/* ── 3. 7-Day Registration Trend ─────────────────────────────── */
+const trendData = {{ growthTrend|json_encode|raw }};
+new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+        labels: trendData.map(d => d.label),
+        datasets: [{
+            label: 'New Users',
+            data: trendData.map(d => d.count),
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13,110,253,0.1)',
+            tension: 0.4,
+            fill: true,
+            pointRadius: 5,
+            pointBackgroundColor: '#0d6efd'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+});
+
+/* ── 4. AI Report Generator ──────────────────────────────────── */
+document.getElementById('btnGenerateReport').addEventListener('click', async function () {
+    const spinner = document.getElementById('reportSpinner');
+    const card    = document.getElementById('reportCard');
+    const text    = document.getElementById('reportText');
+    const ts      = document.getElementById('reportTimestamp');
+
+    spinner.classList.remove('d-none');
+    this.disabled = true;
+    text.textContent = 'Generating report…';
+    card.classList.remove('d-none');
+
+    const payload = {
+        total_users:     {{ userStats.total_users }},
+        verified_users:  {{ userStats.verified_users }},
+        unverified_rate: {{ userStats.unverified_rate }},
+        new_today:       {{ userStats.new_today }},
+        new_week:        {{ userStats.new_week }},
+        new_month:       {{ userStats.new_month }},
+        active_today:    {{ activityStats.active_today }},
+        active_week:     {{ activityStats.active_week }},
+        avg_focus_time:  {{ activityStats.avg_focus_time }},
+        pending_roles:   {{ pendingRoleRequests }},
+        risk_score:      {{ aiInsights.risk_score|default(0) }},
+    };
+
+    try {
+        const res  = await fetch('{{ path('admin_ai_report') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (data.report) {
+            text.textContent = data.report;
+            ts.textContent   = 'Generated at ' + data.generated_at;
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            text.textContent = 'Error: ' + (data.error || 'Report generation failed.');
+        }
+    } catch (e) {
+        text.textContent = 'Network error — is the server running?';
+    } finally {
+        spinner.classList.add('d-none');
+        this.disabled = false;
+    }
+});
+
+/* ── 5. Smart User Search ────────────────────────────────────── */
+let searchTimeout;
+const searchInput   = document.getElementById('smartSearch');
+const searchResults = document.getElementById('searchResults');
+
+searchInput.addEventListener('input', function () {
+    clearTimeout(searchTimeout);
+    const q = this.value.trim();
+    if (q.length < 2) {
+        searchResults.classList.add('d-none');
+        return;
+    }
+
+    searchTimeout = setTimeout(async () => {
+        try {
+            const res  = await fetch(`{{ path('admin_ai_smart_search') }}?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+
+            if (!data.results || data.results.length === 0) {
+                searchResults.innerHTML = '<div class="p-3 text-muted text-center small">No users found matching <strong>' + q + '</strong></div>';
+            } else {
+                searchResults.innerHTML = data.results.map(u => `
+                    <a href="/admin/users/view/${u.id}"
+                       class="d-flex align-items-center gap-3 px-3 py-2 text-decoration-none text-dark border-bottom search-row">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                             style="width:38px;height:38px;font-size:15px;font-weight:700;">
+                            ${(u.name || u.email).charAt(0).toUpperCase()}
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="fw-semibold text-truncate">${u.email}</div>
+                            <div class="small text-muted">${u.name || '—'}</div>
+                        </div>
+                        <div class="d-flex gap-1 flex-shrink-0">
+                            ${u.verified    ? '<span class="badge bg-success">Verified</span>'    : '<span class="badge bg-warning text-dark">Unverified</span>'}
+                            ${u.has_profile ? '<span class="badge bg-info text-dark">Profile</span>' : ''}
+                        </div>
+                    </a>
+                `).join('');
+            }
+            searchResults.classList.remove('d-none');
+        } catch (e) { /* silent */ }
+    }, 280);
+});
+
+document.addEventListener('click', function (e) {
+    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.classList.add('d-none');
+    }
+});
+</script>
+
+<style>
+.search-row:hover { background: #f0f4ff; }
+</style>
+
 {% endblock %}

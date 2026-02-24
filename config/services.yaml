@@ -19,7 +19,9 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-
+    App\Controller\AdminController:
+        arguments:
+             $groqApiKey: '%env(GROQ_API_KEY)%'
     # Explicit service configurations
 
     App\Service\FriendService:
