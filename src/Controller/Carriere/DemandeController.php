@@ -11,6 +11,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -173,7 +177,8 @@ class DemandeController extends AbstractController
     public function accept(
         Request $request,
         Demande $demande,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        MailerInterface $mailer,
     ): Response {
         $user = $this->getUser();
         $opportunity = $demande->getOpportunity();
@@ -187,6 +192,30 @@ class DemandeController extends AbstractController
                 $demande->accept();
                 $entityManager->flush();
                 $this->addFlash('success', 'Application accepted.');
+
+                $applicant = $demande->getUser();
+                if ($applicant) {
+                    $applicantName = $applicant->getEmail();
+                    if ($applicant->getProfile() && ($applicant->getProfile()->getFirstName() || $applicant->getProfile()->getLastName())) {
+                        $applicantName = trim($applicant->getProfile()->getFirstName() . ' ' . $applicant->getProfile()->getLastName());
+                    }
+
+                    $email = (new TemplatedEmail())
+                        ->from(new Address('mohamedamine.rja053@gmail.com', 'MindForge Careers'))
+                        ->to(new Address($applicant->getEmail()))
+                        ->subject('Your application for "' . $opportunity->getTitle() . '" has been accepted!')
+                        ->htmlTemplate('emails/carriere/application_accepted.html.twig')
+                        ->context([
+                            'applicantName' => $applicantName,
+                            'opportunity'   => $opportunity,
+                        ]);
+
+                    try {
+                        $mailer->send($email);
+                    } catch (TransportExceptionInterface $e) {
+                        $this->addFlash('warning', 'Application accepted, but the notification email could not be sent: ' . $e->getMessage());
+                    }
+                }
             } else {
                 $this->addFlash('error', 'Only pending applications can be accepted.');
             }
@@ -200,7 +229,8 @@ class DemandeController extends AbstractController
     public function reject(
         Request $request,
         Demande $demande,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        MailerInterface $mailer,
     ): Response {
         $user = $this->getUser();
         $opportunity = $demande->getOpportunity();
@@ -214,6 +244,30 @@ class DemandeController extends AbstractController
                 $demande->reject();
                 $entityManager->flush();
                 $this->addFlash('success', 'Application rejected.');
+
+                $applicant = $demande->getUser();
+                if ($applicant) {
+                    $applicantName = $applicant->getEmail();
+                    if ($applicant->getProfile() && ($applicant->getProfile()->getFirstName() || $applicant->getProfile()->getLastName())) {
+                        $applicantName = trim($applicant->getProfile()->getFirstName() . ' ' . $applicant->getProfile()->getLastName());
+                    }
+
+                    $email = (new TemplatedEmail())
+                        ->from(new Address('mohamedamine.rja053@gmail.com', 'MindForge Careers'))
+                        ->to(new Address($applicant->getEmail()))
+                        ->subject('Update on your application for "' . $opportunity->getTitle() . '"')
+                        ->htmlTemplate('emails/carriere/application_rejected.html.twig')
+                        ->context([
+                            'applicantName' => $applicantName,
+                            'opportunity'   => $opportunity,
+                        ]);
+
+                    try {
+                        $mailer->send($email);
+                    } catch (TransportExceptionInterface $e) {
+                        $this->addFlash('warning', 'Application rejected, but the notification email could not be sent: ' . $e->getMessage());
+                    }
+                }
             } else {
                 $this->addFlash('error', 'Only pending applications can be rejected.');
             }
