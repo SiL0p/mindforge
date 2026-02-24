@@ -4,6 +4,7 @@
 parameters:
     resources_directory: '%kernel.project_dir%/public/uploads/resources'
     avatars_directory: '%kernel.project_dir%/public/uploads/avatars'
+    groq_api_key: '%env(GROQ_API_KEY)%'
 
 services:
     _defaults:

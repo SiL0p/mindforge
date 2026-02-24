@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+<style>
+body { background: #0f0f1a; color: #fff; font-family: 'Segoe UI', sans-serif; }
+.history-page { max-width: 700px; margin: 50px auto; padding: 20px; }
+h1 { color: #a78bfa; margin-bottom: 30px; }
+table { width: 100%; border-collapse: collapse; }
+th { background: #1e1e2e; color: #a78bfa; padding: 12px; text-align: left; }
+td { padding: 12px; border-bottom: 1px solid #2a2a3e; text-transform: capitalize; }
+tr:hover td { background: #1a1a2e; }
+.back { display: inline-block; margin-top: 20px; color: #7d5fff; text-decoration: none; }
+.back:hover { text-decoration: underline; }
+.empty { color: #888; margin-top: 20px; }
+</style>
+
+<div class="history-page">
+    <h1>📋 Emotion History</h1>
+    {% if logs is empty %}
+        <p class="empty">No emotions saved yet. Go detect some! 😄</p>
+    {% else %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Emotion</th>
+                    <th>Confidence</th>
+                    <th>Detected At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.emotion }}</td>
+                    <td>{{ log.confidence }}%</td>
+                    <td>{{ log.detectedAt|date('Y-m-d H:i:s') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+    <a class="back" href="{{ path('app_emotion') }}">← Back to detector</a>
+</div>
+{% endblock %}
