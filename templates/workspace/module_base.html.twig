@@ -145,6 +145,123 @@
         @media (max-width: 900px) {
             .module-app { grid-template-columns: 1fr; }
         }
+
+        /* Job Alert Bell */
+        .alert-bell-wrap {
+            position: relative;
+            display: inline-block;
+        }
+        .alert-bell-btn {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: #6d748a;
+            text-decoration: none;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            width: 100%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .alert-bell-btn:hover {
+            background: #4e64f4;
+            color: #fff;
+        }
+        .alert-bell-btn:hover .alert-badge {
+            background: #fff;
+            color: #4e64f4;
+        }
+        .alert-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e74c3c;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 17px;
+            height: 17px;
+            border-radius: 9px;
+            padding: 0 4px;
+            margin-left: auto;
+        }
+        .alert-dropdown {
+            display: none;
+            position: fixed;
+            left: 220px;
+            top: auto;
+            width: 320px;
+            background: #fff;
+            border: 1px solid #dde1f0;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(60,70,120,0.18);
+            z-index: 9999;
+            overflow: hidden;
+        }
+        .alert-dropdown.open { display: block; }
+        .alert-dropdown-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 14px;
+            border-bottom: 1px solid #eef0fb;
+            font-weight: 700;
+            font-size: 13px;
+            color: #3b4257;
+        }
+        .alert-dropdown-header a {
+            font-size: 11px;
+            font-weight: 600;
+            color: #4e64f4;
+            text-decoration: none;
+        }
+        .alert-notif-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 14px;
+            border-bottom: 1px solid #f3f4fb;
+            text-decoration: none;
+            color: inherit;
+            transition: background .15s;
+        }
+        .alert-notif-item:last-child { border-bottom: 0; }
+        .alert-notif-item:hover { background: #f5f7ff; }
+        .alert-notif-dot {
+            flex-shrink: 0;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-top: 5px;
+        }
+        .alert-notif-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #3b4257;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .alert-notif-sub {
+            font-size: 11px;
+            color: #9aa1b8;
+            margin-top: 1px;
+        }
+        .alert-dropdown-footer {
+            padding: 10px 14px;
+            text-align: center;
+            border-top: 1px solid #eef0fb;
+        }
+        .alert-dropdown-footer a {
+            font-size: 12px;
+            color: #4e64f4;
+            text-decoration: none;
+            font-weight: 600;
+        }
     </style>
 {% endblock %}
 
@@ -159,6 +276,46 @@
             <a href="{{ path('guardian_library') }}"><i class="fa fa-book"></i> Guardian</a>
             <a href="{{ app.user and 'ROLE_COMPANY' in app.user.roles ? path('app_carriere_opportunite_my_opportunites') : path('app_carriere_opportunite_index') }}"><i class="fa fa-briefcase"></i> Careers</a>
             <a href="{{ path('app_analyst_gamification') }}"><i class="fa fa-pie-chart"></i> Analyst</a>
+            {% if app.user and 'ROLE_COMPANY' not in app.user.roles %}
+            <div class="alert-bell-wrap">
+                <button class="alert-bell-btn" id="alertBellBtn" type="button">
+                    <i class="fa fa-bell"></i> Alerts
+                    {% if job_alert_unread_count > 0 %}
+                        <span class="alert-badge">{{ job_alert_unread_count }}</span>
+                    {% endif %}
+                </button>
+                <div class="alert-dropdown" id="alertDropdown">
+                    <div class="alert-dropdown-header">
+                        <span><i class="fa fa-bell"></i> Job Alerts</span>
+                        <a href="{{ path('job_alert_notification_index') }}">View all</a>
+                    </div>
+                    {% if job_alert_recent|length > 0 %}
+                        {% for notif in job_alert_recent %}
+                        <a class="alert-notif-item" href="{{ path('app_carriere_opportunite_show', {id: notif.opportunite.id}) }}">
+                            <span class="alert-notif-dot" style="background: #4e64f4;"></span>
+                            <div style="min-width: 0;">
+                                <div class="alert-notif-title">{{ notif.opportunite.title }}</div>
+                                <div class="alert-notif-sub">
+                                    {% if notif.opportunite.company %}{{ notif.opportunite.company.name }} · {% endif %}
+                                    {{ notif.sentAt|date('M d, H:i') }}
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <div style="padding: 20px 14px; text-align: center; color: #9aa1b8; font-size: 13px;">
+                            <i class="fa fa-check-circle" style="display: block; font-size: 24px; margin-bottom: 6px;"></i>
+                            All caught up!
+                        </div>
+                    {% endif %}
+                    <div class="alert-dropdown-footer">
+                        <a href="{{ path('job_alert_notification_index') }}">Go to inbox</a>
+                        &nbsp;·&nbsp;
+                        <a href="{{ path('job_alert_subscription_index') }}">Manage alerts</a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </nav>
 
         <small>Quick Links</small>
@@ -206,6 +363,7 @@
                         {% if app.user %}
                             {% if 'ROLE_COMPANY' not in app.user.roles %}
                                 <a class="item" href="{{ path('app_carriere_demande_my_demandes') }}" style="font-size:11px;"><i class="fa fa-file-text" style="margin-right:5px;"></i> My Applications</a>
+                                <a class="item" href="{{ path('job_alert_subscription_index') }}" style="font-size:11px;"><i class="fa fa-bell" style="margin-right:5px;"></i> Job Alerts</a>
                             {% endif %}
                             {% if 'ROLE_COMPANY' in app.user.roles %}
                                 <a class="item" href="{{ path('app_carriere_opportunite_new') }}" style="font-size:11px;"><i class="fa fa-plus-circle" style="margin-right:5px;"></i> Post Opportunity</a>
@@ -221,4 +379,25 @@
         {% block module_right %}{% endblock %}
     </aside>
 </div>
+
+<script>
+(function () {
+    var btn = document.getElementById('alertBellBtn');
+    var dropdown = document.getElementById('alertDropdown');
+    if (!btn || !dropdown) return;
+
+    btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var rect = btn.getBoundingClientRect();
+        dropdown.style.top = rect.top + 'px';
+        dropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove('open');
+        }
+    });
+})();
+</script>
 {% endblock %}
