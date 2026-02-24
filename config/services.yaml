@@ -33,3 +33,7 @@ services:
     App\Service\FriendService:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    App\JobAlertBundle\EventListener\OpportuniteCreatedListener:
+        tags:
+            - { name: doctrine.event_listener, event: postPersist }

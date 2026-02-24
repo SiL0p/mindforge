@@ -10,3 +10,7 @@ controllers:
     resource: ../src/Controller/
     type: attribute
 
+job_alert_bundle_controllers:
+    resource: ../src/JobAlertBundle/Controller/
+    type: attribute
+

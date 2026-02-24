@@ -1,0 +1,89 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}My Job Alerts - MindForge{% endblock %}
+{% block module_subtitle %}Manage your job alert subscriptions{% endblock %}
+
+{% block module_content %}
+<div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+    <h4 style="margin: 0; color: #3b4257;">Your Subscriptions</h4>
+    <a href="{{ path('job_alert_subscription_new') }}" class="btn btn-primary btn-sm">
+        <i class="fa fa-plus"></i> New Alert
+    </a>
+</div>
+
+{% if subscriptions|length > 0 %}
+<div class="table-responsive">
+    <table class="table table-hover" style="margin: 0;">
+        <thead>
+            <tr style="background: #f5f5fa; color: #6d748a; font-size: 12px; text-transform: uppercase;">
+                <th>Keywords</th>
+                <th>Type</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th style="text-align: right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sub in subscriptions %}
+            <tr style="{% if not sub.isActive %}opacity: 0.6;{% endif %}">
+                <td>{{ sub.keywords ?: '<span class="text-muted">—</span>'|raw }}</td>
+                <td>{{ sub.type ? sub.type|capitalize : '<span class="text-muted">Any</span>'|raw }}</td>
+                <td>{{ sub.location ?: '<span class="text-muted">Anywhere</span>'|raw }}</td>
+                <td>
+                    {% if sub.isActive %}
+                        <span class="label label-success">Active</span>
+                    {% else %}
+                        <span class="label label-default">Inactive</span>
+                    {% endif %}
+                </td>
+                <td style="font-size: 12px; color: #9aa1b8;">{{ sub.createdAt|date('M d, Y') }}</td>
+                <td style="text-align: right; white-space: nowrap;">
+                    <a href="{{ path('job_alert_subscription_edit', {id: sub.id}) }}"
+                       class="btn btn-xs btn-default" title="Edit">
+                        <i class="fa fa-edit"></i>
+                    </a>
+                    <form method="post" action="{{ path('job_alert_subscription_toggle', {id: sub.id}) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-xs {% if sub.isActive %}btn-warning{% else %}btn-success{% endif %}"
+                                title="{{ sub.isActive ? 'Deactivate' : 'Activate' }}">
+                            <i class="fa fa-{{ sub.isActive ? 'pause' : 'play' }}"></i>
+                        </button>
+                    </form>
+                    <form method="post" action="{{ path('job_alert_subscription_delete', {id: sub.id}) }}"
+                          style="display: inline;"
+                          onsubmit="return confirm('Delete this alert?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ sub.id) }}">
+                        <button type="submit" class="btn btn-xs btn-danger" title="Delete">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div style="text-align: center; padding: 50px 20px; color: #9aa1b8;">
+    <i class="fa fa-bell-slash" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
+    <p style="font-size: 15px; margin-bottom: 16px;">You have no job alerts yet.</p>
+    <a href="{{ path('job_alert_subscription_new') }}" class="btn btn-primary">
+        <i class="fa fa-plus"></i> Create your first alert
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block module_right %}
+<section class="module-widget">
+    <h4>Quick Links</h4>
+    <div class="body">
+        <a class="item" href="{{ path('job_alert_notification_index') }}">
+            <i class="fa fa-bell"></i> My Notifications
+        </a>
+        <a class="item" href="{{ path('app_carriere_opportunite_index') }}">
+            <i class="fa fa-search"></i> Browse Opportunities
+        </a>
+    </div>
+</section>
+{% endblock %}
