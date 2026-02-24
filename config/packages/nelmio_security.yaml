@@ -1,0 +1,7 @@
+nelmio_security:
+    csp:
+        policies:
+            img-src:
+                - 'self'
+                - https://api.dicebear.com
+                - data:

@@ -1,265 +1,95 @@
 {% extends 'base.html.twig' %}
-{% block title %}Avatar Builder - MindForge{% endblock %}
-
 {% block body %}
 
-<!-- Hero -->
-<div class="hero-area section" style="min-height:200px;">
-    <div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/blog-post-background.jpg') }})"></div>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-8 col-md-offset-2 text-center" style="padding:60px 0 40px;">
-                <h1 class="white-text">Avatar Builder</h1>
-                <p class="white-text">Customize your character step by step</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Builder Section -->
-<div class="section">
-    <div class="container-fluid" style="max-width:1200px;margin:0 auto;padding:0 20px;">
-        <div class="row">
-
-            <!-- LEFT: Sticky Preview -->
-            <div class="col-md-3">
-                <div style="position:sticky;top:20px;background:#374050;border-radius:10px;padding:30px 20px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.15);">
-                    
-                    <div style="width:160px;height:160px;border-radius:50%;margin:0 auto 20px;background:linear-gradient(135deg,#6C3BAA,#9B59B6);padding:4px;">
-                        <img id="mainAvatar" src="" alt="Your avatar" style="width:100%;height:100%;border-radius:50%;background:white;display:block;object-fit:cover;">
-                    </div>
-
-                    <p style="color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">Customizing</p>
-                    <p id="currentCatLabel" style="color:white;font-size:16px;font-weight:700;margin-bottom:24px;">Skin Tone</p>
-
-                    <button id="saveBtn" onclick="saveAvatar()" class="main-button" style="width:100%;margin-bottom:12px;">
-                        <i class="fa fa-save"></i> Save Avatar
-                    </button>
-
-                    <a href="{{ path('app_profile_view') }}" style="color:rgba(255,255,255,0.4);font-size:13px;text-decoration:none;display:block;">
-                        <i class="fa fa-arrow-left"></i> Back to profile
-                    </a>
-                </div>
-            </div>
-
-            <!-- RIGHT: Customizer -->
-            <div class="col-md-9">
-
-                <!-- Category tabs -->
-                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;" id="catTabs"></div>
-
-                <!-- Options title -->
-                <h4 id="optsTitle" style="color:#374050;font-weight:700;text-transform:uppercase;font-size:12px;letter-spacing:2px;margin-bottom:16px;">Choose Skin Tone</h4>
-
-                <!-- Options panel -->
-                <div id="optsPanel"></div>
-
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Footer -->
-<footer id="footer" class="section">
-    <div class="container text-center">
-        <div class="footer-logo">
-            <a class="logo" href="{{ path('app_home') }}">
-                <img src="{{ asset('user/img/logo.png') }}" alt="logo">
-            </a>
-        </div>
-        <p>&copy; 2026 All Rights Reserved</p>
-    </div>
-</footer>
-
-<div id="toast" style="position:fixed;bottom:24px;right:24px;background:#374050;color:white;padding:14px 20px;border-radius:8px;font-weight:600;font-size:14px;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);"></div>
-
 <style>
-.cat-tab {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    border-radius: 30px;
-    font-size: 13px;
-    font-weight: 500;
+.container {
+    max-width: 1000px;
+    margin: 50px auto;
+    display: flex;
+    gap: 40px;
+}
+.preview {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #7d5fff;
+}
+.preview img {
+    width: 100%;
+    height: 100%;
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+.card {
+    background: #f1f2f6;
+    padding: 10px;
+    border-radius: 12px;
     cursor: pointer;
-    background: white;
-    transition: all 0.15s;
-    color: #374050;
 }
-.cat-tab:hover { border-color: #6C3BAA; color: #6C3BAA; }
-.cat-tab.active { background: #6C3BAA; border-color: #6C3BAA; color: white; font-weight: 700; }
-
-.opt-card {
-    border: 2px solid #e8e8e8;
-    border-radius: 10px;
-    padding: 10px 8px;
-    text-align: center;
-    cursor: pointer;
-    background: white;
-    transition: all 0.18s;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+.card img {
+    width: 100%;
 }
-.opt-card:hover { border-color: #6C3BAA; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(108,59,170,0.15); }
-.opt-card.active { border-color: #6C3BAA; background: #f8f4ff; box-shadow: 0 4px 16px rgba(108,59,170,0.2); }
-.opt-card img { width: 72px; height: 72px; border-radius: 50%; background: #f5f5f5; display: block; margin: 0 auto 8px; }
-.opt-card .opt-name { font-size: 11px; font-weight: 600; color: #374050; }
-
-.color-swatch {
-    width: 48px; height: 48px; border-radius: 50%;
-    cursor: pointer; border: 3px solid transparent;
-    transition: all 0.18s; display: inline-flex;
-    align-items: center; justify-content: center;
-    position: relative;
-}
-.color-swatch:hover { transform: scale(1.15); }
-.color-swatch.active { border-color: #374050; box-shadow: 0 0 0 3px white, 0 0 0 5px #374050; }
-
-.toast-show { transform: translateY(0) !important; opacity: 1 !important; }
 </style>
 
+<div class="container">
+    <div>
+        <div class="preview">
+            <img id="avatarPreview"
+                 src="{{ path('avatar_preview', {seed: 'user', top: 'longHairBigHair'}) }}">
+        </div>
+
+        <button onclick="saveAvatar()">Save Avatar</button>
+    </div>
+
+    <div class="grid" id="hairGrid"></div>
+</div>
+
 <script>
-const SAVE_URL = "{{ path('app_generate_avatar') }}";
+document.addEventListener("DOMContentLoaded", function () {
+    const preview = document.getElementById("avatarPreview");
+    const hairGrid = document.getElementById("hairGrid");
+    const seed = "user";
 
-const sel = {
-    skinColor: 'light', top: 'shortHairShortFlat', hairColor: 'brown',
-    eyes: 'default', eyebrows: 'default', mouth: 'smile',
-    facialHair: 'blank', facialHairColor: 'auburn',
-    clothing: 'shirtCrewNeck', clothesColor: 'blue03',
-    accessories: 'blank', backgroundColor: 'b6e3f4',
-};
+    const hairStyles = [
+        "longHairBigHair",
+        "longHairBob",
+        "longHairCurly",
+        "longHairStraight",
+        "shortHairDreads01",
+        "shortHairDreads02",
+        "shortHairFrizzle",
+        "shortHairShaggyMullet"
+    ];
 
-const CATS = [
-    { id:'skin', label:'🎨 Skin', title:'Skin Tone', param:'skinColor', type:'color',
-      options:[{val:'tanned',hex:'#FD9841',name:'Tanned'},{val:'yellow',hex:'#F8D25C',name:'Yellow'},{val:'pale',hex:'#FFDBB4',name:'Pale'},{val:'light',hex:'#EDB98A',name:'Light'},{val:'brown',hex:'#D08B5B',name:'Brown'},{val:'darkBrown',hex:'#AE5D29',name:'Dark'},{val:'black',hex:'#614335',name:'Deep'}]},
-    { id:'hair', label:'💇 Hair', title:'Hair Style', param:'top', type:'avatar',
-      options:[{val:'shortHairShortFlat',name:'Flat'},{val:'shortHairShortCurly',name:'Curly'},{val:'shortHairShortRound',name:'Round'},{val:'shortHairShortWaved',name:'Waved'},{val:'shortHairSides',name:'Sides'},{val:'shortHairTheCaesar',name:'Caesar'},{val:'shortHairDreads01',name:'Dreads'},{val:'shortHairFrizzle',name:'Frizzle'},{val:'longHairBigHair',name:'Big Hair'},{val:'longHairBob',name:'Bob'},{val:'longHairBun',name:'Bun'},{val:'longHairCurly',name:'Long Curly'},{val:'longHairStraight',name:'Straight'},{val:'longHairFro',name:'Afro'},{val:'longHairDreads',name:'Long Dreads'},{val:'hat',name:'Hat'},{val:'hijab',name:'Hijab'},{val:'turban',name:'Turban'},{val:'winterHat1',name:'Winter Hat'},{val:'noHair',name:'No Hair'}]},
-    { id:'hairColor', label:'🎨 Hair Color', title:'Hair Color', param:'hairColor', type:'color',
-      options:[{val:'auburn',hex:'#A55728',name:'Auburn'},{val:'black',hex:'#2C1B18',name:'Black'},{val:'blonde',hex:'#B58143',name:'Blonde'},{val:'blondeGolden',hex:'#D6B370',name:'Golden'},{val:'brown',hex:'#724133',name:'Brown'},{val:'brownDark',hex:'#4A312C',name:'Dark Brown'},{val:'pastelPink',hex:'#F59797',name:'Pink'},{val:'platinum',hex:'#ECDCBF',name:'Platinum'},{val:'red',hex:'#C93305',name:'Red'},{val:'silverGray',hex:'#E8E1E1',name:'Silver'}]},
-    { id:'eyes', label:'👁️ Eyes', title:'Eye Style', param:'eyes', type:'avatar',
-      options:[{val:'default',name:'Default'},{val:'happy',name:'Happy'},{val:'wink',name:'Wink'},{val:'close',name:'Closed'},{val:'cry',name:'Cry'},{val:'hearts',name:'Hearts'},{val:'squint',name:'Squint'},{val:'surprised',name:'Surprised'},{val:'side',name:'Side'},{val:'eyeRoll',name:'Eye Roll'}]},
-    { id:'eyebrows', label:'〰️ Brows', title:'Eyebrows', param:'eyebrows', type:'avatar',
-      options:[{val:'default',name:'Default'},{val:'defaultNatural',name:'Natural'},{val:'raisedExcited',name:'Raised'},{val:'flatNatural',name:'Flat'},{val:'angry',name:'Angry'},{val:'sadConcerned',name:'Sad'},{val:'unibrow',name:'Unibrow'},{val:'upDown',name:'Up Down'}]},
-    { id:'mouth', label:'👄 Mouth', title:'Mouth Style', param:'mouth', type:'avatar',
-      options:[{val:'smile',name:'Smile'},{val:'default',name:'Default'},{val:'serious',name:'Serious'},{val:'twinkle',name:'Twinkle'},{val:'tongue',name:'Tongue'},{val:'sad',name:'Sad'},{val:'screamOpen',name:'Scream'},{val:'eating',name:'Eating'},{val:'concerned',name:'Concerned'},{val:'grimace',name:'Grimace'}]},
-    { id:'facialHair', label:'🧔 Beard', title:'Facial Hair', param:'facialHair', type:'avatar',
-      options:[{val:'blank',name:'None'},{val:'beardLight',name:'Light'},{val:'beardMedium',name:'Medium'},{val:'beardMagestic',name:'Full Beard'},{val:'moustacheFancy',name:'Moustache'},{val:'moustacheMagnum',name:'Magnum'}]},
-    { id:'clothes', label:'👕 Clothes', title:'Clothing', param:'clothing', type:'avatar',
-      options:[{val:'shirtCrewNeck',name:'Crew Neck'},{val:'shirtScoopNeck',name:'Scoop Neck'},{val:'shirtVNeck',name:'V Neck'},{val:'hoodie',name:'Hoodie'},{val:'blazerAndShirt',name:'Blazer'},{val:'blazerAndSweater',name:'Blazer & Sweater'},{val:'collarAndSweater',name:'Collar Sweater'},{val:'graphicShirt',name:'Graphic Shirt'},{val:'overall',name:'Overall'}]},
-    { id:'clothesColor', label:'🎨 Clothes Color', title:'Clothes Color', param:'clothesColor', type:'color',
-      options:[{val:'black',hex:'#262E33',name:'Black'},{val:'blue01',hex:'#65C9FF',name:'Sky'},{val:'blue02',hex:'#5199E4',name:'Blue'},{val:'blue03',hex:'#25557C',name:'Navy'},{val:'gray01',hex:'#E6E6E6',name:'Light Gray'},{val:'gray02',hex:'#929598',name:'Gray'},{val:'pastelBlue',hex:'#B1E2FF',name:'Pastel Blue'},{val:'pastelGreen',hex:'#A7FFC4',name:'Pastel Green'},{val:'pastelOrange',hex:'#FFDEB5',name:'Pastel Orange'},{val:'pink',hex:'#FF488E',name:'Pink'},{val:'red',hex:'#FF5C5C',name:'Red'},{val:'white',hex:'#FFFFFF',name:'White'}]},
-    { id:'accessories', label:'👓 Accessories', title:'Accessories', param:'accessories', type:'avatar',
-      options:[{val:'blank',name:'None'},{val:'kurt',name:'Kurt'},{val:'prescription01',name:'Glasses 1'},{val:'prescription02',name:'Glasses 2'},{val:'round',name:'Round'},{val:'sunglasses',name:'Sunglasses'},{val:'wayfarers',name:'Wayfarers'}]},
-    { id:'bg', label:'🖼️ Background', title:'Background', param:'backgroundColor', type:'color',
-      options:[{val:'b6e3f4',hex:'#b6e3f4',name:'Sky'},{val:'ffd5dc',hex:'#ffd5dc',name:'Rose'},{val:'d1f7c4',hex:'#d1f7c4',name:'Mint'},{val:'ffeaa7',hex:'#ffeaa7',name:'Sun'},{val:'c0392b',hex:'#c0392b',name:'Red'},{val:'8e44ad',hex:'#8e44ad',name:'Purple'},{val:'2980b9',hex:'#2980b9',name:'Blue'},{val:'27ae60',hex:'#27ae60',name:'Green'},{val:'ffffff',hex:'#ffffff',name:'White'}]},
-];
+    hairStyles.forEach(style => {
+        const card = document.createElement("div");
+        card.className = "card";
 
-let currentCat = CATS[0];
+        const img = document.createElement("img");
+        img.src = `{{ path('avatar_preview') }}?seed=${seed}&top=${style}&hairColor=brown`;
+        card.appendChild(img);
 
-const PREVIEW_BASE = "{{ path('app_avatar_preview') }}";
+        card.onclick = () => {
+            preview.src = `{{ path('avatar_preview') }}?seed=${seed}&top=${style}&hairColor=brown`;
+        };
 
-function buildUrl(overrides={}) {
-    const s = {...sel, ...overrides};
-    const p = new URLSearchParams({
-        style: 'avataaars',
-        skinColor: s.skinColor,
-        top: s.top,
-        hairColor: s.hairColor,
-        eyes: s.eyes,
-        eyebrows: s.eyebrows,
-        mouth: s.mouth,
-        facialHair: s.facialHair,
-        facialHairColor: s.facialHairColor,
-        clothing: s.clothing,
-        clothesColor: s.clothesColor,
-        accessories: s.accessories,
-        backgroundColor: s.backgroundColor,
+        hairGrid.appendChild(card);
     });
-    return PREVIEW_BASE + '?' + p.toString();
-}
 
-function updateMain() {
-    document.getElementById('mainAvatar').src = buildUrl();
-}
-
-function selectCat(cat) {
-    currentCat = cat;
-    document.getElementById('currentCatLabel').textContent = cat.title;
-    document.getElementById('optsTitle').textContent = 'Choose ' + cat.title;
-    document.querySelectorAll('.cat-tab').forEach(t => t.classList.toggle('active', t.dataset.id === cat.id));
-    renderOptions(cat);
-}
-
-function renderOptions(cat) {
-    const panel = document.getElementById('optsPanel');
-    panel.innerHTML = '';
-
-    if (cat.type === 'color') {
-        const grid = document.createElement('div');
-        grid.style.cssText = 'display:flex;flex-wrap:wrap;gap:14px;';
-        cat.options.forEach(opt => {
-            const el = document.createElement('div');
-            el.className = 'color-swatch' + (sel[cat.param] === opt.val ? ' active' : '');
-            el.style.background = opt.hex;
-            if (opt.hex === '#ffffff' || opt.hex === '#FFFFFF') el.style.border = '3px solid #ddd';
-            el.title = opt.name;
-            el.onclick = () => { sel[cat.param] = opt.val; updateMain(); renderOptions(cat); };
-            grid.appendChild(el);
-        });
-        panel.appendChild(grid);
-    } else {
-        const grid = document.createElement('div');
-        grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px;';
-        cat.options.forEach(opt => {
-            const card = document.createElement('div');
-            card.className = 'opt-card' + (sel[cat.param] === opt.val ? ' active' : '');
-            card.innerHTML = `<img src="${buildUrl({[cat.param]: opt.val})}" loading="lazy" alt="${opt.name}"><div class="opt-name">${opt.name}</div>`;
-            card.onclick = () => { sel[cat.param] = opt.val; updateMain(); renderOptions(cat); };
-            grid.appendChild(card);
-        });
-        panel.appendChild(grid);
-    }
-}
-
-function buildTabs() {
-    const tabs = document.getElementById('catTabs');
-    CATS.forEach(cat => {
-        const tab = document.createElement('div');
-        tab.className = 'cat-tab' + (cat.id === currentCat.id ? ' active' : '');
-        tab.dataset.id = cat.id;
-        tab.textContent = cat.label;
-        tab.onclick = () => selectCat(cat);
-        tabs.appendChild(tab);
-    });
-}
-
-async function saveAvatar() {
-    const btn = document.getElementById('saveBtn');
-    btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Saving...';
-    try {
-        const res = await fetch(SAVE_URL, {
-            method: 'POST',
-            headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
-            body: JSON.stringify({ avatarUrl: buildUrl() })
-        });
-        const data = await res.json();
-        data.success ? toast('✓ Avatar saved!', '#2ecc71') : toast('✗ ' + (data.error||'Error'), '#e74c3c');
-    } catch(e) {
-        toast('✗ ' + e.message, '#e74c3c');
-    } finally {
-        btn.disabled = false; btn.innerHTML = '<i class="fa fa-save"></i> Save Avatar';
-    }
-}
-
-function toast(msg, color) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.style.borderLeft = '4px solid ' + color;
-    t.classList.add('toast-show');
-    setTimeout(() => t.classList.remove('toast-show'), 3000);
-}
-
-buildTabs();
-renderOptions(currentCat);
-updateMain();
+    window.saveAvatar = function () {
+        fetch("{{ path('avatar_save') }}", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({avatar: preview.src})
+        })
+        .then(res => res.json())
+        .then(() => alert("Saved!"));
+    };
+});
 </script>
 
 {% endblock %}
