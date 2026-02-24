@@ -168,6 +168,60 @@ class DemandeController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/accept', name: 'app_carriere_demande_accept', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted('ROLE_COMPANY')]
+    public function accept(
+        Request $request,
+        Demande $demande,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $user = $this->getUser();
+        $opportunity = $demande->getOpportunity();
+
+        if (!$opportunity || !$opportunity->getCompany() || !$user->hasEntreprise($opportunity->getCompany())) {
+            throw $this->createAccessDeniedException('You do not have access to manage this application.');
+        }
+
+        if ($this->isCsrfTokenValid('accept'.$demande->getId(), $request->request->get('_token'))) {
+            if ($demande->isPending()) {
+                $demande->accept();
+                $entityManager->flush();
+                $this->addFlash('success', 'Application accepted.');
+            } else {
+                $this->addFlash('error', 'Only pending applications can be accepted.');
+            }
+        }
+
+        return $this->redirectToRoute('app_carriere_demande_show', ['id' => $demande->getId()]);
+    }
+
+    #[Route('/{id}/reject', name: 'app_carriere_demande_reject', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted('ROLE_COMPANY')]
+    public function reject(
+        Request $request,
+        Demande $demande,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $user = $this->getUser();
+        $opportunity = $demande->getOpportunity();
+
+        if (!$opportunity || !$opportunity->getCompany() || !$user->hasEntreprise($opportunity->getCompany())) {
+            throw $this->createAccessDeniedException('You do not have access to manage this application.');
+        }
+
+        if ($this->isCsrfTokenValid('reject'.$demande->getId(), $request->request->get('_token'))) {
+            if ($demande->isPending()) {
+                $demande->reject();
+                $entityManager->flush();
+                $this->addFlash('success', 'Application rejected.');
+            } else {
+                $this->addFlash('error', 'Only pending applications can be rejected.');
+            }
+        }
+
+        return $this->redirectToRoute('app_carriere_demande_show', ['id' => $demande->getId()]);
+    }
+
     #[Route('/{id}/withdraw', name: 'app_carriere_demande_withdraw', requirements: ['id' => '\d+'], methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
     public function withdraw(
