@@ -17,6 +17,7 @@ class JobAlertExtension extends AbstractExtension implements GlobalsInterface
     public function getGlobals(): array
     {
         $user = $this->security->getUser();
+
         /** @var \App\Entity\Architect\User|null $user */
         if (!$user instanceof \App\Entity\Architect\User || in_array('ROLE_COMPANY', $user->getRoles())) {
             return [

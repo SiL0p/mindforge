@@ -42,6 +42,13 @@ class DemandeController extends AbstractController
             return $this->redirectToRoute('app_carriere_quiz_show', ['id' => $opportunity->getId()]);
         }
 
+        // Quiz gate: student must pass the quiz before applying
+        $passed = $request->getSession()->get('quiz_' . $opportunity->getId() . '_passed');
+        if (!$passed) {
+            $this->addFlash('error', 'You must pass the quiz before applying.');
+            return $this->redirectToRoute('app_carriere_quiz_show', ['id' => $opportunity->getId()]);
+        }
+
         // Check if already applied
         if ($demandeRepository->hasUserApplied($user->getId(), $opportunity->getId())) {
             $this->addFlash('warning', 'You have already applied to this opportunity.');
@@ -204,6 +211,7 @@ class DemandeController extends AbstractController
         MailerInterface $mailer,
     ): Response {
         $user = $this->getUser();
+
         /** @var \App\Entity\Architect\User|null $user */
         if (!$user instanceof \App\Entity\Architect\User) {
             throw $this->createAccessDeniedException();
@@ -260,6 +268,7 @@ class DemandeController extends AbstractController
         MailerInterface $mailer,
     ): Response {
         $user = $this->getUser();
+
         /** @var \App\Entity\Architect\User|null $user */
         if (!$user instanceof \App\Entity\Architect\User) {
             throw $this->createAccessDeniedException();

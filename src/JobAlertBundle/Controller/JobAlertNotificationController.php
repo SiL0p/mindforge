@@ -16,6 +16,7 @@ class JobAlertNotificationController extends AbstractController
     #[Route('', name: 'job_alert_notification_index', methods: ['GET'])]
     public function index(JobAlertNotificationRepository $repository): Response
     {
+
         $user = $this->getUser();
         /** @var \App\Entity\Architect\User|null $user */
         if (!$user instanceof \App\Entity\Architect\User) {
@@ -47,6 +48,7 @@ class JobAlertNotificationController extends AbstractController
     #[Route('/read-all', name: 'job_alert_notification_read_all', methods: ['POST'])]
     public function markAllRead(EntityManagerInterface $em, JobAlertNotificationRepository $repository): Response
     {
+
         $user = $this->getUser();
         /** @var \App\Entity\Architect\User|null $user */
         if (!$user instanceof \App\Entity\Architect\User) {

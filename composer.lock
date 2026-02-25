@@ -4,6 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
+
     "content-hash": "da9ad5c8d6bb84ae018efe0829711ae3",
     "packages": [
         {
@@ -9390,6 +9391,7 @@
         {
             "name": "ua-parser/uap-php",
             "version": "v3.10.0",
+
             "source": {
                 "type": "git",
                 "url": "https://github.com/ua-parser/uap-php.git",

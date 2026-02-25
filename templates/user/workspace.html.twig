@@ -563,6 +563,7 @@
             <a href="{{ path('app_analyst_gamification') }}" class="{{ currentRoute starts with 'app_analyst_' ? 'active' : '' }}"><i class="fa fa-pie-chart"></i>Analytics</a>
             <a href="{{ path('community_index') }}" class="{{ currentRoute starts with 'community_' ? 'active' : '' }}"><i class="fa fa-users"></i>Community</a>
             <a href="{{ path('guardian_hub') }}" class="{{ currentRoute starts with 'guardian_' ? 'active' : '' }}"><i class="fa fa-book"></i>Guardian</a>
+
             <a href="{{ path('app_emotion') }}" class="{{ currentRoute == 'app_emotion' ? 'active' : '' }}"><i class="fa fa-heart"></i>Emotion</a>
         </nav>
 
@@ -624,6 +625,7 @@
             <a href="{{ path('guardian_hub') }}" class="folder-card">
                 <div><span class="dot" style="background:#7f6be7"></span><span class="folder-title">Guardian</span></div>
                 <div class="folder-date">Focus · Rooms · Library</div>
+
             </a>
             <a href="{{ path('app_emotion') }}" class="folder-card">
                 <div><span class="dot" style="background:#ff6b6b"></span><span class="folder-title">Emotion</span></div>
