@@ -1,35 +1,29 @@
 # config/services.yaml
 # yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
-# See also https://symfony.com/doc/current/service_container/import.html
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+
 parameters:
     resources_directory: '%kernel.project_dir%/public/uploads/resources'
-    # Directory to store uploaded avatars
     avatars_directory: '%kernel.project_dir%/public/uploads/avatars'
+    groq_api_key: '%env(GROQ_API_KEY)%'
 
 services:
-    # default configuration for services in *this* file
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        autowire: true
+        autoconfigure: true
         bind:
             string $resourcesDirectory: '%resources_directory%'
 
     App\:
-        # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
         resource: '../src/'
         exclude:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
-    
-    # Configure FriendService with explicit project directory
+    App\Controller\AdminController:
+        arguments:
+             $groqApiKey: '%env(GROQ_API_KEY)%'
+    # Explicit service configurations
+
     App\Service\FriendService:
         arguments:
             $projectDir: '%kernel.project_dir%'
@@ -37,6 +31,10 @@ services:
     App\Service\WorkspaceSocialService:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    App\Service\AvatarService:
+        arguments:
+            $uploadDir: '%avatars_directory%'
 
     App\Service\Guardian\GuardianAiAssistant:
         arguments:

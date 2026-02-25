@@ -1,0 +1,575 @@
+{% extends 'base.html.twig' %}
+{% block title %}Avatar Builder{% endblock %}
+
+{% block body %}
+
+<!-- Header -->
+<header id="header">
+    <div class="container">
+        <div class="navbar-header">
+            <div class="navbar-brand">
+                <a class="logo" href="{{ path('app_home') }}">
+                    <img src="{{ asset('user/img/logo.png') }}" alt="logo">
+                </a>
+            </div>
+        </div>
+        <nav id="nav">
+            <ul class="main-menu nav navbar-nav navbar-right">
+                <li><a href="{{ path('app_home') }}">Home</a></li>
+                <li><a href="{{ path('app_profile_edit') }}">
+                    <i class="fa fa-arrow-left"></i> Back to Profile
+                </a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<!-- Hero -->
+<div class="hero-area section">
+    <div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/blog-post-background.jpg') }})"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2 text-center">
+                <h1 class="white-text">Avatar Builder</h1>
+                <p class="white-text">Choose your style, customise every detail, or upload your own photo</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Builder Section -->
+<div class="section" style="background:#f7f7f7; padding: 50px 0 80px;">
+<div class="container">
+
+<!-- Violation Banner -->
+<div id="violationBanner" style="display:none; background:#fff0f0; border:1px solid #e63946; border-radius:8px; padding:14px 20px; margin-bottom:24px; color:#9b1d23; align-items:center; gap:12px;">
+    <i class="fa fa-ban fa-lg"></i>
+    <div><strong>Content Policy Violation</strong><br><span id="violationMsg">Your upload did not meet our community guidelines.</span></div>
+</div>
+
+<div class="row">
+
+    <!-- ══════ LEFT: Preview + Save ══════ -->
+    <div class="col-md-3">
+        <div class="blog-post" style="padding:28px; border-radius:12px; background:#fff; box-shadow:0 4px 24px rgba(0,0,0,0.09); position:sticky; top:20px;">
+
+            <!-- Avatar ring -->
+            <div style="text-align:center; margin-bottom:18px;">
+                <div id="avatarRing" style="width:140px; height:140px; border-radius:50%; overflow:hidden; border:4px solid #e8572a; margin:0 auto 14px; background:#f7f7f7; position:relative;">
+                    <img id="previewImg" src="" alt="Preview" style="width:100%;height:100%;object-fit:cover; display:block;">
+                    <div id="loader" style="display:none; position:absolute; inset:0; background:rgba(255,255,255,0.8); justify-content:center; align-items:center;">
+                        <i class="fa fa-spinner fa-spin fa-2x" style="color:#e8572a;"></i>
+                    </div>
+                </div>
+                <p style="font-weight:700; font-size:16px; color:#333; margin:0;" id="displayName">{{ app.user.profile.firstName ?? app.user.email ?? 'User' }}</p>
+                <span style="background:#e8572a; color:#fff; font-size:11px; padding:2px 10px; border-radius:999px; font-weight:600;">Member</span>
+            </div>
+
+            <!-- Seed -->
+            <div class="form-group">
+                <label style="font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#999;">Your Name / Seed</label>
+                <input type="text" id="seedInput" class="form-control" placeholder="Your name…"
+                       value="{{ app.user.profile.firstName ?? app.user.id ?? 'user' }}" maxlength="40">
+            </div>
+
+            <!-- BG Color -->
+            <div class="form-group">
+                <label style="font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#999;">Background</label>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <input type="color" id="bgColorPicker" value="#f2efe8" style="width:38px;height:38px;padding:2px;border:1px solid #ddd;border-radius:6px;cursor:pointer;">
+                    <div id="bgSwatches" style="display:flex; gap:5px; flex-wrap:wrap; flex:1;"></div>
+                </div>
+            </div>
+
+            <!-- Upload -->
+            <div class="form-group">
+                <label style="font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#999;">Upload Photo</label>
+                <div id="uploadZone" style="border:2px dashed #ddd; border-radius:8px; padding:14px; text-align:center; cursor:pointer; position:relative; transition:border-color .2s;">
+                    <input type="file" id="photoUpload" accept="image/jpeg,image/png,image/webp"
+                           style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
+                    <i class="fa fa-camera" style="font-size:22px; color:#bbb; display:block; margin-bottom:5px;"></i>
+                    <p style="font-size:12px; color:#999; margin:0; line-height:1.4;"><strong style="color:#555;">Click or drag</strong><br>JPG · PNG · WEBP · max 2MB</p>
+                </div>
+                <div id="uploadProgress" style="display:none; height:3px; background:#eee; border-radius:99px; margin-top:8px; overflow:hidden;">
+                    <div id="progressBar" style="height:100%; background:#3a86ff; width:0%; transition:width .3s;"></div>
+                </div>
+            </div>
+
+            <button class="btn btn-block" id="regenerateBtn"
+                    style="background:#f0f0f0; border:1px solid #ddd; color:#555; border-radius:8px; margin-bottom:8px; font-weight:600;">
+                <i class="fa fa-refresh"></i> Regenerate
+            </button>
+            <button class="btn btn-block" id="saveBtn"
+                    style="background:#e8572a; color:#fff; border:none; border-radius:8px; padding:12px; font-size:15px; font-weight:700; cursor:pointer;">
+                <i class="fa fa-save"></i> Save Avatar
+            </button>
+
+        </div>
+    </div>
+
+    <!-- ══════ RIGHT: Style Picker ══════ -->
+    <div class="col-md-9">
+        <div class="blog-post" style="padding:28px; border-radius:12px; background:#fff; box-shadow:0 4px 24px rgba(0,0,0,0.09);">
+
+            <!-- Category Tabs -->
+            <p style="font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#aaa; margin-bottom:12px;">Style Categories</p>
+            <div id="categoryTabs" style="display:flex; flex-wrap:wrap; gap:7px; margin-bottom:24px;"></div>
+
+            <!-- Variant Grid -->
+            <p style="font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#aaa; margin-bottom:12px;">
+                Pick a Variant <span id="gridStyleLabel" style="color:#e8572a;"></span>
+            </p>
+            <div id="avatarGrid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:10px; margin-bottom:28px;"></div>
+
+            <!-- ─── Deep Customisation Panel ─── -->
+            <div id="customPanel">
+                <p style="font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#aaa; margin-bottom:16px;">Fine-tune Your Avatar</p>
+
+                <div class="row">
+                    <!-- Skin / Base Color -->
+                    <div class="col-sm-6 col-md-4">
+                        <div class="form-group">
+                            <label style="font-size:12px; font-weight:600; color:#666;">Skin / Base Color</label>
+                            <div id="skinSwatches" style="display:flex; flex-wrap:wrap; gap:7px; margin-top:6px;"></div>
+                        </div>
+                    </div>
+                    <!-- Hair Color -->
+                    <div class="col-sm-6 col-md-4" id="hairColorGroup">
+                        <div class="form-group">
+                            <label style="font-size:12px; font-weight:600; color:#666;">Hair Color</label>
+                            <div id="hairSwatches" style="display:flex; flex-wrap:wrap; gap:7px; margin-top:6px;"></div>
+                        </div>
+                    </div>
+                    <!-- Eye Color -->
+                    <div class="col-sm-6 col-md-4" id="eyeColorGroup">
+                        <div class="form-group">
+                            <label style="font-size:12px; font-weight:600; color:#666;">Eye / Feature Color</label>
+                            <div id="eyeSwatches" style="display:flex; flex-wrap:wrap; gap:7px; margin-top:6px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extra options row -->
+                <div class="row" style="margin-top:8px;">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label style="font-size:12px; font-weight:600; color:#666;">Flip / Mirror</label><br>
+                            <label style="cursor:pointer; font-weight:400; color:#555;">
+                                <input type="checkbox" id="flipToggle"> Flip Horizontally
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label style="font-size:12px; font-weight:600; color:#666;">Scale (%)</label>
+                            <input type="range" id="scaleSlider" min="70" max="130" value="100" class="form-control" style="padding:6px;">
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /customPanel -->
+
+        </div>
+    </div>
+
+</div><!-- /row -->
+</div><!-- /container -->
+</div><!-- /section -->
+
+<!-- Footer -->
+<footer id="footer" class="section">
+    <div class="container text-center">
+        <div class="footer-logo">
+            <a class="logo" href="{{ path('app_home') }}">
+                <img src="{{ asset('user/img/logo.png') }}" alt="logo">
+            </a>
+        </div>
+        <p>&copy; 2026 All Rights Reserved</p>
+    </div>
+</footer>
+
+<!-- Toast -->
+<div id="toast" style="position:fixed;bottom:30px;right:30px;background:#333;color:#fff;padding:13px 22px;border-radius:9px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transform:translateY(16px);transition:opacity .3s,transform .3s;z-index:9999;max-width:300px;"></div>
+
+<style>
+.av-swatch {
+    width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+    border: 3px solid transparent; transition: transform .15s, border-color .15s;
+}
+.av-swatch:hover { transform: scale(1.15); }
+.av-swatch.active { border-color: #333; transform: scale(1.12); box-shadow: 0 0 0 2px #333; }
+
+.av-card {
+    background: #f7f7f7; border-radius: 10px; padding: 8px;
+    cursor: pointer; border: 3px solid transparent; transition: border-color .2s, transform .15s, box-shadow .2s;
+    text-align: center; position: relative;
+}
+.av-card:hover { border-color: #e8572a; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.09); }
+.av-card.active { border-color: #e8572a; box-shadow: 0 0 0 3px rgba(232,87,42,.2); }
+.av-card.active::after { content:'✓'; position:absolute; top:4px; right:7px; font-size:10px; font-weight:800; color:#e8572a; }
+.av-card img { width:100%; display:block; border-radius:6px; }
+.av-card-lbl { font-size:10px; color:#999; margin-top:4px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.cat-tab {
+    padding: 7px 16px; border-radius: 999px; border: 1px solid #ddd;
+    background: #fff; font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: all .2s; display:inline-flex; align-items:center; gap:5px;
+}
+.cat-tab:hover { border-color: #e8572a; color: #e8572a; }
+.cat-tab.active { background: #e8572a; color: #fff; border-color: #e8572a; }
+
+#uploadZone:hover { border-color: #e8572a; background: #fff8f5; }
+</style>
+
+<script>
+const SAVE_URL  = "{{ path('app_generate_avatar') }}";
+const DICE      = "https://api.dicebear.com/9.x";
+
+const CATEGORIES = [
+  { id:"avataaars",         label:"Avataaars",     icon:"👤", group:"Human"   },
+  { id:"lorelei",           label:"Lorelei",       icon:"🧑", group:"Human"   },
+  { id:"personas",          label:"Personas",      icon:"🙂", group:"Human"   },
+  { id:"micah",             label:"Micah",         icon:"🧍", group:"Human"   },
+  { id:"adventurer",        label:"Adventurer",    icon:"⚔️", group:"Human"   },
+  { id:"adventurer-neutral",label:"Adventurer·N",  icon:"🧝", group:"Human"   },
+  { id:"open-peeps",        label:"Open Peeps",    icon:"🚶", group:"Human"   },
+  { id:"fun-emoji",         label:"Fun Emoji",     icon:"😄", group:"Fun"     },
+  { id:"notionists",        label:"Notionists",    icon:"🎨", group:"Fun"     },
+  { id:"notionists-neutral",label:"Notionists·N",  icon:"🖌️",group:"Fun"     },
+  { id:"croodles",          label:"Croodles",      icon:"✏️", group:"Fun"     },
+  { id:"croodles-neutral",  label:"Croodles·N",    icon:"🖊️", group:"Fun"     },
+  { id:"bottts",            label:"Bottts",        icon:"🤖", group:"Robot"   },
+  { id:"bottts-neutral",    label:"Bottts·N",      icon:"🦾", group:"Robot"   },
+  { id:"pixel-art",         label:"Pixel Art",     icon:"🎮", group:"Pixel"   },
+  { id:"pixel-art-neutral", label:"Pixel·N",       icon:"👾", group:"Pixel"   },
+  { id:"thumbs",            label:"Thumbs",        icon:"👍", group:"Animals" },
+  { id:"lorelei-neutral",   label:"Lorelei·N",     icon:"🐱", group:"Animals" },
+  { id:"initials",          label:"Initials",      icon:"🔠", group:"Shape"   },
+  { id:"rings",             label:"Rings",         icon:"💍", group:"Shape"   },
+  { id:"shapes",            label:"Shapes",        icon:"🔷", group:"Shape"   },
+  { id:"icons",             label:"Icons",         icon:"⭐", group:"Shape"   },
+  { id:"glass",             label:"Glass",         icon:"🔮", group:"Shape"   },
+  { id:"identicon",         label:"Identicon",     icon:"🧩", group:"Shape"   },
+];
+
+const ANIMAL_SEEDS = ["bear","fox","wolf","panda","tiger","lion","rabbit","deer","owl","penguin","koala","cat","dog","dragon","unicorn","phoenix"];
+const SEEDS        = ["alpha","beta","gamma","delta","epsilon","zeta","eta","theta","iota","kappa","lambda","mu"];
+
+const BG_PALETTE   = ["#f2efe8","#ffd6c0","#c8e6ff","#c8ffd6","#ffc8e4","#fff3c0","#d6c8ff","#c8f4ff","#1a1a2e","#16213e","#e8f5e9","#fce4ec"];
+const SKIN_PALETTE = ["#fddbb4","#f1c27d","#e0ac69","#c68642","#8d5524","#ffcba4","#b5651d","#deb887","#ffffff","#333333","#ff9898","#a8d8a8"];
+const HAIR_PALETTE = ["#2c1503","#a0522d","#d2691e","#f4a460","#daa520","#ffd700","#c0c0c0","#808080","#333333","#ff4444","#4169e1","#9400d3"];
+const EYE_PALETTE  = ["#4169e1","#228b22","#8b4513","#808080","#000000","#20b2aa","#9370db","#ff8c00","#dc143c","#00ced1","#556b2f","#4b0082"];
+
+// ── State ──
+let state = {
+  style:           "avataaars",
+  seed:            document.getElementById('seedInput').value.trim() || "user",
+  bgColor:         "#f2efe8",
+  skinColor:       "fddbb4",
+  hairColor:       "2c1503",
+  eyeColor:        "4169e1",
+  variantIdx:      0,
+  flip:            false,
+  scale:           100,
+  mode:            "dicebear",
+  uploadedDataUrl: null,
+  isBlocked:       false,
+  // FIX: tracks the exact URL currently shown in the preview
+  lockedUrl:       ""
+};
+
+function isAnimalGroup() {
+  const cat = CATEGORIES.find(c => c.id === state.style);
+  return cat && cat.group === "Animals";
+}
+
+// ── URL builder ──
+function buildUrl(styleId, seed, extra) {
+  const bg = state.bgColor.replace('#','');
+  let params = `seed=${encodeURIComponent(seed)}&backgroundColor=${bg}&radius=50`;
+  if (extra.skin) params += `&skinColor=${extra.skin.replace('#','')}`;
+  if (extra.hair) params += `&hairColor=${extra.hair.replace('#','')}`;
+  if (extra.eye)  params += `&eyeColor=${extra.eye.replace('#','')}`;
+  if (state.flip) params += `&flip=true`;
+  if (state.scale !== 100) params += `&scale=${state.scale}`;
+  return `${DICE}/${styleId}/svg?${params}`;
+}
+
+function currentUrl() {
+  const seeds = isAnimalGroup() ? ANIMAL_SEEDS : SEEDS;
+  const seed  = seeds[state.variantIdx % seeds.length] + '_' + state.seed;
+  return buildUrl(state.style, seed, { skin: state.skinColor, hair: state.hairColor, eye: state.eyeColor });
+}
+
+// ── Preview — FIX: lock the URL into state.lockedUrl so Save always sends exactly this ──
+function updatePreview() {
+  const img = document.getElementById('previewImg');
+  if (state.mode === 'upload' && state.uploadedDataUrl) {
+    img.src = state.uploadedDataUrl;
+    state.lockedUrl = '';
+  } else {
+    const url = currentUrl();
+    state.lockedUrl = url;   // ← lock it here
+    img.src = url;
+  }
+}
+
+// ── Grid ──
+function buildGrid() {
+  const grid = document.getElementById('avatarGrid');
+  grid.innerHTML = '';
+  document.getElementById('gridStyleLabel').textContent = '— ' + (CATEGORIES.find(c=>c.id===state.style)?.label ?? state.style);
+
+  const seeds = isAnimalGroup() ? ANIMAL_SEEDS : SEEDS;
+  const count  = isAnimalGroup() ? 16 : 12;
+
+  for (let i = 0; i < count; i++) {
+    const seedStr = seeds[i % seeds.length] + '_' + state.seed;
+    const url = buildUrl(state.style, seedStr, { skin: state.skinColor, hair: state.hairColor, eye: state.eyeColor });
+
+    const card = document.createElement('div');
+    card.className = 'av-card' + (i === state.variantIdx ? ' active' : '');
+    card.innerHTML = `<img src="${url}" alt="${seeds[i%seeds.length]}" loading="lazy"><div class="av-card-lbl">${seeds[i%seeds.length]}</div>`;
+    card.addEventListener('click', () => {
+      state.variantIdx = i;
+      state.mode = 'dicebear';
+      hideViolation();
+      grid.querySelectorAll('.av-card').forEach((c,j) => c.classList.toggle('active', j===i));
+      updatePreview();
+    });
+    grid.appendChild(card);
+  }
+}
+
+// ── Category Tabs ──
+function buildTabs() {
+  const container = document.getElementById('categoryTabs');
+  container.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-tab' + (cat.id === state.style ? ' active' : '');
+    btn.innerHTML = `${cat.icon} ${cat.label}`;
+    btn.dataset.id = cat.id;
+    btn.addEventListener('click', () => {
+      state.style = cat.id;
+      state.variantIdx = 0;
+      state.mode = 'dicebear';
+      hideViolation();
+      container.querySelectorAll('.cat-tab').forEach(b => b.classList.toggle('active', b.dataset.id === cat.id));
+      buildGrid();
+      updatePreview();
+    });
+    container.appendChild(btn);
+  });
+}
+
+// ── Colour Swatches ──
+function buildSwatches(containerId, palette, stateKey) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  palette.forEach(hex => {
+    const d = document.createElement('div');
+    d.className = 'av-swatch' + (hex.replace('#','') === state[stateKey].replace('#','') ? ' active' : '');
+    d.style.background = hex;
+    d.title = hex;
+    d.addEventListener('click', () => {
+      state[stateKey] = hex.replace('#','');
+      c.querySelectorAll('.av-swatch').forEach(s => s.classList.toggle('active', s.title === hex));
+      buildGrid();
+      updatePreview();
+    });
+    c.appendChild(d);
+  });
+}
+
+function buildBgSwatches() {
+  const c = document.getElementById('bgSwatches');
+  c.innerHTML = '';
+  BG_PALETTE.forEach(hex => {
+    const d = document.createElement('div');
+    d.className = 'av-swatch' + (hex === state.bgColor ? ' active' : '');
+    d.style.background = hex;
+    d.style.width = '22px'; d.style.height = '22px';
+    d.style.border = '3px solid transparent';
+    d.title = hex;
+    d.addEventListener('click', () => {
+      state.bgColor = hex;
+      document.getElementById('bgColorPicker').value = hex;
+      c.querySelectorAll('.av-swatch').forEach(s => s.classList.toggle('active', s.title === hex));
+      buildGrid(); updatePreview();
+    });
+    c.appendChild(d);
+  });
+}
+
+// ── Violations ──
+const BLOCKED_WORDS = [/nsfw/i,/nude/i,/naked/i,/porn/i,/xxx/i,/sex/i,/gore/i,/blood/i,/violence/i,/hate/i,/racist/i,/nazi/i];
+function checkFilename(name) { return BLOCKED_WORDS.some(r => r.test(name)); }
+
+function analyzeImage(dataUrl) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = c.height = 16;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, 16, 16);
+      const px = ctx.getImageData(0,0,16,16).data;
+      let skin = 0;
+      for (let i = 0; i < px.length; i+=4) {
+        const [r,g,b] = [px[i],px[i+1],px[i+2]];
+        if (r>60&&g>40&&b>20&&r>g&&r>b&&(r-g)>10&&(r-g)<120&&(r-b)>20&&(r-b)<170) skin++;
+      }
+      if (skin/256 > 0.85) resolve({ok:false, reason:"Image appears to contain inappropriate content."});
+      else resolve({ok:true});
+    };
+    img.onerror = () => resolve({ok:false, reason:"Cannot read image."});
+    img.src = dataUrl;
+  });
+}
+
+function showViolation(msg) {
+  state.isBlocked = true;
+  state.mode = 'dicebear';
+  state.uploadedDataUrl = null;
+  document.getElementById('violationMsg').textContent = msg;
+  document.getElementById('violationBanner').style.display = 'flex';
+  const ring = document.getElementById('avatarRing');
+  ring.style.borderColor = '#e63946';
+  setTimeout(() => { ring.style.borderColor = '#e8572a'; }, 600);
+  document.getElementById('photoUpload').value = '';
+  updatePreview();
+  showToast('Upload blocked — content policy violation.', '#9b1d23');
+}
+
+function hideViolation() {
+  document.getElementById('violationBanner').style.display = 'none';
+  state.isBlocked = false;
+}
+
+// ── Toast ──
+function showToast(msg, bg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = bg || '#2d6a4f';
+  t.style.opacity = '1';
+  t.style.transform = 'translateY(0)';
+  setTimeout(() => { t.style.opacity='0'; t.style.transform='translateY(16px)'; }, 3400);
+}
+
+// ── Upload handler ──
+document.getElementById('photoUpload').addEventListener('change', async function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!['image/jpeg','image/png','image/webp'].includes(file.type)) { showViolation("Only JPG, PNG, or WEBP accepted."); return; }
+  if (file.size > 2*1024*1024) { showToast('Image must be under 2 MB.','#9b1d23'); e.target.value=''; return; }
+  if (checkFilename(file.name)) { showViolation("Filename contains prohibited keywords."); return; }
+
+  const prog = document.getElementById('uploadProgress');
+  const bar  = document.getElementById('progressBar');
+  prog.style.display = 'block'; bar.style.width = '0%';
+  document.getElementById('loader').style.display = 'flex';
+
+  let pct = 0;
+  const tick = setInterval(() => { pct = Math.min(pct+15, 85); bar.style.width = pct+'%'; }, 80);
+
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    clearInterval(tick); bar.style.width = '100%';
+    const check = await analyzeImage(ev.target.result);
+    setTimeout(() => { prog.style.display='none'; document.getElementById('loader').style.display='none'; }, 400);
+    if (!check.ok) { showViolation(check.reason); return; }
+    hideViolation();
+    state.uploadedDataUrl = ev.target.result;
+    state.mode = 'upload';
+    updatePreview();
+    document.querySelectorAll('.av-card').forEach(c => c.classList.remove('active'));
+    showToast('Photo uploaded successfully!');
+  };
+  reader.onerror = () => { clearInterval(tick); document.getElementById('loader').style.display='none'; prog.style.display='none'; showViolation("Could not read file."); };
+  reader.readAsDataURL(file);
+});
+
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor='#e8572a'; zone.style.background='#fff8f5'; });
+zone.addEventListener('dragleave', () => { zone.style.borderColor=''; zone.style.background=''; });
+
+// ── Controls ──
+document.getElementById('seedInput').addEventListener('input', function() {
+  state.seed = this.value.trim() || 'user';
+  document.getElementById('displayName').textContent = state.seed;
+  buildGrid(); updatePreview();
+});
+
+document.getElementById('bgColorPicker').addEventListener('input', function() {
+  state.bgColor = this.value;
+  buildBgSwatches(); buildGrid(); updatePreview();
+});
+
+document.getElementById('flipToggle').addEventListener('change', function() {
+  state.flip = this.checked; buildGrid(); updatePreview();
+});
+
+document.getElementById('scaleSlider').addEventListener('input', function() {
+  state.scale = parseInt(this.value); buildGrid(); updatePreview();
+});
+
+document.getElementById('regenerateBtn').addEventListener('click', function() {
+  const seeds = isAnimalGroup() ? ANIMAL_SEEDS : SEEDS;
+  state.variantIdx = (state.variantIdx + 1) % seeds.length;
+  state.mode = 'dicebear';
+  hideViolation();
+  buildGrid(); updatePreview();
+});
+
+// ── Save — FIX: sends state.lockedUrl (exactly what the preview shows) ──
+document.getElementById('saveBtn').addEventListener('click', async function() {
+  if (state.isBlocked) { showToast('Please choose a valid avatar first.','#9b1d23'); return; }
+  const btn = this;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Saving…';
+
+  let body;
+  if (state.mode === 'upload' && state.uploadedDataUrl) {
+    body = JSON.stringify({ mode:'upload', dataUrl: state.uploadedDataUrl });
+  } else {
+    // Use lockedUrl — the exact URL already rendered in the preview, not a new currentUrl() call
+    body = JSON.stringify({ mode:'dicebear', style: state.style, avatarUrl: state.lockedUrl || currentUrl() });
+  }
+
+  try {
+    const res  = await fetch(SAVE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'X-Requested-With':'XMLHttpRequest' },
+      body
+    });
+    const data = await res.json();
+    if (data.success) {
+      // Only update preview src if server returns a different URL (e.g. after processing/upload)
+      // For dicebear mode, keep showing the same avatar — don't let server response overwrite it
+      if (data.avatar && state.mode === 'upload') {
+        document.getElementById('previewImg').src = data.avatar + '?t=' + Date.now();
+      }
+      showToast('Avatar saved! ✓');
+    } else {
+      showToast('Error: ' + (data.error || 'Unknown error'), '#9b1d23');
+    }
+  } catch(e) {
+    showToast('Network error. Try again.','#9b1d23');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa fa-save"></i> Save Avatar';
+  }
+});
+
+// ── Init ──
+buildTabs();
+buildGrid();
+buildBgSwatches();
+buildSwatches('skinSwatches', SKIN_PALETTE, 'skinColor');
+buildSwatches('hairSwatches', HAIR_PALETTE, 'hairColor');
+buildSwatches('eyeSwatches',  EYE_PALETTE,  'eyeColor');
+updatePreview();
+</script>
+
+{% endblock %}

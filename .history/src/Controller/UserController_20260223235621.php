@@ -3,7 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Analyst\GamificationStats;
 use App\Entity\Architect\User;
-use App\Entity\Architect\Profile;
+use App\Entity\Architect\Profile;  
 use App\Entity\Community\Claim;
 use App\Entity\Community\SharedTask;
 use App\Entity\Planner\Exam;
@@ -19,8 +19,6 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use App\Entity\Architect\RoleRequest;
-use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
-
 
 final class UserController extends AbstractController
 {
@@ -132,7 +130,7 @@ public function workspace(EntityManagerInterface $em): Response
         'recentTasks' => $recentTasks,
         'recentChallenges' => $recentChallenges,
         'recentClaims' => $recentClaims,
-        'workspaceFriends' => $workspaceFriends,
+        'workspaceFriends' => $workspaceFriends, 
     ]);
 }
     #[Route('/signup', name: 'app_signup')]
@@ -143,20 +141,20 @@ public function workspace(EntityManagerInterface $em): Response
     ): Response {
         if ($request->isMethod('POST')) {
             $data = $request->request->all();
-
+            
             // ✅ Validate required fields
             if (empty($data['email']) || empty($data['password'])) {
                 $this->addFlash('error', 'Email and password are required.');
                 return $this->render('user/signup.html.twig');
             }
-
+            
             // ✅ Check if email already exists
             $existingUser = $em->getRepository(User::class)->findOneBy(['email' => $data['email']]);
             if ($existingUser) {
                 $this->addFlash('error', 'This email is already registered.');
                 return $this->render('user/signup.html.twig');
             }
-
+            
             try {
                 // 1️⃣ Create user
                 $user = new User();
@@ -164,27 +162,27 @@ public function workspace(EntityManagerInterface $em): Response
                 $user->setRoles(['ROLE_USER']);
                 $user->setPassword($passwordHasher->hashPassword($user, $data['password']));
                 // Don't set username since it doesn't exist in your schema
-
+                
                 // 2️⃣ Create profile
                 $profile = new Profile();
                 $profile->setUser($user);
                 $profile->setFirstName($data['first_name'] ?? null);
                 $profile->setLastName($data['last_name'] ?? null);
-
+                
                 // 3️⃣ Persist everything
                 $em->persist($user);
                 $em->persist($profile);
                 $em->flush();
-
+                
                 $this->addFlash('success', 'Account created successfully. Please login.');
                 return $this->redirectToRoute('app_login');
-
+                
             } catch (\Exception $e) {
                 $this->addFlash('error', 'An error occurred. Please try again.');
                 // Log the error: $this->logger->error($e->getMessage());
             }
         }
-
+        
         return $this->render('user/signup.html.twig');
     }
 
@@ -208,52 +206,52 @@ public function requestStudentPlus(
 ): Response {
     // Get the currently logged-in user
     $user = $this->getUser();
-
+    
     // If no user is logged in, redirect to login
     if (!$user) {
         return $this->redirectToRoute('app_login');
     }
-
+    
     // Check if user already has Student+ or Admin role
     if ($user->getRoles() && (in_array('ROLE_STUDENT_PLUS', $user->getRoles()) || in_array('ROLE_ADMIN', $user->getRoles()))) {
         $this->addFlash('info', 'You already have Student+ or Admin status!');
         return $this->redirectToRoute('app_home');
     }
-
+    
     // Check if user already has a pending request
     $existingRequest = $em->getRepository(RoleRequest::class)->findOneBy([
         'user' => $user,
         'status' => 'pending' // Assuming you have a status field
     ]);
-
+    
     if ($existingRequest) {
         $this->addFlash('warning', 'You already have a pending request. Please wait for admin approval.');
         return $this->redirectToRoute('app_request_status');
     }
-
+    
     // Handle form submission
     if ($request->isMethod('POST')) {
         $motivation = $request->request->get('motivation');
-
+        
         if (!empty($motivation) && strlen($motivation) >= 50) {
             $roleRequest = new RoleRequest();
             $roleRequest->setUser($user);
             $roleRequest->setMotivation($motivation);
             // Set default status to pending
             $roleRequest->setStatus('pending');
-
+            
             $em->persist($roleRequest);
             $em->flush();
-
+            
             $this->addFlash('success', 'Request submitted successfully! We will review it soon.');
-
+            
             // Redirect to avoid form resubmission
             return $this->redirectToRoute('app_request_status');
         } else {
             $this->addFlash('error', 'Motivation must be at least 50 characters.');
         }
     }
-
+    
     return $this->render('user/request_student_plus.html.twig', [
         'user' => $user,
     ]);
@@ -264,17 +262,17 @@ public function requestStatus(EntityManagerInterface $em): Response
 {
     // Get the currently logged-in user
     $user = $this->getUser();
-
+    
     // If no user is logged in, redirect to login
     if (!$user) {
         return $this->redirectToRoute('app_login');
     }
-
+    
     $requests = $em->getRepository(RoleRequest::class)->findBy(
         ['user' => $user],
         ['requestedAt' => 'DESC']
     );
-
+    
     return $this->render('user/request_status.html.twig', [
         'requests' => $requests,
         'user' => $user,
@@ -311,8 +309,8 @@ public function forgotPassword(
                     <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto;">
                         <h2>Password Reset</h2>
                         <p>Click the link below to reset your password. It expires in <strong>1 hour</strong>.</p>
-                        <a href="' . $resetLink . '"
-                           style="display:inline-block; padding: 12px 24px; background:#e74c3c;
+                        <a href="' . $resetLink . '" 
+                           style="display:inline-block; padding: 12px 24px; background:#e74c3c; 
                                   color:white; text-decoration:none; border-radius:4px;">
                             Reset My Password
                         </a>
@@ -341,7 +339,6 @@ public function resetPassword(
 ): Response {
     $user = $em->getRepository(User::class)->findOneBy(['resetToken' => $token]);
 
-    // Check if token is valid
     if (!$user || !$user->isPasswordResetTokenValid()) {
         $this->addFlash('error', 'This reset link is invalid or has expired.');
         return $this->redirectToRoute('app_forgot_password');
@@ -351,19 +348,16 @@ public function resetPassword(
         $password = $request->request->get('password');
         $confirm  = $request->request->get('password_confirm');
 
-        // Validate password length
         if (strlen($password) < 8) {
             $this->addFlash('error', 'Password must be at least 8 characters.');
             return $this->render('user/reset_password.html.twig', ['token' => $token]);
         }
 
-        // Check if passwords match
         if ($password !== $confirm) {
             $this->addFlash('error', 'Passwords do not match.');
             return $this->render('user/reset_password.html.twig', ['token' => $token]);
         }
 
-        // Hash and save new password
         $user->setPassword($passwordHasher->hashPassword($user, $password));
         $user->setResetToken(null);
         $user->setResetTokenExpireAt(null);
@@ -374,17 +368,5 @@ public function resetPassword(
     }
 
     return $this->render('user/reset_password.html.twig', ['token' => $token]);
-}
-#[Route('/connect/google', name: 'app_google_connect')]
-public function connectGoogle(ClientRegistry $clientRegistry): Response
-{
-    return $clientRegistry->getClient('google')->redirect(['email', 'profile']);
-}
-
-#[Route('/connect/google/callback', name: 'app_google_callback')]
-public function connectGoogleCallback(): Response
-{
-    // Handled by GoogleAuthenticator — this method can be empty
-    return $this->redirectToRoute('app_workspace');
 }
 }

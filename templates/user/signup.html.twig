@@ -26,7 +26,15 @@
                                 {{ message }}
                             </div>
                         {% endfor %}
-
+                    <hr>
+<a href="{{ path('app_google_connect') }}"
+   class="btn btn-block"
+   style="background:#fff; border:1px solid #ddd; color:#444; padding:10px; display:flex; align-items:center; justify-content:center; gap:10px; text-decoration:none; border-radius:4px;">
+    <img src="https://developers.google.com/identity/images/g-logo.png"
+         width="20" height="20" alt="Google">
+    <span>Sign up with Google</span>
+</a>
+<hr>
                         <form method="POST" action="{{ path('app_signup') }}">
                             <input type="hidden" name="_csrf_token"
                                    value="{{ csrf_token('signup') }}">

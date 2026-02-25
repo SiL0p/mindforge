@@ -1,0 +1,148 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}MoodForge - Emotion History{% endblock %}
+
+{% block body %}
+<style>
+    /* Hero & Background Styling */
+    .hero-area {
+        position: relative;
+        padding-top: 80px;
+        padding-bottom: 80px;
+        min-height: 100vh;
+    }
+
+    /* History Table Styling */
+    .panel-history {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .table-custom {
+        margin-bottom: 0;
+    }
+
+    .table-custom thead th {
+        background: #f8f9fa;
+        color: #7d5fff;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 1px;
+        border-bottom: 2px solid #eee;
+        padding: 15px;
+    }
+
+    .table-custom tbody td {
+        padding: 15px;
+        vertical-align: middle;
+        font-size: 14px;
+        color: #444;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    .table-custom tbody tr:hover {
+        background-color: #fcfaff;
+    }
+
+    .emotion-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 20px;
+        background: #f0ebff;
+        color: #7d5fff;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+
+    .confidence-text {
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        color: #2ecc71;
+    }
+
+    .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+        color: #999;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-top: 25px;
+        color: #7d5fff;
+        font-weight: 600;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+    .back-link:hover {
+        color: #5a3edb;
+        transform: translateX(-5px);
+    }
+</style>
+
+<div id="home" class="hero-area">
+    {# Parallax background to match your detection page #}
+    <div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/home-background.jpg') }})"></div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="panel panel-default panel-history">
+                    <div class="panel-heading" style="background: #fff; border-bottom: 1px solid #eee; padding: 20px;">
+                        <h3 style="margin: 0; color: #333;">
+                            <i class="fa fa-history" style="color: #7d5fff; margin-right: 10px;"></i>
+                            Your Emotion Journey
+                        </h3>
+                    </div>
+
+                    <div class="panel-body" style="padding: 0;">
+                        {% if logs is empty %}
+                            <div class="empty-state">
+                                <i class="fa fa-folder-open-o fa-4x" style="margin-bottom: 15px; opacity: 0.5;"></i>
+                                <h4>No history found</h4>
+                                <p>Your emotional insights will appear here once you start scanning.</p>
+                            </div>
+                        {% else %}
+                            <div class="table-responsive">
+                                <table class="table table-custom">
+                                    <thead>
+                                        <tr>
+                                            <th>Emotion</th>
+                                            <th>Confidence</th>
+                                            <th>Time Detected</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for log in logs %}
+                                        <tr>
+                                            <td>
+                                                <span class="emotion-badge">{{ log.emotion }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="confidence-text">{{ log.confidence }}%</span>
+                                            </td>
+                                            <td>
+                                                <span class="text-muted">
+                                                    <i class="fa fa-clock-o"></i> {{ log.detectedAt|date('M d, Y') }} at {{ log.detectedAt|date('H:i') }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <a class="back-link" href="{{ path('app_emotion') }}">
+                    <i class="fa fa-arrow-left"></i> Return to Analysis
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
