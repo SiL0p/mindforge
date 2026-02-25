@@ -20,6 +20,17 @@
 
             <div id="gamification-toast" class="alert alert-success" style="display:none; position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 320px;"></div>
 
+            <div id="encouragement-popup" style="display:none; position: fixed; right: 18px; bottom: 18px; z-index: 99999; background: rgba(0,0,0,0.6); padding: 12px; border-radius: 8px; color: #fff; max-width: 320px; text-align: center;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img id="encouragement-gif" src="" alt="encouragement" style="width:96px; height:96px; object-fit:cover; border-radius:6px;">
+                    <div style="text-align:left;">
+                        <div id="encouragement-title" style="font-weight:700; font-size:14px;">Great job!</div>
+                        <div id="encouragement-subtext" style="font-size:12px; opacity:0.95;">You earned XP.</div>
+                        <button id="encouragement-close" style="margin-top:8px; background:transparent; border:1px solid rgba(255,255,255,0.15); color:#fff; padding:4px 8px; border-radius:4px; cursor:pointer;">Close</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
                 {% for statusKey, list in tasks %}
                     <div class="col-md-4" style="margin-bottom: 20px;">
@@ -86,6 +97,37 @@
         setTimeout(() => { toastEl.style.display = 'none'; }, 3500);
     }
 
+    function showEncouragement(gamification) {
+        try {
+            const popup = document.getElementById('encouragement-popup');
+            const img = document.getElementById('encouragement-gif');
+            const title = document.getElementById('encouragement-title');
+            const sub = document.getElementById('encouragement-subtext');
+            const close = document.getElementById('encouragement-close');
+
+            img.src = (gamification && gamification.gif_url) ? gamification.gif_url : '';
+            if (gamification && gamification.level_up) {
+                title.textContent = 'Level up!';
+                sub.textContent = `You reached level ${gamification.new_level || ''}`.trim();
+            } else if (gamification && (gamification.unlocked_badges || []).length) {
+                title.textContent = 'New badge!';
+                sub.textContent = `Unlocked: ${(gamification.unlocked_badges || []).join(', ')}`;
+            } else {
+                title.textContent = '+ ' + (gamification.xp_gained || 0) + ' XP';
+                sub.textContent = 'Nice work!';
+            }
+
+            popup.style.display = 'block';
+
+            const hide = () => { popup.style.display = 'none'; };
+            close.onclick = hide;
+
+            setTimeout(hide, 2800);
+        } catch (e) {
+            console.warn('encouragement popup failed', e);
+        }
+    }
+
     buttons.forEach((btn) => {
         btn.addEventListener('click', async () => {
             const taskId = btn.getAttribute('data-task-id');
@@ -109,6 +151,12 @@
                 }
 
                 if (data.gamification) {
+                    if (data.gamification.gif_url) {
+                        showEncouragement(data.gamification);
+                        setTimeout(() => window.location.reload(), 2800);
+                        return;
+                    }
+
                     const unlocked = (data.gamification.unlocked_badges || []);
                     const badgeText = unlocked.length ? ` New badge: ${unlocked.join(', ')}` : '';
                     showToast(`+${data.gamification.xp_gained} XP gained.${badgeText}`, false);

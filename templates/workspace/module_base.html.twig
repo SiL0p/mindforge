@@ -176,7 +176,7 @@
         <nav class="module-nav">
             <a href="{{ path('app_planner_tasks') }}"><i class="fa fa-folder"></i> Planner</a>
             <a href="{{ path('community_index') }}"><i class="fa fa-users"></i> Community</a>
-            <a href="{{ path('guardian_library') }}"><i class="fa fa-book"></i> Guardian</a>
+            <a href="{{ path('guardian_hub') }}"><i class="fa fa-book"></i> Guardian</a>
             <a href="{{ app.user and 'ROLE_COMPANY' in app.user.roles ? path('app_carriere_opportunite_my_opportunites') : path('app_carriere_opportunite_index') }}"><i class="fa fa-briefcase"></i> Careers</a>
             <a href="{{ path('app_analyst_gamification') }}"><i class="fa fa-pie-chart"></i> Analyst</a>
         </nav>
@@ -223,4 +223,68 @@
         {% block module_right %}{% endblock %}
     </aside>
 </div>
+<div id="guardian-mini-timer" style="display:none; position:fixed; left:230px; bottom:18px; z-index:1100; background:#111827; color:#e5e7eb; padding:8px 12px; border-radius:999px; font-size:12px; box-shadow:0 8px 24px rgba(0,0,0,0.35);">
+    <span id="guardian-mini-timer-label" style="font-weight:600; margin-right:6px;">Focus</span>
+    <span id="guardian-mini-timer-time">00:00</span>
+</div>
+<script>
+(function () {
+    const container = document.getElementById('guardian-mini-timer');
+    const label = document.getElementById('guardian-mini-timer-label');
+    const timeEl = document.getElementById('guardian-mini-timer-time');
+    if (!container || !timeEl) {
+        return;
+    }
+
+    function readState() {
+        try {
+            const raw = localStorage.getItem('guardian_focus_state');
+            if (!raw) {
+                return null;
+            }
+            const state = JSON.parse(raw);
+            if (!state || typeof state.endAt !== 'number') {
+                return null;
+            }
+            return state;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function formatTimeLeft(msLeft) {
+        const totalSeconds = Math.max(0, Math.floor(msLeft / 1000));
+        const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+        const seconds = String(totalSeconds % 60).padStart(2, '0');
+        return minutes + ':' + seconds;
+    }
+
+    function tick() {
+        const state = readState();
+        if (!state) {
+            container.style.display = 'none';
+            return;
+        }
+
+        const now = Date.now();
+        const msLeft = state.endAt - now;
+        if (msLeft <= 0) {
+            container.style.display = 'none';
+            localStorage.removeItem('guardian_focus_state');
+            return;
+        }
+
+        timeEl.textContent = formatTimeLeft(msLeft);
+        if (state.taskTitle) {
+            label.textContent = state.taskTitle.length > 18 ? state.taskTitle.slice(0, 15) + '…' : state.taskTitle;
+        } else {
+            label.textContent = 'Focus';
+        }
+        container.style.display = 'inline-flex';
+    }
+
+    tick();
+    setInterval(tick, 1000);
+})();
+</script>
 {% endblock %}

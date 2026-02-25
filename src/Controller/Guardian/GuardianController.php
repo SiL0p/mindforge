@@ -35,6 +35,8 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 
 #[Route('/guardian')]
 #[IsGranted('ROLE_USER')]
@@ -44,6 +46,14 @@ class GuardianController extends AbstractController
         private string $resourcesDirectory,
         private SluggerInterface $slugger
     ) {}
+
+    // ==================== GUARDIAN HUB ====================
+
+    #[Route('', name: 'guardian_hub', methods: ['GET'])]
+    public function hub(): Response
+    {
+        return $this->render('user/guardian/hub.html.twig');
+    }
 
     // ==================== RESOURCE LIBRARY (FRONT) ====================
 
@@ -75,7 +85,8 @@ class GuardianController extends AbstractController
         $query = trim((string) $request->query->get('q', ''));
         $limit = max(1, min(10, (int) $request->query->get('limit', 6)));
 
-        $suggestions = $externalLearningResourceService->fetchOpenLibrarySuggestions($query, $limit);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $suggestions = $externalLearningResourceService->fetchOpenLibrarySuggestions($query, $limit, $page);
 
         return new JsonResponse([
             'success' => true,
@@ -119,7 +130,7 @@ class GuardianController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Ressource uploadée avec succès ! Merci pour votre contribution.');
-            return $this->redirectToRoute('guardian_library');
+            return $this->redirectToRoute('guardian_library', ['created' => 1]);
         }
 
         return $this->render('user/guardian/resource_upload.html.twig', [
@@ -454,7 +465,8 @@ class GuardianController extends AbstractController
     #[Route('/rooms/{id}', name: 'guardian_room_detail', methods: ['GET'])]
     public function roomDetail(
         VirtualRoom $room,
-        ChatMessageRepository $messageRepo
+        ChatMessageRepository $messageRepo,
+        ResourceRepository $resourceRepo
     ): Response
     {
         if (!$room->isActive() && !$this->isGranted('ROLE_ADMIN')) {
@@ -469,10 +481,108 @@ class GuardianController extends AbstractController
             return $this->redirectToRoute('guardian_rooms');
         }
 
+        $creatorResources = [];
+        if ($room->getCreator()) {
+            $creatorResources = $resourceRepo->findBy([
+                'uploader' => $room->getCreator()
+            ], ['createdAt' => 'DESC'], 6);
+        }
+
+        // Recent resources for manager modal (limit 30)
+        $recentResources = $resourceRepo->findBy([], ['createdAt' => 'DESC'], 30);
+
         return $this->render('user/guardian/room_detail.html.twig', [
             'room' => $room,
             'is_participant' => $isParticipant,
             'messages' => $messageRepo->findByRoom($room),
+            'creator_resources' => $creatorResources,
+            'recent_resources' => $recentResources,
+        ]);
+    }
+
+    #[Route('/rooms/{id}/resource/{resourceId}/add', name: 'guardian_room_add_resource', methods: ['POST'])]
+    public function addRoomResource(
+        Request $request,
+        VirtualRoom $room,
+        int $resourceId,
+        ResourceRepository $resourceRepo,
+        EntityManagerInterface $em
+    ): Response {
+        // Only creator can manage resources
+        if ($room->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Only the room owner can manage resources.');
+        }
+
+        if (!$this->isCsrfTokenValid('manage_room_'.$room->getId(), $request->request->get('_token'))) {
+            return $this->redirectToRoute('guardian_room_detail', ['id' => $room->getId()]);
+        }
+
+        $resource = $resourceRepo->find($resourceId);
+        if (!$resource) {
+            $this->addFlash('error', 'Ressource introuvable.');
+            return $this->redirectToRoute('guardian_room_detail', ['id' => $room->getId()]);
+        }
+
+        $room->addSelectedResource($resource);
+        $em->flush();
+        $this->addFlash('success', 'Ressource ajoutée à la salle.');
+        return $this->redirectToRoute('guardian_room_detail', ['id' => $room->getId()]);
+    }
+
+    #[Route('/rooms/{id}/resource/{resourceId}/remove', name: 'guardian_room_remove_resource', methods: ['POST'])]
+    public function removeRoomResource(
+        Request $request,
+        VirtualRoom $room,
+        int $resourceId,
+        ResourceRepository $resourceRepo,
+        EntityManagerInterface $em
+    ): Response {
+        if ($room->getCreator() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Only the room owner can manage resources.');
+        }
+
+        if (!$this->isCsrfTokenValid('manage_room_'.$room->getId(), $request->request->get('_token'))) {
+            return $this->redirectToRoute('guardian_room_detail', ['id' => $room->getId()]);
+        }
+
+        $resource = $resourceRepo->find($resourceId);
+        if (!$resource) {
+            $this->addFlash('error', 'Ressource introuvable.');
+            return $this->redirectToRoute('guardian_room_detail', ['id' => $room->getId()]);
+        }
+
+        $room->removeSelectedResource($resource);
+        $em->flush();
+        $this->addFlash('success', 'Ressource retirée de la salle.');
+        return $this->redirectToRoute('guardian_room_detail', ['id' => $room->getId()]);
+    }
+
+    #[Route('/rooms/{id}/participants', name: 'guardian_room_participants_api', methods: ['GET'])]
+    public function roomParticipants(
+        VirtualRoom $room
+    ): JsonResponse {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return new JsonResponse(['success' => false, 'message' => 'Authentication required.'], 401);
+        }
+
+        if (!$room->isParticipant($user)) {
+            return new JsonResponse(['success' => false, 'message' => 'You must be in the room to see live participants.'], 403);
+        }
+
+        $participants = $room->getParticipants();
+        $items = [];
+        foreach ($participants as $participant) {
+            $items[] = [
+                'id' => $participant->getId(),
+            ];
+        }
+
+        return new JsonResponse([
+            'success' => true,
+            'count' => count($items),
+            'participants' => $items,
         ]);
     }
 
@@ -502,7 +612,7 @@ class GuardianController extends AbstractController
             $this->addFlash('success', 'Vous avez rejoint la salle.');
         }
 
-        return $this->redirectToRoute('guardian_room_detail', ['id' => $room->getId()]);
+        return $this->redirectToRoute('guardian_room_detail', ['id' => $room->getId(), 'joined' => 1]);
     }
 
     #[Route('/rooms/{id}/leave', name: 'guardian_room_leave', methods: ['POST'])]
@@ -553,6 +663,89 @@ class GuardianController extends AbstractController
             'week_focus_minutes' => $focusSessionRepository->getWeekDurationByUser($user),
             'per_task_totals' => $focusSessionRepository->getPerTaskTotalsByUser($user, 6),
             'selected_task_id' => $selectedTaskId,
+        ]);
+    }
+
+    #[Route('/stats', name: 'guardian_stats', methods: ['GET'])]
+    public function stats(
+        FocusSessionRepository $focusSessionRepository,
+        ChartBuilderInterface $chartBuilder
+    ): Response {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $end = new \DateTimeImmutable('tomorrow');
+        $start = $end->modify('-13 days'); // last 14 days including today
+
+        $dailyMinutes = $focusSessionRepository->getDailyMinutesByUser($user, $start, $end);
+        $labels = [];
+        $values = [];
+        foreach ($dailyMinutes as $day => $minutes) {
+            $labels[] = $day;
+            $values[] = $minutes;
+        }
+
+        $dailyChart = $chartBuilder->createChart(Chart::TYPE_LINE);
+        $dailyChart->setData([
+            'labels' => $labels,
+            'datasets' => [[
+                'label' => 'Focus minutes per day',
+                'data' => $values,
+                'borderColor' => '#3b82f6',
+                'backgroundColor' => 'rgba(59, 130, 246, 0.18)',
+                'tension' => 0.25,
+                'fill' => true,
+            ]],
+        ]);
+        $dailyChart->setOptions([
+            'plugins' => [
+                'legend' => ['position' => 'bottom'],
+            ],
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => ['precision' => 0],
+                ],
+            ],
+            'maintainAspectRatio' => false,
+        ]);
+
+        $perTask = $focusSessionRepository->getPerTaskTotalsByUser($user, 6);
+        $taskLabels = array_map(static fn (array $row): string => (string) $row['task_title'], $perTask);
+        $taskValues = array_map(static fn (array $row): int => (int) $row['total_minutes'], $perTask);
+
+        $taskChart = $chartBuilder->createChart(Chart::TYPE_BAR);
+        $taskChart->setData([
+            'labels' => $taskLabels,
+            'datasets' => [[
+                'label' => 'Minutes by task',
+                'data' => $taskValues,
+                'backgroundColor' => '#22c55e',
+            ]],
+        ]);
+        $taskChart->setOptions([
+            'plugins' => [
+                'legend' => ['display' => false],
+            ],
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => ['precision' => 0],
+                ],
+            ],
+            'maintainAspectRatio' => false,
+        ]);
+
+        return $this->render('user/guardian/stats.html.twig', [
+            'total_focus_minutes' => $focusSessionRepository->getTotalDurationByUser($user),
+            'week_focus_minutes' => $focusSessionRepository->getWeekDurationByUser($user),
+            'today_sessions' => $focusSessionRepository->getTodaySessionCountByUser($user),
+            'per_task_totals' => $perTask,
+            'daily_chart' => $dailyChart,
+            'task_chart' => $taskChart,
         ]);
     }
 
@@ -640,8 +833,7 @@ class GuardianController extends AbstractController
         ];
 
         $aiRecommendation = $guardianAiAssistant->recommendDuration($taskContext, $stats);
-
-        $this->persistAiInsight(
+        $insight = $this->persistAiInsight(
             $em,
             $user,
             $task,
@@ -654,13 +846,32 @@ class GuardianController extends AbstractController
             (string) ($aiRecommendation['source'] ?? 'rule')
         );
 
+        // Prefer an explicit task estimate when present, otherwise use AI recommendation or priority defaults
+        $estimatedMinutes = $task->getEstimatedMinutes();
+
+        $recommendedFromAi = isset($aiRecommendation['duration']) ? (int) $aiRecommendation['duration'] : $this->getDurationForTaskPriority($task->getPriority());
+
+        $recommended = $recommendedFromAi;
+        if ($estimatedMinutes !== null && (int) $estimatedMinutes > 0) {
+            $recommended = (int) $estimatedMinutes;
+            $usedSource = 'estimate';
+        } else {
+            $usedSource = (string) ($aiRecommendation['source'] ?? 'rule');
+        }
+
         return new JsonResponse([
             'success' => true,
             'task_id' => $task->getId(),
             'priority' => $task->getPriority(),
-            'recommended_duration' => (int) ($aiRecommendation['duration'] ?? $this->getDurationForTaskPriority($task->getPriority())),
+            'estimated_minutes' => $estimatedMinutes !== null ? (int) $estimatedMinutes : null,
+            'recommended_duration' => $recommended,
             'reason' => (string) ($aiRecommendation['reason'] ?? ''),
-            'source' => (string) ($aiRecommendation['source'] ?? 'rule'),
+            'source' => $usedSource,
+            'insight_id' => $insight->getId(),
+            'feedback' => [
+                'helpful' => $insight->getHelpfulVotes(),
+                'unhelpful' => $insight->getUnhelpfulVotes(),
+            ],
         ]);
     }
 
@@ -702,8 +913,7 @@ class GuardianController extends AbstractController
         ];
 
         $tipsPayload = $guardianAiAssistant->getFocusTips($taskContext, $stats);
-
-        $this->persistAiInsight(
+        $insight = $this->persistAiInsight(
             $em,
             $user,
             $task,
@@ -722,6 +932,11 @@ class GuardianController extends AbstractController
             'tips' => $tipsPayload['tips'] ?? [],
             'motivation' => (string) ($tipsPayload['motivation'] ?? ''),
             'source' => (string) ($tipsPayload['source'] ?? 'rule'),
+            'insight_id' => $insight->getId(),
+            'feedback' => [
+                'helpful' => $insight->getHelpfulVotes(),
+                'unhelpful' => $insight->getUnhelpfulVotes(),
+            ],
         ]);
     }
 
@@ -758,8 +973,7 @@ class GuardianController extends AbstractController
         ];
 
         $planPayload = $guardianAiAssistant->buildDailyPlan($taskPayload, $stats);
-
-        $this->persistAiInsight(
+        $insight = $this->persistAiInsight(
             $em,
             $user,
             null,
@@ -776,6 +990,11 @@ class GuardianController extends AbstractController
             'success' => true,
             'plan' => $planPayload['plan'] ?? [],
             'source' => (string) ($planPayload['source'] ?? 'rule'),
+            'insight_id' => $insight->getId(),
+            'feedback' => [
+                'helpful' => $insight->getHelpfulVotes(),
+                'unhelpful' => $insight->getUnhelpfulVotes(),
+            ],
         ]);
     }
 
@@ -808,8 +1027,7 @@ class GuardianController extends AbstractController
         }, $recent);
 
         $review = $guardianAiAssistant->buildWeeklyReview($stats, $recentPayload);
-
-        $this->persistAiInsight(
+        $insight = $this->persistAiInsight(
             $em,
             $user,
             null,
@@ -828,6 +1046,56 @@ class GuardianController extends AbstractController
             'wins' => $review['wins'] ?? [],
             'next_action' => (string) ($review['next_action'] ?? ''),
             'source' => (string) ($review['source'] ?? 'rule'),
+            'insight_id' => $insight->getId(),
+            'feedback' => [
+                'helpful' => $insight->getHelpfulVotes(),
+                'unhelpful' => $insight->getUnhelpfulVotes(),
+            ],
+        ]);
+    }
+
+    #[Route('/focus-timer/api/ai-feedback/{id}', name: 'guardian_focus_timer_api_ai_feedback', methods: ['POST'])]
+    public function focusTimerApiAiFeedback(
+        AiInsight $insight,
+        Request $request,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return new JsonResponse(['success' => false, 'message' => 'Authentication required.'], 401);
+        }
+
+        if ($insight->getUser() && $insight->getUser()->getId() !== $user->getId()) {
+            return new JsonResponse(['success' => false, 'message' => 'You can only rate your own insights.'], 403);
+        }
+
+        $payload = json_decode($request->getContent() ?: '{}', true) ?? [];
+        $token = (string) ($payload['_token'] ?? '');
+        if (!$this->isCsrfTokenValid('guardian_ai_feedback', $token)) {
+            return new JsonResponse(['success' => false, 'message' => 'Invalid security token.'], 403);
+        }
+
+        $feedback = (string) ($payload['feedback'] ?? '');
+        if ($feedback !== 'up' && $feedback !== 'down') {
+            return new JsonResponse(['success' => false, 'message' => 'Invalid feedback value.'], 422);
+        }
+
+        if ($feedback === 'up') {
+            $insight->incrementHelpfulVotes();
+        } else {
+            $insight->incrementUnhelpfulVotes();
+        }
+
+        $em->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'insight_id' => $insight->getId(),
+            'feedback' => [
+                'helpful' => $insight->getHelpfulVotes(),
+                'unhelpful' => $insight->getUnhelpfulVotes(),
+            ],
         ]);
     }
 
@@ -838,7 +1106,7 @@ class GuardianController extends AbstractController
         string $type,
         array $payload,
         string $source
-    ): void {
+    ): AiInsight {
         $insight = new AiInsight();
         $insight
             ->setUser($user)
@@ -849,6 +1117,8 @@ class GuardianController extends AbstractController
 
         $em->persist($insight);
         $em->flush();
+
+        return $insight;
     }
 
     #[Route('/focus-timer/api/log', name: 'guardian_focus_timer_api_log', methods: ['POST'])]
@@ -964,10 +1234,12 @@ class GuardianController extends AbstractController
         $task->setActualMinutes($newActualMinutes);
 
         $previousStatus = $task->getStatus();
-        if ($task->getEstimatedMinutes() !== null
-            && $task->getEstimatedMinutes() > 0
-            && $newActualMinutes >= $task->getEstimatedMinutes()
-            && $task->getStatus() !== Task::STATUS_DONE) {
+        $markDone = false;
+        if (array_key_exists('task_done', $payload)) {
+            $raw = $payload['task_done'];
+            $markDone = $raw === true || $raw === 1 || $raw === '1' || $raw === 'true' || $raw === 'on';
+        }
+        if ($markDone && $task->getStatus() !== Task::STATUS_DONE) {
             $task->setStatus(Task::STATUS_DONE);
         } elseif ($task->getStatus() === Task::STATUS_TODO && $newActualMinutes >= 10) {
             $task->setStatus(Task::STATUS_IN_PROGRESS);
@@ -1010,6 +1282,10 @@ class GuardianController extends AbstractController
             $successMessage .= ' Task auto-marked as done.';
         } elseif ($statusChanged && $task->getStatus() === Task::STATUS_IN_PROGRESS) {
             $successMessage .= ' Task moved to in progress.';
+        }
+
+        if ($gamificationPayload) {
+            $this->addFlash('gamification', json_encode($gamificationPayload));
         }
 
         $this->addFlash('success', $successMessage);

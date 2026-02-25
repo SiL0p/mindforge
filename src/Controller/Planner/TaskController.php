@@ -78,7 +78,7 @@ class TaskController extends AbstractController
                 $stats = $taskRepository->getSubjectStatsForDate($this->getUser(), $task->getSubject(), $task->getDueDate());
                 
                 $willExceedCount = $stats['count'] >= 3;
-                $willExceedTime = ($stats['minutes'] + (int)$task->getEstimatedMinutes()) > 180;
+                $willExceedTime = $task->getEstimatedMinutes() !== null && ($stats['minutes'] + (int)$task->getEstimatedMinutes()) > 180;
 
                 if ($willExceedCount || $willExceedTime) {
                     $this->addFlash('danger', 'Limit reached: You cannot schedule more than 3 tasks or exceed 180 minutes for the same subject on the same day. Please do another subject!');
@@ -138,6 +138,7 @@ class TaskController extends AbstractController
 
     #[Route('/{id}/status/{status}', name: 'app_planner_task_status', methods: ['POST'])]
     public function updateStatus(
+        Request $request,
         Task $task,
         string $status,
         EntityManagerInterface $em,
@@ -145,12 +146,22 @@ class TaskController extends AbstractController
     ): Response
     {
         $user = $this->getUser();
+        $expectsJson = $request->isXmlHttpRequest() || str_contains((string) $request->headers->get('accept'), 'application/json');
         if (!$user) {
-            return $this->json(['error' => 'Authentication required.'], 401);
+            if ($expectsJson) {
+                return $this->json(['error' => 'Authentication required.'], 401);
+            }
+
+            return $this->redirectToRoute('app_login');
         }
 
         if ($task->getOwner() !== $user && !$this->isGranted('ROLE_ADMIN')) {
-            return $this->json(['error' => 'You are not allowed to update this task.'], 403);
+            if ($expectsJson) {
+                return $this->json(['error' => 'You are not allowed to update this task.'], 403);
+            }
+
+            $this->addFlash('error', 'You are not allowed to update this task.');
+            return $this->redirectToRoute('app_planner_tasks');
         }
         
         $validStatuses = [Task::STATUS_TODO, Task::STATUS_IN_PROGRESS, Task::STATUS_DONE];
@@ -171,12 +182,21 @@ class TaskController extends AbstractController
             }
         }
 
-        return $this->json([
-            'success' => true, 
-            'newStatus' => $status,
-            'message' => 'Status updated successfully.',
-            'gamification' => $gamificationPayload,
-        ]);
+        if ($expectsJson) {
+            return $this->json([
+                'success' => true,
+                'newStatus' => $status,
+                'message' => 'Status updated successfully.',
+                'gamification' => $gamificationPayload,
+            ]);
+        }
+
+        if ($gamificationPayload) {
+            $this->addFlash('gamification', json_encode($gamificationPayload));
+        }
+
+        $this->addFlash('success', 'Status updated successfully.');
+        return $this->redirectToRoute('app_planner_tasks');
     }
 
     #[Route('/{id}/delete', name: 'app_planner_task_delete', methods: ['POST'])]

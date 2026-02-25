@@ -62,10 +62,10 @@
             <p class="text-muted">Adjust your filters or upload a new contribution.</p>
         </div>
     {% else %}
-        <div class="row">
+        <div class="row g-3">
             {% for resource in resources %}
                 <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="guardian-card h-100 p-3" style="animation-delay: {{ loop.index0 * 60 }}ms;">
+                    <div class="guardian-card h-100 p-3 d-flex flex-column justify-content-between" style="animation-delay: {{ loop.index0 * 60 }}ms;">
                         <div class="d-flex align-items-start justify-content-between mb-3">
                             <div>
                                 <h5 class="mb-1">{{ resource.title }}</h5>
@@ -115,8 +115,14 @@
             <button id="load-external-suggestions" class="btn btn-sm btn-outline-primary" type="button">Refresh</button>
         </div>
         <p class="text-muted small" id="external-suggestions-query" style="margin-bottom: 10px;"></p>
-        <div id="external-suggestions-list" class="row"></div>
+        <div id="external-suggestions-list" class="row g-3"></div>
     </section>
+    <div id="guardian-resource-popup" style="display:none; position:fixed; right:24px; bottom:24px; width:320px; max-width:80vw; z-index:1050; box-shadow:0 8px 24px rgba(0,0,0,0.2); border-radius:8px; overflow:hidden; background:#fff;">
+        <div style="padding:10px 12px;">
+            <div style="font-weight:700; color:#111827; margin-bottom:4px;">Resource created</div>
+            <div style="font-size:13px; color:#4b5563;">Your resource has been added to the library.</div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -141,10 +147,14 @@
 
             const yearText = item.year ? ` (${item.year})` : '';
             col.innerHTML = `
-                <div class="guardian-card p-3 h-100">
-                    <div class="fw-semibold mb-1">${item.title}</div>
-                    <div class="text-muted small mb-2">${item.author}${yearText}</div>
-                    <a class="btn btn-sm btn-outline-dark" href="${item.url}" target="_blank" rel="noopener noreferrer">Open source</a>
+                <div class="guardian-card p-3 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="fw-semibold mb-1">${item.title}</div>
+                        <div class="text-muted small mb-2">${item.author}${yearText}</div>
+                    </div>
+                    <div style="margin-top:8px;">
+                        <a class="btn btn-sm btn-outline-dark" href="${item.url}" target="_blank" rel="noopener noreferrer">Open source</a>
+                    </div>
                 </div>
             `;
 
@@ -156,26 +166,67 @@
         const query = (searchInput?.value || '').trim() || 'study skills';
         queryLabel.textContent = `Query: ${query}`;
 
+        if (!refreshBtn) return;
+        refreshBtn.disabled = true;
+        const originalText = refreshBtn.textContent;
+        refreshBtn.textContent = 'Refreshing...';
+
+        // Add timestamp to bypass any intermediate caches and request a random page
+        const cacheBuster = Date.now();
+        const randomPage = Math.floor(Math.random() * 4) + 1; // pages 1..4
+        const url = `${endpoint}?q=${encodeURIComponent(query)}&limit=6&page=${randomPage}&t=${cacheBuster}`;
+
         try {
-            const response = await fetch(`${endpoint}?q=${encodeURIComponent(query)}&limit=6`, {
+            const response = await fetch(url, {
                 method: 'GET',
-                headers: { Accept: 'application/json' }
+                headers: { Accept: 'application/json' },
+                cache: 'no-store'
             });
 
-            const data = await response.json();
-            if (!response.ok || !data.success) {
+            const data = await response.json().catch(() => null);
+            if (!response.ok || !data || !data.success) {
                 renderCards([]);
                 return;
             }
 
             renderCards(data.suggestions || []);
         } catch (error) {
+            console.error('Failed to load external suggestions', error);
             renderCards([]);
+        } finally {
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = originalText;
         }
     }
 
     refreshBtn?.addEventListener('click', loadSuggestions);
+    // allow pressing Enter in the search field to refresh external suggestions
+    searchInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            loadSuggestions();
+        }
+    });
     loadSuggestions();
+
+    // Lightweight popup when a resource was just created successfully
+    const createdFlag = '{{ app.request.query.get('created')|default('') }}';
+    const resourcePopup = document.getElementById('guardian-resource-popup');
+    if (createdFlag === '1' && resourcePopup) {
+        resourcePopup.style.display = 'block';
+        resourcePopup.style.opacity = '0';
+        resourcePopup.style.transform = 'translateY(10px)';
+        setTimeout(() => {
+            resourcePopup.style.transition = 'opacity 220ms ease, transform 220ms ease';
+            resourcePopup.style.opacity = '1';
+            resourcePopup.style.transform = 'translateY(0)';
+        }, 20);
+        setTimeout(() => {
+            resourcePopup.style.opacity = '0';
+            resourcePopup.style.transform = 'translateY(10px)';
+            setTimeout(() => { resourcePopup.style.display = 'none'; }, 260);
+        }, 2600);
+    }
 })();
 </script>
 {% endblock %}

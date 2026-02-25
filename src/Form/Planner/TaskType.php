@@ -2,6 +2,7 @@
 // src/Form/TaskType.php
 namespace App\Form\Planner;
 
+use App\Entity\Guardian\Resource as GuardianResource;
 use App\Entity\Planner\Subject;
 use App\Entity\Planner\Task;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -77,25 +78,19 @@ class TaskType extends AbstractType
                 'label' => 'Due date',
                 'label_attr' => ['class' => 'form-label text-light'],
             ])
-            ->add('estimatedMinutes', IntegerType::class, [
+            // Estimated time removed: Focus Timer and AI will provide duration suggestions.
+            ->add('resources', EntityType::class, [
+                'class' => GuardianResource::class,
+                'choice_label' => 'title',
                 'required' => false,
-                'constraints' => [
-                    new Range([
-                        'min' => 1,
-                        'max' => 480,
-                        'notInRangeMessage' => 'Estimate must be between {{ min }} and {{ max }} minutes.',
-                    ]),
-                ],
+                'multiple' => true,
+                'expanded' => false,
                 'attr' => [
-                    'min' => 1,
-                    'max' => 480,
-                    'class' => 'form-control bg-dark text-light border-secondary',
-                    'placeholder' => 'Ex: 60',
+                    'class' => 'form-select bg-dark text-light border-secondary',
                 ],
-                'label' => 'Estimated time (minutes)',
+                'label' => 'Linked resources (optional)',
                 'label_attr' => ['class' => 'form-label text-light'],
-            ])
-        ;
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

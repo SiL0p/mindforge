@@ -16,6 +16,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use App\Entity\Architect\Profile;
+use App\Entity\Planner\Exam;
+use App\Entity\Planner\Task;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'user')]
@@ -75,6 +77,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: SharedTask::class, mappedBy: 'sharedWith', orphanRemoval: true)]
     private Collection $sharedTasksReceived;
 
+    // One-to-Many: User owns many Exams
+    #[ORM\OneToMany(targetEntity: Exam::class, mappedBy: 'owner')]
+    private Collection $exams;
+
+    // One-to-Many: User owns many Tasks
+    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'owner')]
+    private Collection $tasks;
+
     // RELATIONSHIPS: Guardian Module
     // One-to-Many: User creates many VirtualRooms (only Student+)
     #[ORM\OneToMany(targetEntity: VirtualRoom::class, mappedBy: 'creator', orphanRemoval: true)]
@@ -111,6 +121,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->uploadedResources = new ArrayCollection();
         $this->demandes = new ArrayCollection();
         $this->entreprises = new ArrayCollection();
+        $this->exams = new ArrayCollection();
+        $this->tasks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -195,6 +207,64 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getChatMessages(): Collection
     {
         return $this->chatMessages;
+    }
+
+    /**
+     * @return Collection<int, Exam>
+     */
+    public function getExams(): Collection
+    {
+        return $this->exams;
+    }
+
+    public function addExam(Exam $exam): self
+    {
+        if (!$this->exams->contains($exam)) {
+            $this->exams->add($exam);
+            $exam->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeExam(Exam $exam): self
+    {
+        if ($this->exams->removeElement($exam)) {
+            if ($exam->getOwner() === $this) {
+                $exam->setOwner(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Task>
+     */
+    public function getTasks(): Collection
+    {
+        return $this->tasks;
+    }
+
+    public function addTask(Task $task): self
+    {
+        if (!$this->tasks->contains($task)) {
+            $this->tasks->add($task);
+            $task->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTask(Task $task): self
+    {
+        if ($this->tasks->removeElement($task)) {
+            if ($task->getOwner() === $this) {
+                $task->setOwner(null);
+            }
+        }
+
+        return $this;
     }
 
     public function addChatMessage(ChatMessage $chatMessage): self

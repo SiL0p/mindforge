@@ -3,7 +3,10 @@
 namespace App\Entity\Planner;
 
 use App\Entity\Architect\User;
+use App\Entity\Guardian\Resource as GuardianResource;
 use App\Repository\Planner\TaskRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -77,6 +80,15 @@ class Task
     #[ORM\ManyToOne(inversedBy: 'tasks')]
     private ?Subject $subject = null;
 
+    #[ORM\ManyToMany(targetEntity: GuardianResource::class)]
+    #[ORM\JoinTable(name: 'task_resource')]
+    private Collection $resources;
+
+    public function __construct()
+    {
+        $this->resources = new ArrayCollection();
+    }
+
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
@@ -110,6 +122,11 @@ class Task
     public function getStatus(): ?string { return $this->status; }
     public function setStatus(string $status): static
     {
+        // Once a task is done, prevent it from going back to todo/in_progress
+        if ($this->status === self::STATUS_DONE && $status !== self::STATUS_DONE) {
+            return $this;
+        }
+
         $this->status = $status;
 
         if ($status === self::STATUS_DONE) {
@@ -137,4 +154,28 @@ class Task
     public function setOwner(?User $owner): static { $this->owner = $owner; return $this; }
     public function getSubject(): ?Subject { return $this->subject; }
     public function setSubject(?Subject $subject): static { $this->subject = $subject; return $this; }
+
+    /**
+     * @return Collection<int, GuardianResource>
+     */
+    public function getResources(): Collection
+    {
+        return $this->resources;
+    }
+
+    public function addResource(GuardianResource $resource): static
+    {
+        if (!$this->resources->contains($resource)) {
+            $this->resources->add($resource);
+        }
+
+        return $this;
+    }
+
+    public function removeResource(GuardianResource $resource): static
+    {
+        $this->resources->removeElement($resource);
+
+        return $this;
+    }
 }

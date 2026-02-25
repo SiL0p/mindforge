@@ -8,6 +8,16 @@
 
 {% block module_content %}
 <div class="guardian-shell">
+    <div id="encouragement-popup" style="display:none; position:fixed; right:24px; bottom:24px; width:320px; max-width:80vw; z-index:1050; box-shadow:0 8px 24px rgba(0,0,0,0.2); border-radius:8px; overflow:hidden; background:#fff;">
+        <div style="display:flex; gap:8px; align-items:center; padding:8px;">
+            <img id="encouragement-gif" src="" alt="celebrate" style="width:80px; height:80px; object-fit:cover; border-radius:6px;">
+            <div style="flex:1;">
+                <div id="encouragement-title" style="font-weight:700; color:#222;">Nice work!</div>
+                <div id="encouragement-sub" style="font-size:13px; color:#666;">Keep going — you earned XP!</div>
+            </div>
+            <button id="encouragement-close" class="btn btn-sm btn-outline-secondary" style="margin-left:8px;">✕</button>
+        </div>
+    </div>
     <section class="guardian-hero mb-4">
         <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
             <div>
@@ -15,10 +25,15 @@
                 <h1 class="guardian-title">Task Focus Sessions</h1>
                 <p class="guardian-subtitle">Pick a task, start the timer, and save your completed focus session.</p>
             </div>
-            <div class="d-flex flex-wrap gap-2">
-                <div class="guardian-badge" style="background: rgba(72, 198, 239, 0.18); color: #1b4d6b;">Today: {{ today_sessions }} sessions</div>
-                <div class="guardian-badge" style="background: rgba(124, 92, 255, 0.18); color: #3f2fbf;">This week: {{ week_focus_minutes }} min</div>
-                <div class="guardian-badge" style="background: rgba(72, 198, 239, 0.18); color: #1b4d6b;">Total: {{ total_focus_minutes }} min</div>
+            <div class="d-flex flex-column align-items-start gap-2">
+                <div class="d-flex flex-wrap gap-2">
+                    <div class="guardian-badge" style="background: rgba(72, 198, 239, 0.18); color: #1b4d6b;">Today: {{ today_sessions }} sessions</div>
+                    <div class="guardian-badge" style="background: rgba(124, 92, 255, 0.18); color: #3f2fbf;">This week: {{ week_focus_minutes }} min</div>
+                    <div class="guardian-badge" style="background: rgba(72, 198, 239, 0.18); color: #1b4d6b;">Total: {{ total_focus_minutes }} min</div>
+                </div>
+                <a href="{{ path('guardian_stats') }}" class="btn btn-sm btn-outline-primary mt-1">
+                    <i class="fas fa-chart-line"></i> View my stats
+                </a>
             </div>
         </div>
     </section>
@@ -30,7 +45,7 @@
                 <select id="task-select" class="form-select">
                     <option value="">-- Select a task --</option>
                     {% for task in tasks %}
-                        <option value="{{ task.id }}" data-priority="{{ task.priority ?? 2 }}" {% if selected_task_id == task.id %}selected{% endif %}>{{ task.title }}</option>
+                        <option value="{{ task.id }}" data-priority="{{ task.priority ?? 2 }}" data-estimated="{{ task.estimatedMinutes ?: '' }}" {% if selected_task_id == task.id %}selected{% endif %}>{{ task.title }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -59,6 +74,12 @@
                 <button id="reset-btn" class="btn btn-default"><i class="fas fa-undo"></i> Reset</button>
                 <button id="complete-btn" class="btn btn-primary"><i class="fas fa-check"></i> Save session</button>
             </div>
+            <div class="form-check d-flex justify-content-center mt-2">
+                <input class="form-check-input" type="checkbox" id="task-done-toggle">
+                <label class="form-check-label ms-2" for="task-done-toggle">
+                    Mark this task as done when saving this session
+                </label>
+            </div>
             <small class="text-muted" style="display:block; margin-top: 10px;">A session is stored with task, duration, and timestamp.</small>
         </div>
 
@@ -70,7 +91,17 @@
                         <button id="refresh-tips-btn" class="btn btn-xs btn-outline-secondary" type="button"><i class="fas fa-rotate-right"></i> Refresh</button>
                     </div>
                     <ul id="ai-tips-list" class="mb-2" style="padding-left: 18px;"></ul>
-                    <div id="ai-motivation" class="text-muted small"></div>
+                    <div id="ai-motivation" class="text-muted small mb-1"></div>
+                    <div id="ai-tips-feedback" class="text-muted small" data-insight-id="">
+                        <span>Was this helpful?</span>
+                        <button type="button" class="btn btn-xs btn-outline-success ms-1" data-feedback-target="tips" data-feedback="up">
+                            👍
+                        </button>
+                        <button type="button" class="btn btn-xs btn-outline-danger ms-1" data-feedback-target="tips" data-feedback="down">
+                            👎
+                        </button>
+                        <span id="ai-tips-feedback-summary" class="ms-2"></span>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-6">
@@ -91,7 +122,17 @@
             </div>
             <p id="ai-weekly-summary" class="text-muted" style="margin-top: 8px; margin-bottom: 8px;"></p>
             <ul id="ai-weekly-wins" class="mb-2" style="padding-left: 18px;"></ul>
-            <div id="ai-weekly-next-action" class="text-muted small"></div>
+            <div id="ai-weekly-next-action" class="text-muted small mb-1"></div>
+            <div id="ai-weekly-feedback" class="text-muted small" data-insight-id="">
+                <span>Was this helpful?</span>
+                <button type="button" class="btn btn-xs btn-outline-success ms-1" data-feedback-target="weekly" data-feedback="up">
+                    👍
+                </button>
+                <button type="button" class="btn btn-xs btn-outline-danger ms-1" data-feedback-target="weekly" data-feedback="down">
+                    👎
+                </button>
+                <span id="ai-weekly-feedback-summary" class="ms-2"></span>
+            </div>
         </div>
     </section>
 
@@ -172,6 +213,11 @@
     const aiWeeklySummary = document.getElementById('ai-weekly-summary');
     const aiWeeklyWins = document.getElementById('ai-weekly-wins');
     const aiWeeklyNextAction = document.getElementById('ai-weekly-next-action');
+    const aiTipsFeedback = document.getElementById('ai-tips-feedback');
+    const aiTipsFeedbackSummary = document.getElementById('ai-tips-feedback-summary');
+    const aiWeeklyFeedback = document.getElementById('ai-weekly-feedback');
+    const aiWeeklyFeedbackSummary = document.getElementById('ai-weekly-feedback-summary');
+    const taskDoneToggle = document.getElementById('task-done-toggle');
 
     const startBtn = document.getElementById('start-btn');
     const pauseBtn = document.getElementById('pause-btn');
@@ -192,6 +238,48 @@
     const API_WEEKLY_REVIEW = '{{ path('guardian_focus_timer_api_weekly_review') }}';
     const API_LOG = '{{ path('guardian_focus_timer_api_log') }}';
     const API_SOCIAL_FOCUS = '{{ path('app_workspace_network_status_focus') }}';
+    const API_AI_FEEDBACK = '{{ path('guardian_focus_timer_api_ai_feedback', {id: '__ID__'}) }}';
+    const AI_FEEDBACK_TOKEN = '{{ csrf_token('guardian_ai_feedback') }}';
+
+    let currentTipsInsightId = null;
+    let currentWeeklyInsightId = null;
+
+    function syncMiniTimerStorage(isActive) {
+        try {
+            if (!isActive) {
+                localStorage.removeItem('guardian_focus_state');
+                return;
+            }
+            const selectedOption = taskSelect.options[taskSelect.selectedIndex];
+            const taskTitle = selectedOption ? selectedOption.textContent.trim() : 'Focus';
+            const endAt = Date.now() + (remainingSeconds * 1000);
+            const state = {
+                endAt: endAt,
+                taskTitle: taskTitle,
+            };
+            localStorage.setItem('guardian_focus_state', JSON.stringify(state));
+        } catch (e) {
+        }
+    }
+
+    function renderFeedbackSummary(summaryEl, feedback) {
+        if (!summaryEl) {
+            return;
+        }
+        if (!feedback || (typeof feedback.helpful === 'undefined' && typeof feedback.unhelpful === 'undefined')) {
+            summaryEl.textContent = '';
+            return;
+        }
+        const helpful = Number(feedback.helpful || 0);
+        const unhelpful = Number(feedback.unhelpful || 0);
+        const total = helpful + unhelpful;
+        if (total === 0) {
+            summaryEl.textContent = '';
+            return;
+        }
+        const ratio = total > 0 ? Math.round((helpful / total) * 100) : 0;
+        summaryEl.textContent = `${helpful} helpful / ${unhelpful} not helpful (${ratio}% 👍)`;
+    }
 
     async function updateFocusMode(focusMode) {
         try {
@@ -225,6 +313,20 @@
         });
     }
 
+    function sanitizeAiReason(reason) {
+        if (!reason) return '';
+        const r = String(reason).trim();
+        // Hide low-level parse errors and present a friendly fallback message
+        if (/parse error|ai parse error/i.test(r) || /rule-?based fallback/i.test(r)) {
+            return 'AI: Rule-based fallback.';
+        }
+        // Shorten overly long technical messages
+        if (r.length > 200) {
+            return `AI: ${r.slice(0, 197)}...`;
+        }
+        return `AI: ${r}`;
+    }
+
     function formatTime(totalSeconds) {
         const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
         const seconds = (totalSeconds % 60).toString().padStart(2, '0');
@@ -256,6 +358,8 @@
             return;
         }
 
+        // Always ask the server for the authoritative recommendation. The API now exposes
+        // `estimated_minutes` and a `source` field; prefer `estimated_minutes` when present.
         try {
             const response = await fetch(API_RECOMMENDED_DURATION.replace('__TASK_ID__', String(taskId)), {
                 method: 'GET',
@@ -266,11 +370,19 @@
 
             const data = await response.json();
             if (!response.ok || !data.success) {
+                // Fallback to priority default
                 currentTargetDuration = 35;
                 timerAiReason.textContent = 'Fallback duration applied.';
             } else {
-                currentTargetDuration = Number(data.recommended_duration || 35);
-                timerAiReason.textContent = data.reason ? `AI: ${data.reason}` : '';
+                // Use explicit server-side estimate when available
+                const estimated = Number(data.estimated_minutes || 0);
+                if (estimated && estimated > 0) {
+                    currentTargetDuration = Math.max(1, Math.min(240, estimated));
+                    timerAiReason.textContent = 'Using task estimate.';
+                } else {
+                    currentTargetDuration = Number(data.recommended_duration || 35);
+                    timerAiReason.textContent = sanitizeAiReason(data.reason);
+                }
             }
         } catch (error) {
             currentTargetDuration = 35;
@@ -301,14 +413,29 @@
             if (!response.ok || !data.success) {
                 renderList(aiTipsList, [], 'Unable to load AI tips right now.');
                 aiMotivation.textContent = '';
+                currentTipsInsightId = null;
+                if (aiTipsFeedback) {
+                    aiTipsFeedback.dataset.insightId = '';
+                }
+                renderFeedbackSummary(aiTipsFeedbackSummary, null);
                 return;
             }
 
             renderList(aiTipsList, data.tips || [], 'No tips available.');
             aiMotivation.textContent = data.motivation || '';
+            currentTipsInsightId = data.insight_id || null;
+            if (aiTipsFeedback) {
+                aiTipsFeedback.dataset.insightId = currentTipsInsightId ? String(currentTipsInsightId) : '';
+            }
+            renderFeedbackSummary(aiTipsFeedbackSummary, data.feedback || null);
         } catch (error) {
             renderList(aiTipsList, [], 'Unable to load AI tips right now.');
             aiMotivation.textContent = '';
+            currentTipsInsightId = null;
+            if (aiTipsFeedback) {
+                aiTipsFeedback.dataset.insightId = '';
+            }
+            renderFeedbackSummary(aiTipsFeedbackSummary, null);
         }
     }
 
@@ -347,16 +474,65 @@
                 aiWeeklySummary.textContent = 'Unable to load weekly review right now.';
                 renderList(aiWeeklyWins, [], 'No highlights available.');
                 aiWeeklyNextAction.textContent = '';
+                currentWeeklyInsightId = null;
+                if (aiWeeklyFeedback) {
+                    aiWeeklyFeedback.dataset.insightId = '';
+                }
+                renderFeedbackSummary(aiWeeklyFeedbackSummary, null);
                 return;
             }
 
             aiWeeklySummary.textContent = data.summary || 'No summary available.';
             renderList(aiWeeklyWins, data.wins || [], 'No highlights available.');
             aiWeeklyNextAction.textContent = data.next_action ? `Next action: ${data.next_action}` : '';
+            currentWeeklyInsightId = data.insight_id || null;
+            if (aiWeeklyFeedback) {
+                aiWeeklyFeedback.dataset.insightId = currentWeeklyInsightId ? String(currentWeeklyInsightId) : '';
+            }
+            renderFeedbackSummary(aiWeeklyFeedbackSummary, data.feedback || null);
         } catch (error) {
             aiWeeklySummary.textContent = 'Unable to load weekly review right now.';
             renderList(aiWeeklyWins, [], 'No highlights available.');
             aiWeeklyNextAction.textContent = '';
+            currentWeeklyInsightId = null;
+            if (aiWeeklyFeedback) {
+                aiWeeklyFeedback.dataset.insightId = '';
+            }
+            renderFeedbackSummary(aiWeeklyFeedbackSummary, null);
+        }
+    }
+
+    async function sendAiFeedback(target, value) {
+        const insightId = target === 'tips' ? currentTipsInsightId : currentWeeklyInsightId;
+        if (!insightId) {
+            return;
+        }
+
+        try {
+            const response = await fetch(API_AI_FEEDBACK.replace('__ID__', String(insightId)), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    _token: AI_FEEDBACK_TOKEN,
+                    feedback: value
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                return;
+            }
+
+            if (target === 'tips') {
+                renderFeedbackSummary(aiTipsFeedbackSummary, data.feedback || null);
+            } else if (target === 'weekly') {
+                renderFeedbackSummary(aiWeeklyFeedbackSummary, data.feedback || null);
+            }
+        } catch (e) {
         }
     }
 
@@ -420,6 +596,8 @@
 
         timerStatus.textContent = 'Saving session...';
 
+        const taskDoneFlag = !!(taskDoneToggle && taskDoneToggle.checked);
+
         try {
             const response = await fetch(API_LOG, {
                 method: 'POST',
@@ -433,7 +611,8 @@
                     task_id: taskId,
                     duration: durationToStore,
                     elapsed_minutes: trackedElapsed,
-                    client_session_id: `${taskId}-${sessionStartedAt ? sessionStartedAt.getTime() : Date.now()}`
+                    client_session_id: `${taskId}-${sessionStartedAt ? sessionStartedAt.getTime() : Date.now()}`,
+                    task_done: taskDoneFlag
                 })
             });
 
@@ -447,6 +626,12 @@
                 const unlocked = data.gamification.unlocked_badges || [];
                 const unlockedText = unlocked.length ? ` | New badges: ${unlocked.join(', ')}` : '';
                 timerGamification.textContent = `+${data.gamification.xp_gained} XP | Streak: ${data.gamification.streak_days} day(s)${unlockedText}`;
+                // Show encouragement popup if server provided a gif_url
+                if (data.gamification.gif_url) {
+                    showEncouragement(data.gamification);
+                    // Wait for popup display then reload after 2.8s
+                    await new Promise((resolve) => setTimeout(resolve, 2800));
+                }
             }
 
             if (data.task_progress) {
@@ -466,6 +651,55 @@
             window.location.reload();
         } catch (error) {
             timerStatus.textContent = 'Network error while saving session.';
+            syncMiniTimerStorage(false);
+        }
+    }
+
+    function showEncouragement(gamification) {
+        try {
+            const popup = document.getElementById('encouragement-popup');
+            const img = document.getElementById('encouragement-gif');
+            const title = document.getElementById('encouragement-title');
+            const sub = document.getElementById('encouragement-sub');
+            const closeBtn = document.getElementById('encouragement-close');
+
+            img.src = gamification.gif_url || '';
+            const badges = (gamification.unlocked_badges || []).slice(0,3).join(', ');
+            if (gamification.level_up) {
+                title.textContent = `Level up!`;
+                sub.textContent = `You reached level ${gamification.current_level}`;
+            } else if (badges) {
+                title.textContent = `Badge unlocked!`;
+                sub.textContent = badges;
+            } else if (gamification.xp_gained) {
+                title.textContent = `+${gamification.xp_gained} XP`;
+                sub.textContent = `Great focus — keep it up!`;
+            } else {
+                title.textContent = 'Nice work!';
+                sub.textContent = 'Keep going — you earned XP!';
+            }
+
+            popup.style.display = 'block';
+            popup.style.opacity = '0';
+            popup.style.transform = 'translateY(10px)';
+            setTimeout(() => {
+                popup.style.transition = 'opacity 260ms ease, transform 260ms ease';
+                popup.style.opacity = '1';
+                popup.style.transform = 'translateY(0)';
+            }, 20);
+
+            const hide = () => {
+                popup.style.opacity = '0';
+                popup.style.transform = 'translateY(10px)';
+                setTimeout(() => { popup.style.display = 'none'; }, 300);
+            };
+
+            closeBtn.onclick = hide;
+
+            // Auto-hide after 2.5s
+            setTimeout(hide, 2500);
+        } catch (e) {
+            // ignore
         }
     }
 
@@ -474,6 +708,7 @@
     resetBtn.addEventListener('click', () => {
         pauseTimer();
         updateFocusMode(false);
+        syncMiniTimerStorage(false);
         resetToInputDuration();
         sessionStartedAt = null;
         timerStatus.textContent = 'Ready to focus';
@@ -492,6 +727,30 @@
     refreshTipsBtn.addEventListener('click', loadTipsForTask);
     refreshPlanBtn.addEventListener('click', loadDailyPlan);
     refreshWeeklyReviewBtn.addEventListener('click', loadWeeklyReview);
+    (aiTipsFeedback || document).addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) {
+            return;
+        }
+        const feedback = target.getAttribute('data-feedback');
+        const feedbackTarget = target.getAttribute('data-feedback-target');
+        if (!feedback || !feedbackTarget) {
+            return;
+        }
+        sendAiFeedback(feedbackTarget, feedback);
+    });
+    (aiWeeklyFeedback || document).addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) {
+            return;
+        }
+        const feedback = target.getAttribute('data-feedback');
+        const feedbackTarget = target.getAttribute('data-feedback-target');
+        if (!feedback || !feedbackTarget) {
+            return;
+        }
+        sendAiFeedback(feedbackTarget, feedback);
+    });
     taskSelect.addEventListener('change', () => {
         if (!timerId) {
             applyDurationFromTask();

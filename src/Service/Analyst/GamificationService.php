@@ -28,6 +28,7 @@ class GamificationService
         $this->ensureDefaultBadges();
 
         $stats = $this->getOrCreateStats($user);
+        $previousLevel = $stats->getCurrentLevel();
         $xpGained = $this->xpEngineService->calculateForTask($task);
         $focusMinutes = $task->getActualMinutes() ?? $task->getEstimatedMinutes() ?? 0;
 
@@ -41,11 +42,26 @@ class GamificationService
 
         $this->entityManager->flush();
 
+        $newLevel = $stats->getCurrentLevel();
+        $levelUp = $newLevel > $previousLevel;
+
+        // Choose a celebratory GIF depending on what happened
+        $gifUrl = null;
+        if (!empty($unlocked)) {
+            $gifUrl = 'https://media.giphy.com/media/111ebonMs90YLu/giphy.gif';
+        } elseif ($levelUp) {
+            $gifUrl = 'https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif';
+        } elseif ($xpGained >= 50) {
+            $gifUrl = 'https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif';
+        }
+
         return [
             'xp_gained' => $xpGained,
-            'current_level' => $stats->getCurrentLevel(),
+            'current_level' => $newLevel,
             'total_xp' => $stats->getTotalXp(),
             'unlocked_badges' => $unlocked,
+            'level_up' => $levelUp,
+            'gif_url' => $gifUrl,
         ];
     }
 
@@ -58,6 +74,7 @@ class GamificationService
         $today = new \DateTimeImmutable('today');
 
         $stats = $this->getOrCreateStats($user);
+        $previousLevel = $stats->getCurrentLevel();
         $lastActivityDate = $stats->getLastActivityDate();
 
         if ($lastActivityDate === null) {
@@ -82,12 +99,26 @@ class GamificationService
 
         $this->entityManager->flush();
 
+        $newLevel = $stats->getCurrentLevel();
+        $levelUp = $newLevel > $previousLevel;
+
+        $gifUrl = null;
+        if (!empty($unlocked)) {
+            $gifUrl = 'https://media.giphy.com/media/111ebonMs90YLu/giphy.gif';
+        } elseif ($levelUp) {
+            $gifUrl = 'https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif';
+        } elseif ($xpGained >= 60) {
+            $gifUrl = 'https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif';
+        }
+
         return [
             'xp_gained' => $xpGained,
-            'current_level' => $stats->getCurrentLevel(),
+            'current_level' => $newLevel,
             'total_xp' => $stats->getTotalXp(),
             'streak_days' => $stats->getStreakDays(),
             'unlocked_badges' => $unlocked,
+            'level_up' => $levelUp,
+            'gif_url' => $gifUrl,
         ];
     }
 

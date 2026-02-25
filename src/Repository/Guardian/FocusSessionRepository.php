@@ -15,6 +15,55 @@ class FocusSessionRepository extends ServiceEntityRepository
         parent::__construct($registry, FocusSession::class);
     }
 
+    /**
+     * Returns an associative array of daily total minutes for a user between the given dates.
+     * Keys are Y-m-d strings, values are integers (total minutes).
+     */
+    public function getDailyMinutesByUser(
+        User $user,
+        \DateTimeImmutable $from,
+        \DateTimeImmutable $to
+    ): array {
+        // Initialize all days in range with 0 to keep charts continuous
+        $period = new \DatePeriod(
+            $from,
+            new \DateInterval('P1D'),
+            $to
+        );
+
+        $daily = [];
+        foreach ($period as $date) {
+            $daily[$date->format('Y-m-d')] = 0;
+        }
+
+        // Fetch raw sessions and aggregate in PHP to avoid DB-specific functions
+        $sessions = $this->createQueryBuilder('fs')
+            ->where('fs.user = :user')
+            ->andWhere('fs.timestamp >= :from')
+            ->andWhere('fs.timestamp < :to')
+            ->setParameter('user', $user)
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->orderBy('fs.timestamp', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        /** @var FocusSession $session */
+        foreach ($sessions as $session) {
+            $ts = $session->getTimestamp();
+            if (!$ts instanceof \DateTimeInterface) {
+                continue;
+            }
+            $dayKey = $ts->format('Y-m-d');
+            if (!array_key_exists($dayKey, $daily)) {
+                $daily[$dayKey] = 0;
+            }
+            $daily[$dayKey] += (int) $session->getDuration();
+        }
+
+        return $daily;
+    }
+
     public function findRecentByUser(User $user, int $limit = 10): array
     {
         return $this->createQueryBuilder('fs')

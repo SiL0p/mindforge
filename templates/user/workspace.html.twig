@@ -562,7 +562,7 @@
             <a href="{{ path('app_planner_calendar') }}" class="{{ currentRoute starts with 'app_planner_' ? 'active' : '' }}"><i class="fa fa-calendar"></i>Planner</a>
             <a href="{{ path('app_analyst_gamification') }}" class="{{ currentRoute starts with 'app_analyst_' ? 'active' : '' }}"><i class="fa fa-pie-chart"></i>Analytics</a>
             <a href="{{ path('community_index') }}" class="{{ currentRoute starts with 'community_' ? 'active' : '' }}"><i class="fa fa-users"></i>Community</a>
-            <a href="{{ path('guardian_library') }}" class="{{ currentRoute starts with 'guardian_' ? 'active' : '' }}"><i class="fa fa-book"></i>Guardian</a>
+            <a href="{{ path('guardian_hub') }}" class="{{ currentRoute starts with 'guardian_' ? 'active' : '' }}"><i class="fa fa-book"></i>Guardian</a>
         </nav>
 
         <div>
@@ -620,13 +620,9 @@
                 <div><span class="dot" style="background:#5cc1e9"></span><span class="folder-title">Community</span></div>
                 <div class="folder-date">Challenges + Support</div>
             </a>
-            <a href="{{ path('guardian_library') }}" class="folder-card">
-                <div><span class="dot" style="background:#7f6be7"></span><span class="folder-title">Library</span></div>
-                <div class="folder-date">Resources</div>
-            </a>
-            <a href="{{ path('guardian_rooms') }}" class="folder-card">
-                <div><span class="dot" style="background:#6676f3"></span><span class="folder-title">Virtual Rooms</span></div>
-                <div class="folder-date">Collaboration</div>
+            <a href="{{ path('guardian_hub') }}" class="folder-card">
+                <div><span class="dot" style="background:#7f6be7"></span><span class="folder-title">Guardian</span></div>
+                <div class="folder-date">Focus · Rooms · Library</div>
             </a>
         </div>
 

@@ -42,6 +42,12 @@ class AiInsight
     #[ORM\Column(type: Types::TEXT)]
     private string $payload = '{}';
 
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
+    private int $helpfulVotes = 0;
+
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
+    private int $unhelpfulVotes = 0;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -114,6 +120,30 @@ class AiInsight
     public function setPayload(string $payload): self
     {
         $this->payload = $payload;
+
+        return $this;
+    }
+
+    public function getHelpfulVotes(): int
+    {
+        return $this->helpfulVotes;
+    }
+
+    public function incrementHelpfulVotes(): self
+    {
+        $this->helpfulVotes++;
+
+        return $this;
+    }
+
+    public function getUnhelpfulVotes(): int
+    {
+        return $this->unhelpfulVotes;
+    }
+
+    public function incrementUnhelpfulVotes(): self
+    {
+        $this->unhelpfulVotes++;
 
         return $this;
     }

@@ -14,7 +14,7 @@ class ExternalLearningResourceService
     {
     }
 
-    public function fetchOpenLibrarySuggestions(string $query, int $limit = 6): array
+    public function fetchOpenLibrarySuggestions(string $query, int $limit = 6, int $page = 1): array
     {
         $safeQuery = trim($query);
         $safeLimit = max(1, min(10, $limit));
@@ -29,6 +29,7 @@ class ExternalLearningResourceService
                 'query' => [
                     'q' => $safeQuery,
                     'limit' => $safeLimit,
+                    'page' => max(1, $page),
                     'language' => 'eng',
                 ],
             ]);

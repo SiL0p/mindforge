@@ -81,10 +81,19 @@ class VirtualRoom
     #[ORM\OneToMany(targetEntity: ChatMessage::class, mappedBy: 'virtualRoom', orphanRemoval: true)]
     private Collection $chatMessages;
 
+    // RELATIONSHIP: Many Rooms may reference Many Resources (selected by owner)
+    #[ORM\ManyToMany(targetEntity: \App\Entity\Guardian\Resource::class)]
+    #[ORM\JoinTable(name: 'virtual_room_resources',
+        joinColumns: [new ORM\JoinColumn(name: 'virtual_room_id', referencedColumnName: 'id', onDelete: 'CASCADE')],
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'resource_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    )]
+    private Collection $selectedResources;
+
     public function __construct()
     {
         $this->participants = new ArrayCollection();
         $this->chatMessages = new ArrayCollection();
+        $this->selectedResources = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -158,6 +167,25 @@ class VirtualRoom
                 $chatMessage->setVirtualRoom(null);
             }
         }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, \App\Entity\Guardian\Resource>
+     */
+    public function getSelectedResources(): Collection { return $this->selectedResources; }
+
+    public function addSelectedResource(\App\Entity\Guardian\Resource $resource): self
+    {
+        if (!$this->selectedResources->contains($resource)) {
+            $this->selectedResources->add($resource);
+        }
+        return $this;
+    }
+
+    public function removeSelectedResource(\App\Entity\Guardian\Resource $resource): self
+    {
+        $this->selectedResources->removeElement($resource);
         return $this;
     }
 }

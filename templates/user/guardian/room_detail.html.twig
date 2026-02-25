@@ -7,6 +7,12 @@
 {% block module_subtitle %}Chat and resources in your selected room.{% endblock %}
 {% block module_content %}
 <div class="guardian-shell">
+    <div id="guardian-room-popup" style="display:none; position:fixed; right:24px; bottom:24px; width:320px; max-width:80vw; z-index:1050; box-shadow:0 8px 24px rgba(0,0,0,0.2); border-radius:8px; overflow:hidden; background:#fff;">
+        <div style="padding:10px 12px;">
+            <div id="guardian-room-popup-title" style="font-weight:700; color:#111827; margin-bottom:4px;">Room update</div>
+            <div id="guardian-room-popup-text" style="font-size:13px; color:#4b5563;"></div>
+        </div>
+    </div>
     <section class="guardian-hero mb-4">
         <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
             <div>
@@ -124,7 +130,162 @@
                     {% endfor %}
                 </div>
             </div>
+            <div class="guardian-panel p-3 mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0"><i class="fas fa-book"></i> Resources in this room</h5>
+                    {% if app.user == room.creator %}
+                        <button class="btn btn-sm btn-outline-primary" id="manage-room-resources-btn">Manage</button>
+                    {% endif %}
+                </div>
+
+                {% set room_resources = room.selectedResources is defined ? room.selectedResources : [] %}
+                {% if room_resources|length == 0 %}
+                    <div class="text-muted">No resources added to this room yet.</div>
+                {% else %}
+                    <div class="row g-2">
+                        {% for resource in room_resources %}
+                            <div class="col-12">
+                                <div class="card" style="border-radius:8px; padding:10px;">
+                                    <div class="d-flex align-items-start justify-content-between">
+                                        <div class="me-2" style="flex:1; min-width:0;">
+                                            <strong class="d-block text-truncate" title="{{ resource.title }}">{{ resource.title }}</strong>
+                                            <small class="text-muted d-block">{{ resource.subject.name }} • {{ resource.uploader.userIdentifier }}</small>
+                                        </div>
+                                        <div class="text-end ms-2">
+                                            <a href="{{ path('guardian_resource_download', {id: resource.id}) }}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            {% if app.user == room.creator %}
+                                                <form method="POST" action="{{ path('guardian_room_remove_resource', {id: room.id, resourceId: resource.id}) }}" style="display:inline-block; margin-left:6px;">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('manage_room_' ~ room.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Management modal (owner only) #}
+            {% if app.user == room.creator %}
+            <div id="manage-room-resources-modal" class="modal" tabindex="-1" style="display:none;">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Manage room resources</h5>
+                            <button type="button" class="btn-close" id="manage-modal-close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted">Select resources to add or remove from this room. These are pulled from the library.</p>
+                            <div class="list-group">
+                                {% for resource in recent_resources %}
+                                    {% set in_room = resource in room.selectedResources %}
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div style="min-width:0; flex:1;">
+                                            <strong class="d-block text-truncate" title="{{ resource.title }}">{{ resource.title }}</strong>
+                                            <small class="text-muted">{{ resource.subject.name }} • {{ resource.uploader.userIdentifier }}</small>
+                                        </div>
+                                        <div>
+                                            {% if in_room %}
+                                                <form method="POST" action="{{ path('guardian_room_remove_resource', {id: room.id, resourceId: resource.id}) }}" style="display:inline-block;">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('manage_room_' ~ room.id) }}">
+                                                    <button class="btn btn-sm btn-outline-danger">Remove</button>
+                                                </form>
+                                            {% else %}
+                                                <form method="POST" action="{{ path('guardian_room_add_resource', {id: room.id, resourceId: resource.id}) }}" style="display:inline-block;">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('manage_room_' ~ room.id) }}">
+                                                    <button class="btn btn-sm btn-primary">Add</button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" id="manage-modal-close-2">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+            (function(){
+                const btn = document.getElementById('manage-room-resources-btn');
+                const modal = document.getElementById('manage-room-resources-modal');
+                const close = document.getElementById('manage-modal-close');
+                const close2 = document.getElementById('manage-modal-close-2');
+                function showModal(){ modal.style.display = 'block'; document.body.style.overflow = 'hidden'; }
+                function hideModal(){ modal.style.display = 'none'; document.body.style.overflow = ''; }
+                if (btn) btn.addEventListener('click', showModal);
+                if (close) close.addEventListener('click', hideModal);
+                if (close2) close2.addEventListener('click', hideModal);
+            })();
+            </script>
+            {% endif %}
         </div>
     </div>
 </div>
+<script>
+(function () {
+    const joinedFlag = '{{ app.request.query.get('joined')|default('') }}';
+    const popup = document.getElementById('guardian-room-popup');
+    const popupTitle = document.getElementById('guardian-room-popup-title');
+    const popupText = document.getElementById('guardian-room-popup-text');
+    const API_PARTICIPANTS = '{{ path('guardian_room_participants_api', {id: room.id}) }}';
+    let lastCount = {{ room.participants|length }};
+
+    function showRoomPopup(message, title) {
+        if (!popup || !popupText) {
+            return;
+        }
+        popupTitle.textContent = title || 'Room update';
+        popupText.textContent = message;
+        popup.style.display = 'block';
+        popup.style.opacity = '0';
+        popup.style.transform = 'translateY(10px)';
+        setTimeout(() => {
+            popup.style.transition = 'opacity 220ms ease, transform 220ms ease';
+            popup.style.opacity = '1';
+            popup.style.transform = 'translateY(0)';
+        }, 20);
+        setTimeout(() => {
+            popup.style.opacity = '0';
+            popup.style.transform = 'translateY(10px)';
+            setTimeout(() => { popup.style.display = 'none'; }, 260);
+        }, 2600);
+    }
+
+    if (joinedFlag === '1') {
+        showRoomPopup('You joined this room successfully.', 'Welcome to the room');
+    }
+
+    async function pollParticipants() {
+        try {
+            const response = await fetch(API_PARTICIPANTS, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                return;
+            }
+            const currentCount = Number(data.count || 0);
+            if (currentCount > lastCount) {
+                showRoomPopup('Someone just joined this room.', 'New participant');
+            }
+            lastCount = currentCount;
+        } catch (e) {
+        }
+    }
+
+    // Light polling every 15 seconds while on the page
+    setInterval(pollParticipants, 15000);
+})();
+</script>
 {% endblock %}

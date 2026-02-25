@@ -1,0 +1,85 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}My Focus Stats{% endblock %}
+{% block body_class %}guardian-ui{% endblock %}
+
+{% block module_title %}My Focus Stats{% endblock %}
+{% block module_subtitle %}Visualize how you actually use your Focus Timer.{% endblock %}
+
+{% block module_content %}
+<div class="guardian-shell">
+    <section class="guardian-panel p-4 mb-4">
+        <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
+            <div>
+                <span class="guardian-pill"><i class="fas fa-chart-line"></i> Insights</span>
+                <h1 class="guardian-title">Focus Overview</h1>
+                <p class="guardian-subtitle">These stats come from your real focus sessions logged with Guardian.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <div class="guardian-badge" style="background: rgba(72, 198, 239, 0.18); color: #1b4d6b;">
+                    Today: {{ today_sessions }} sessions
+                </div>
+                <div class="guardian-badge" style="background: rgba(124, 92, 255, 0.18); color: #3f2fbf;">
+                    This week: {{ week_focus_minutes }} min
+                </div>
+                <div class="guardian-badge" style="background: rgba(72, 198, 239, 0.18); color: #1b4d6b;">
+                    Total: {{ total_focus_minutes }} min
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="guardian-panel p-4 mb-4">
+        <div class="row g-3">
+            <div class="col-lg-7">
+                <h4 class="mb-3">Daily focus time (last 14 days)</h4>
+                <div style="min-height:260px;">
+                    {{ render_chart(daily_chart) }}
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <h4 class="mb-3">Top focused tasks</h4>
+                {% if per_task_totals is empty %}
+                    <p class="text-muted mb-0">No tracked task totals yet. Start a session from the Focus Timer.</p>
+                {% else %}
+                    <div style="min-height:260px;">
+                        {{ render_chart(task_chart) }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <section class="guardian-panel p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Raw task totals</h4>
+            <a href="{{ path('guardian_focus_timer') }}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-clock"></i> Back to Focus Timer
+            </a>
+        </div>
+        {% if per_task_totals is empty %}
+            <p class="text-muted mb-0">Once you log sessions, you will see per-task minutes here.</p>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th class="text-end">Total minutes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in per_task_totals %}
+                            <tr>
+                                <td>{{ row.task_title }}</td>
+                                <td class="text-end">{{ row.total_minutes }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
+
