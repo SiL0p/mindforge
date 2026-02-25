@@ -9,7 +9,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
-
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -65,7 +64,6 @@ class AdminController extends AbstractController
             method_exists($u, 'getProfile') && $u->getProfile() !== null
         ));
         $usersWithAvatar = count(array_filter($allUsers, fn($u) =>
-
             ($p = method_exists($u, 'getProfile') ? $u->getProfile() : null) && !empty($p->getAvatar())
         ));
         $usersWithBio = count(array_filter($allUsers, fn($u) =>
@@ -96,7 +94,6 @@ class AdminController extends AbstractController
 
         // ── Recent users (last 10) ────────────────────────────────────────
         $recentRaw   = array_slice(array_reverse($allUsers), 0, 10);
-
         $recentUsers = array_map(function($u) {
             $profile = method_exists($u, 'getProfile') ? $u->getProfile() : null;
             return [
@@ -114,7 +111,6 @@ class AdminController extends AbstractController
         $locales   = [];
         $timezones = [];
         foreach ($allUsers as $u) {
-
             $profile = method_exists($u, 'getProfile') ? $u->getProfile() : null;
             if ($profile && $profile->getLocale()) {
                 $locales[$profile->getLocale()] = ($locales[$profile->getLocale()] ?? 0) + 1;
@@ -527,7 +523,6 @@ PROMPT;
             . "4. Top priorities the admin should act on this week\n\n"
             . "Tone: professional, direct, data-referenced. Address the admin directly as 'you'.";
 
-
         // If no GROQ API key is configured, return a local fallback narrative instead of failing
         if (empty($this->groqApiKey) || $this->groqApiKey === 'your-api-key-here') {
             $fallbackReport = $this->buildLocalAdminReport($totalUsers, $verifiedUsers, $unvRate, $newToday, $newWeek, $newMonth, $activeToday, $activeWeek, $avgFocus, $pendingRoles, $riskScore);
@@ -571,7 +566,6 @@ PROMPT;
             ]);
 
         } catch (\Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface $e) {
-
             // If the remote API returns an error (invalid key, rate limit, etc.), return a local fallback report
             $fallbackReport = $this->buildLocalAdminReport($totalUsers, $verifiedUsers, $unvRate, $newToday, $newWeek, $newMonth, $activeToday, $activeWeek, $avgFocus, $pendingRoles, $riskScore);
             return new JsonResponse(['report' => $fallbackReport, 'generated_at' => date('Y-m-d H:i:s')]);
@@ -610,7 +604,6 @@ PROMPT;
         $results  = [];
 
         foreach ($allUsers as $u) {
-
             $email = strtolower($u->getEmail());
             $profile = method_exists($u, 'getProfile') ? $u->getProfile() : null;
             $firstName = strtolower($profile ? ($profile->getFirstName() ?? '') : '');
@@ -621,7 +614,6 @@ PROMPT;
                 $results[] = [
                     'id'         => $u->getId(),
                     'email'      => $u->getEmail(),
-
                     'name'       => trim(($profile ? ($profile->getFirstName() ?? '') : '') . ' ' . ($profile ? ($profile->getLastName() ?? '') : '')),
                     'verified'   => method_exists($u, 'isVerified') ? $u->isVerified() : false,
                     'has_profile'=> $profile !== null,

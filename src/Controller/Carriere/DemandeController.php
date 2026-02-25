@@ -211,7 +211,6 @@ class DemandeController extends AbstractController
         MailerInterface $mailer,
     ): Response {
         $user = $this->getUser();
-
         /** @var \App\Entity\Architect\User|null $user */
         if (!$user instanceof \App\Entity\Architect\User) {
             throw $this->createAccessDeniedException();
@@ -268,7 +267,6 @@ class DemandeController extends AbstractController
         MailerInterface $mailer,
     ): Response {
         $user = $this->getUser();
-
         /** @var \App\Entity\Architect\User|null $user */
         if (!$user instanceof \App\Entity\Architect\User) {
             throw $this->createAccessDeniedException();

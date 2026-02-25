@@ -68,20 +68,28 @@ class PopulateCareerTestUsersCommand extends Command
         $skipped = 0;
 
         foreach ($testUsers as $userData) {
+            // Validate email
+            $email = $userData['email'] ?? null;
+            if (!is_string($email) || trim($email) === '') {
+                $io->warning('Skipping test user with invalid email: ' . var_export($email, true));
+                $skipped++;
+                continue;
+            }
+
             // Check if user already exists
-            $existingUser = $this->em->getRepository(User::class)->findOneBy(['email' => $userData['email']]);
+            $existingUser = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
 
             if ($existingUser) {
-                $io->warning("User already exists: {$userData['email']}");
+                $io->warning("User already exists: {$email}");
                 $skipped++;
                 continue;
             }
 
             // Create new user
             $user = new User();
-            $user->setEmail($userData['email']);
+            $user->setEmail($email);
             $user->setPassword($this->passwordHasher->hashPassword($user, 'password123'));
-            $user->setRoles($userData['roles']);
+            $user->setRoles($userData['roles'] ?? []);
             $user->setIsVerified(true); // Auto-verify test users
 
             $this->em->persist($user);
