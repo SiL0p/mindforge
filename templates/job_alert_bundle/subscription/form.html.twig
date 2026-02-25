@@ -1,0 +1,80 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}{{ is_edit ? 'Edit' : 'New' }} Job Alert - MindForge{% endblock %}
+{% block module_subtitle %}{{ is_edit ? 'Update your alert criteria' : 'Get notified when matching jobs are posted' }}{% endblock %}
+
+{% block module_content %}
+
+{% if form.vars.errors|length > 0 %}
+<div class="alert alert-danger" style="margin-bottom: 16px;">
+    <strong><i class="fa fa-exclamation-circle"></i> Please fix the errors below.</strong>
+</div>
+{% endif %}
+
+{{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+
+<div class="row">
+    <div class="col-md-8">
+
+        <div class="form-group {% if form.keywords.vars.errors|length > 0 %}has-error{% endif %}" style="margin-bottom: 16px;">
+            <label style="font-weight: 600; color: #3b4257;">Keywords</label>
+            {{ form_widget(form.keywords, {attr: {class: 'form-control', placeholder: 'e.g. developer, marketing, design...'}}) }}
+            <small class="text-muted">Matched against job title and description (leave blank to match all)</small>
+            {% if form.keywords.vars.errors|length > 0 %}
+                <span class="help-block" style="color: #a94442;">{{ form_errors(form.keywords) }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-group {% if form.type.vars.errors|length > 0 %}has-error{% endif %}" style="margin-bottom: 16px;">
+            <label style="font-weight: 600; color: #3b4257;">Job Type</label>
+            {{ form_widget(form.type, {attr: {class: 'form-control'}}) }}
+            <small class="text-muted">Leave blank to match any type</small>
+            {% if form.type.vars.errors|length > 0 %}
+                <span class="help-block" style="color: #a94442;">{{ form_errors(form.type) }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-group {% if form.location.vars.errors|length > 0 %}has-error{% endif %}" style="margin-bottom: 16px;">
+            <label style="font-weight: 600; color: #3b4257;">Location</label>
+            {{ form_widget(form.location, {attr: {class: 'form-control', placeholder: 'e.g. Paris, Remote...'}}) }}
+            <small class="text-muted">Leave blank to match any location</small>
+            {% if form.location.vars.errors|length > 0 %}
+                <span class="help-block" style="color: #a94442;">{{ form_errors(form.location) }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+            <div class="checkbox">
+                <label>
+                    {{ form_widget(form.isActive) }}
+                    <strong>Active</strong> — receive notifications for this alert
+                </label>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa fa-{{ is_edit ? 'save' : 'plus' }}"></i>
+                {{ is_edit ? 'Save Changes' : 'Create Alert' }}
+            </button>
+            <a href="{{ path('job_alert_subscription_index') }}" class="btn btn-default">
+                <i class="fa fa-arrow-left"></i> Cancel
+            </a>
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+        <div class="module-widget" style="margin-top: 0;">
+            <h4><i class="fa fa-info-circle"></i> How it works</h4>
+            <div class="body" style="font-size: 13px; color: #6d748a; line-height: 1.7;">
+                <p>When a company posts a new opportunity, your alert criteria are checked automatically.</p>
+                <p><strong>All set criteria must match</strong> (AND logic). Empty fields match everything.</p>
+                <p>Matches appear in your <a href="{{ path('job_alert_notification_index') }}">notifications inbox</a>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ form_end(form) }}
+{% endblock %}
