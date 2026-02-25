@@ -1,0 +1,112 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Job Alert Notifications - MindForge{% endblock %}
+{% block module_subtitle %}Jobs matching your alert subscriptions{% endblock %}
+
+{% block module_content %}
+
+{% set unread = notifications|filter(n => not n.isRead)|length %}
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <div>
+        <h4 style="margin: 0; color: #3b4257;">
+            Notifications
+            {% if unread > 0 %}
+                <span class="label label-danger" style="font-size: 12px; vertical-align: middle;">{{ unread }} new</span>
+            {% endif %}
+        </h4>
+    </div>
+    <div style="display: flex; gap: 8px;">
+        {% if unread > 0 %}
+        <form method="post" action="{{ path('job_alert_notification_read_all') }}">
+            <button type="submit" class="btn btn-sm btn-default">
+                <i class="fa fa-check-double"></i> Mark all as read
+            </button>
+        </form>
+        {% endif %}
+        <a href="{{ path('job_alert_subscription_index') }}" class="btn btn-sm btn-default">
+            <i class="fa fa-bell"></i> Manage Alerts
+        </a>
+    </div>
+</div>
+
+{% if notifications|length > 0 %}
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+        {% for notification in notifications %}
+        <div style="
+            background: {% if not notification.isRead %}#f0f4ff{% else %}#fff{% endif %};
+            border: 1px solid {% if not notification.isRead %}#c5d0f7{% else %}#e0e3ef{% endif %};
+            border-radius: 10px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        ">
+            <div style="flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+                        background: {% if not notification.isRead %}#4e64f4{% else %}#c4c8d8{% endif %};
+                        display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px;">
+                <i class="fa fa-briefcase"></i>
+            </div>
+
+            <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: {% if not notification.isRead %}700{% else %}400{% endif %}; color: #3b4257; margin-bottom: 2px;">
+                    <a href="{{ path('app_carriere_opportunite_show', {id: notification.opportunite.id}) }}"
+                       style="color: inherit; text-decoration: none;">
+                        {{ notification.opportunite.title }}
+                    </a>
+                </div>
+                <div style="font-size: 12px; color: #9aa1b8;">
+                    {% if notification.opportunite.company %}
+                        <i class="fa fa-building"></i> {{ notification.opportunite.company.name }} &nbsp;·&nbsp;
+                    {% endif %}
+                    <i class="fa fa-clock-o"></i> {{ notification.sentAt|date('M d, Y H:i') }}
+                </div>
+            </div>
+
+            <div style="flex-shrink: 0; display: flex; gap: 6px; align-items: center;">
+                {% if not notification.isRead %}
+                    <form method="post" action="{{ path('job_alert_notification_read', {id: notification.id}) }}">
+                        <button type="submit" class="btn btn-xs btn-primary" title="Mark as read">
+                            <i class="fa fa-check"></i>
+                        </button>
+                    </form>
+                {% else %}
+                    <span style="font-size: 11px; color: #b0b6c9;"><i class="fa fa-check"></i> Read</span>
+                {% endif %}
+                <a href="{{ path('app_carriere_opportunite_show', {id: notification.opportunite.id}) }}"
+                   class="btn btn-xs btn-default" title="View job">
+                    <i class="fa fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div style="text-align: center; padding: 50px 20px; color: #9aa1b8;">
+        <i class="fa fa-bell-slash" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
+        <p style="font-size: 15px; margin-bottom: 8px;">No notifications yet.</p>
+        <p style="font-size: 13px; margin-bottom: 16px;">Notifications will appear here when a new job matches your alerts.</p>
+        <a href="{{ path('job_alert_subscription_index') }}" class="btn btn-primary">
+            <i class="fa fa-bell"></i> Manage Alerts
+        </a>
+    </div>
+{% endif %}
+
+{% endblock %}
+
+{% block module_right %}
+<section class="module-widget">
+    <h4>Quick Links</h4>
+    <div class="body">
+        <a class="item" href="{{ path('job_alert_subscription_index') }}">
+            <i class="fa fa-sliders"></i> My Alert Subscriptions
+        </a>
+        <a class="item" href="{{ path('job_alert_subscription_new') }}">
+            <i class="fa fa-plus"></i> New Alert
+        </a>
+        <a class="item" href="{{ path('app_carriere_opportunite_index') }}">
+            <i class="fa fa-search"></i> Browse Opportunities
+        </a>
+    </div>
+</section>
+{% endblock %}
