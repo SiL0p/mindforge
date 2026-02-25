@@ -1,0 +1,125 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Planner Backoffice{% endblock %}
+{% block body_class %}guardian-admin-ui{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="guardian-admin-hero mb-4">
+        <h1 class="mb-1">Planner Backoffice</h1>
+        <p class="text-muted mb-0">Operational view of tasks, exams, and subjects.</p>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="guardian-admin-card p-3">
+                <div class="text-muted small">Total Tasks</div>
+                <h3 class="mb-0">{{ totalTasks }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="guardian-admin-card p-3">
+                <div class="text-muted small">Done Tasks</div>
+                <h3 class="mb-0">{{ doneTasks }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="guardian-admin-card p-3">
+                <div class="text-muted small">Completion Rate</div>
+                <h3 class="mb-0">{{ completionRate }}%</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="guardian-admin-card p-3">
+                <div class="text-muted small">Subjects</div>
+                <h3 class="mb-0">{{ totalSubjects }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="guardian-admin-card p-3">
+                <div class="text-muted small">To Do</div>
+                <h4 class="mb-0">{{ todoTasks }}</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="guardian-admin-card p-3">
+                <div class="text-muted small">In Progress</div>
+                <h4 class="mb-0">{{ inProgressTasks }}</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="guardian-admin-card p-3">
+                <div class="text-muted small">Total Exams</div>
+                <h4 class="mb-0">{{ totalExams }}</h4>
+            </div>
+        </div>
+    </div>
+
+    {% if examError %}
+        <div class="alert alert-warning">{{ examError }}</div>
+    {% endif %}
+
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="guardian-admin-card p-3 table-responsive">
+                <h5 class="mb-3">Recent Tasks</h5>
+                <table class="table guardian-admin-table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Owner</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% if recentTasks is empty %}
+                        <tr><td colspan="5" class="text-center text-muted">No tasks found.</td></tr>
+                    {% else %}
+                        {% for task in recentTasks %}
+                            <tr>
+                                <td>{{ task.title }}</td>
+                                <td>{{ task.owner.userIdentifier }}</td>
+                                <td>{{ task.status }}</td>
+                                <td>{{ task.priority }}</td>
+                                <td>{{ task.createdAt ? task.createdAt|date('Y-m-d H:i') : '-' }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="guardian-admin-card p-3 table-responsive">
+                <h5 class="mb-3">Upcoming Exams</h5>
+                <table class="table guardian-admin-table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% if upcomingExams is empty %}
+                        <tr><td colspan="2" class="text-center text-muted">No upcoming exams.</td></tr>
+                    {% else %}
+                        {% for exam in upcomingExams %}
+                            <tr>
+                                <td>{{ exam.title }}</td>
+                                <td>{{ exam.examDate|date('Y-m-d H:i') }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

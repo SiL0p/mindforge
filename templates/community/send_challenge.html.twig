@@ -1,0 +1,139 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Envoyer un défi{% endblock %}
+
+{% block module_title %}Envoyer un défi{% endblock %}
+{% block module_subtitle %}Motivez vos camarades avec un nouveau défi ! 🎯{% endblock %}
+
+{% block module_content %}
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="page-header">
+                    <h2><i class="fa fa-paper-plane"></i> Créer un défi</h2>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        {{ form_start(form, {'method': 'POST'}) }}
+                            <div class="form-group">
+                                {{ form_label(form.sharedWith) }}
+                                {{ form_widget(form.sharedWith) }}
+                                {{ form_errors(form.sharedWith) }}
+                            </div>
+
+                            <div class="form-group">
+                                {{ form_label(form.category) }}
+                                {{ form_widget(form.category) }}
+                                {{ form_errors(form.category) }}
+                                <small class="form-text text-muted">Choisissez la catégorie du défi</small>
+                                <div style="margin-top: 10px;">
+                                    <button type="button" id="generateAiBtn" class="btn btn-info btn-sm">
+                                        <i class="fa fa-magic"></i> Générer avec l'IA
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form_label(form.title) }}
+                                {{ form_widget(form.title) }}
+                                {{ form_errors(form.title) }}
+                            </div>
+
+                            <div class="form-group">
+                                {{ form_label(form.description) }}
+                                {{ form_widget(form.description) }}
+                                {{ form_errors(form.description) }}
+                                <small class="form-text text-muted">Décrivez le défi en détail</small>
+                            </div>
+
+                            <div class="form-group">
+                                {{ form_label(form.difficulty) }}
+                                {{ form_widget(form.difficulty) }}
+                                {{ form_errors(form.difficulty) }}
+                            </div>
+
+                            <div class="form-group">
+                                {{ form_label(form.attachmentFile) }}
+                                {{ form_widget(form.attachmentFile) }}
+                                {{ form_errors(form.attachmentFile) }}
+                                <small class="form-text text-muted">{{ form.attachmentFile.vars.help }}</small>
+                            </div>
+
+                            <div class="form-group" style="margin-top: 20px;">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-paper-plane"></i> Envoyer le défi
+                                </button>
+                                <a href="{{ path('community_challenge_outbox') }}" class="btn btn-default">Défis envoyés</a>
+                                <a href="{{ path('community_index') }}" class="btn btn-link">Retour</a>
+                            </div>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const generateBtn = document.getElementById('generateAiBtn');
+            const categorySelect = document.getElementById('{{ form.category.vars.id }}');
+            const titleInput = document.getElementById('{{ form.title.vars.id }}');
+            const descriptionInput = document.getElementById('{{ form.description.vars.id }}');
+            const difficultySelect = document.getElementById('{{ form.difficulty.vars.id }}');
+
+            generateBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // Check if category is selected
+                if (!categorySelect.value) {
+                    alert('Veuillez sélectionner une catégorie avant de générer.');
+                    return;
+                }
+
+                // Disable button and show loading state
+                generateBtn.disabled = true;
+                const originalText = generateBtn.innerHTML;
+                generateBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Génération en cours...';
+
+                // Send AJAX request
+                fetch('{{ path("community_challenge_generate_ai") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: 'category=' + encodeURIComponent(categorySelect.value),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        // Fill form fields with generated data
+                        titleInput.value = data.data.title;
+                        descriptionInput.value = data.data.description;
+                        difficultySelect.value = data.data.difficulty;
+
+                        // Show success message
+                        alert('Défi généré avec succès ! Vous pouvez maintenant l\'ajuster si nécessaire.⚡');
+                    } else {
+                        alert('Erreur: ' + (data.error || 'Impossible de générer le défi'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Une erreur s\'est produite lors de la génération.');
+                })
+                .finally(() => {
+                    // Re-enable button
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = originalText;
+                });
+            });
+        });
+    </script>
+{% endblock %}

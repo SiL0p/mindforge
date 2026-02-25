@@ -1,0 +1,109 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}My Job Postings - MindForge{% endblock %}
+
+{% block hero %}
+<div class="hero-area section">
+	<div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/page-background.jpg') }})"></div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-10 col-md-offset-1 text-center">
+				<ul class="hero-area-tree">
+					<li><a href="{{ path('app_home') }}">Home</a></li>
+					<li><a href="{{ path('app_carriere_opportunite_index') }}">Careers</a></li>
+					<li>My Job Postings</li>
+				</ul>
+				<h1 class="white-text">My Job Postings</h1>
+				<p class="white-text lead">Manage your company's career opportunities</p>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block module_content %}
+<div class="section">
+	<div class="container">
+
+		<div style="margin-bottom: 30px; text-align: right;">
+			<a href="{{ path('app_carriere_opportunite_new') }}" class="main-button icon-button">
+				<i class="fa fa-plus-circle"></i> Post New Opportunity
+			</a>
+		</div>
+
+		{% if opportunities|length > 0 %}
+			<div class="row">
+				{% for opportunity in opportunities %}
+				<div class="col-md-6">
+					<div class="single-blog" style="margin-bottom: 30px;">
+						<div class="blog-img" style="background: linear-gradient(135deg, {% if opportunity.isActive %}#6C3BAA 0%, #374050{% else %}#999 0%, #666{% endif %} 100%); padding: 25px; min-height: 130px; position: relative;">
+							{% if not opportunity.isActive %}
+								<span style="position: absolute; top: 12px; right: 12px; background: #FF6B6B; color: #fff; padding: 3px 10px; border-radius: 3px; font-size: 11px; font-weight: bold;">
+									{{ opportunity.status|capitalize }}
+								</span>
+							{% else %}
+								<span style="position: absolute; top: 12px; right: 12px; background: #28a745; color: #fff; padding: 3px 10px; border-radius: 3px; font-size: 11px; font-weight: bold;">
+									Active
+								</span>
+							{% endif %}
+							<h3 style="color: #fff; margin: 0 0 8px 0;">
+								<a href="{{ path('app_carriere_opportunite_show', {id: opportunity.id}) }}" style="color: #fff;">
+									{{ opportunity.title }}
+								</a>
+							</h3>
+							{% if opportunity.company %}
+								<p style="color: rgba(255,255,255,0.85); margin: 0;">
+									<i class="fa fa-building"></i> {{ opportunity.company.name }}
+								</p>
+							{% endif %}
+							{% if opportunity.location %}
+								<p style="color: rgba(255,255,255,0.85); margin: 5px 0 0 0;">
+									<i class="fa fa-map-marker"></i> {{ opportunity.location }}
+								</p>
+							{% endif %}
+						</div>
+						<div class="blog-content" style="padding: 20px;">
+							<div style="margin-bottom: 12px;">
+								<span class="label label-primary">{{ opportunity.type|capitalize }}</span>
+								{% if opportunity.duration %}
+									<span class="label label-info">{{ opportunity.duration }}</span>
+								{% endif %}
+								{% if opportunity.deadline %}
+									<span class="label {% if opportunity.isDeadlinePassed %}label-danger{% else %}label-warning{% endif %}">
+										Deadline: {{ opportunity.deadline|date('M d, Y') }}
+									</span>
+								{% endif %}
+								<span class="label label-default">
+									<i class="fa fa-users"></i> {{ opportunity.applicationCount }} application{{ opportunity.applicationCount != 1 ? 's' : '' }}
+								</span>
+							</div>
+							<p class="text-muted">
+								{{ opportunity.description|length > 120 ? opportunity.description|slice(0, 120) ~ '...' : opportunity.description }}
+							</p>
+							<div style="margin-top: 15px;">
+								<a href="{{ path('app_carriere_opportunite_show', {id: opportunity.id}) }}" class="main-button icon-button" style="padding: 8px 15px; font-size: 13px; margin-right: 5px;">
+									<i class="fa fa-eye"></i> View
+								</a>
+								<a href="{{ path('app_carriere_opportunite_edit', {id: opportunity.id}) }}" class="main-button icon-button" style="padding: 8px 15px; font-size: 13px; background: #17a2b8;">
+									<i class="fa fa-edit"></i> Edit
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+		{% else %}
+			<div class="text-center" style="padding: 60px 0;">
+				<i class="fa fa-briefcase" style="font-size: 64px; color: #ccc; margin-bottom: 20px; display: block;"></i>
+				<h3>No job postings yet</h3>
+				<p class="text-muted">You haven't created any career opportunities yet.</p>
+				<a href="{{ path('app_carriere_opportunite_new') }}" class="main-button icon-button" style="margin-top: 15px;">
+					<i class="fa fa-plus-circle"></i> Post Your First Opportunity
+				</a>
+			</div>
+		{% endif %}
+
+	</div>
+</div>
+{% endblock %}

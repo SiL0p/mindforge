@@ -1,0 +1,40 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; }
+        .header { color: #333; border-bottom: 3px solid #FF5252; padding-bottom: 15px; }
+        .content { margin: 20px 0; line-height: 1.6; }
+        .challenge-card { background: #f9f9f9; padding: 15px; border-left: 4px solid #FF5252; margin: 15px 0; }
+        .button { display: inline-block; background: #5B7FFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 15px; }
+        .footer { color: #999; font-size: 12px; border-top: 1px solid #ddd; padding-top: 15px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>❌ Défi rejeté</h1>
+        </div>
+
+        <div class="content">
+            <p>Bonjour,</p>
+
+            <p><strong>{{ rejected_by.profile.firstName ?? 'Un utilisateur' }} {{ rejected_by.profile.lastName ?? '' }}</strong> a décliné votre défi. Pas de problème, essayez avec quelqu'un d'autre ! 😊</p>
+
+            <div class="challenge-card">
+                <h2 style="margin-top: 0; color: #FF5252;">{{ task.title }}</h2>
+                <p>{{ task.description }}</p>
+            </div>
+
+            <p>Lancez d'autres défis motivants à votre communauté !</p>
+
+            <a href="https://mindforge.local/community/challenge/send" class="button">Lancer un nouveau défi</a>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2026 MindForge. Tous droits réservés.</p>
+        </div>
+    </div>
+</body>
+</html>

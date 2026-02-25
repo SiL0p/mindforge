@@ -1,0 +1,57 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Community Hub{% endblock %}
+
+{% block module_title %}Community Hub{% endblock %}
+{% block module_subtitle %}Challenges, friends, and support in one place.{% endblock %}
+{% block module_content %}
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center" style="margin-bottom: 30px;">
+                <h1><i class="fa fa-users"></i> Community Hub</h1>
+                <p class="lead">Connect, challenge, and collaborate with your peers.</p>
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 30px;">
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-body text-center">
+                        <h3><i class="fa fa-paper-plane"></i> Challenges</h3>
+                        <p>Send learning challenges to your friends.</p>
+                        <a href="{{ path('community_challenge_send') }}" class="btn btn-primary">Send Challenge</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-body text-center">
+                        <h3><i class="fa fa-ticket"></i> Support Tickets</h3>
+                        <p>Create and track your support requests.</p>
+                        <a href="{{ path('community_claim_create') }}" class="btn btn-primary">Create Ticket</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 30px;">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="panel panel-default">
+                    <div class="panel-body text-center">
+                        <h3><i class="fa fa-tasks"></i> Tasks</h3>
+                        <p>Open your personal task board from the Community area.</p>
+                        <a href="{{ path('community_tasks') }}" class="btn btn-primary">Open Tasks</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <p class="text-muted">Use the <strong>Community</strong> dropdown in the top navigation to open challenges, tasks, friends, and support.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Edit {{ company.name }} - MindForge{% endblock %}
+
+{% block hero %}
+<div class="hero-area section">
+	<div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/page-background.jpg') }})"></div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-10 col-md-offset-1 text-center">
+				<ul class="hero-area-tree">
+					<li><a href="{{ path('app_home') }}">Home</a></li>
+					<li><a href="{{ path('app_carriere_entreprise_index') }}">Companies</a></li>
+					<li>Edit</li>
+				</ul>
+				<h1 class="white-text">Edit Company Profile</h1>
+				<p class="white-text lead">Update your company information</p>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block module_content %}
+<div class="section">
+	<div class="container">
+		<div class="row">
+
+			<!-- Main Content -->
+			<div class="col-md-8">
+				<div style="background: #fff; padding: 30px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+					<h3 style="margin-top: 0; margin-bottom: 25px;">Edit: {{ company.name }}</h3>
+
+					{% if not form.vars.valid %}
+						<div style="background-color: #f2dede; border: 1px solid #ebccd1; color: #a94442; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+							<strong><i class="fa fa-exclamation-triangle"></i> Please fix the following errors:</strong>
+							{{ form_errors(form) }}
+						</div>
+					{% endif %}
+
+					{{ form_start(form) }}
+
+						<div class="form-group {{ form.name.vars.errors|length > 0 ? 'has-error' : '' }}">
+							{{ form_label(form.name) }}
+							{{ form_widget(form.name, {'attr': {'class': 'input'}}) }}
+							{% if form.name.vars.errors|length > 0 %}
+								<span style="color: #d9534f; font-size: 13px; margin-top: 5px; display: block;">{{ form_errors(form.name) }}</span>
+							{% endif %}
+						</div>
+
+						<div class="form-group {{ form.description.vars.errors|length > 0 ? 'has-error' : '' }}">
+							{{ form_label(form.description) }}
+							{{ form_widget(form.description, {'attr': {'class': 'input'}}) }}
+							{% if form.description.vars.errors|length > 0 %}
+								<span style="color: #d9534f; font-size: 13px; margin-top: 5px; display: block;">{{ form_errors(form.description) }}</span>
+							{% endif %}
+						</div>
+
+						<div class="form-group {{ form.industry.vars.errors|length > 0 ? 'has-error' : '' }}">
+							{{ form_label(form.industry) }}
+							{{ form_widget(form.industry, {'attr': {'class': 'input'}}) }}
+							{% if form.industry.vars.errors|length > 0 %}
+								<span style="color: #d9534f; font-size: 13px; margin-top: 5px; display: block;">{{ form_errors(form.industry) }}</span>
+							{% endif %}
+						</div>
+
+						<div class="row">
+							<div class="col-md-6">
+								<div class="form-group {{ form.contactEmail.vars.errors|length > 0 ? 'has-error' : '' }}">
+									{{ form_label(form.contactEmail) }}
+									{{ form_widget(form.contactEmail, {'attr': {'class': 'input'}}) }}
+									{% if form.contactEmail.vars.errors|length > 0 %}
+										<span style="color: #d9534f; font-size: 13px; margin-top: 5px; display: block;">{{ form_errors(form.contactEmail) }}</span>
+									{% endif %}
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group {{ form.contactPhone.vars.errors|length > 0 ? 'has-error' : '' }}">
+									{{ form_label(form.contactPhone) }}
+									{{ form_widget(form.contactPhone, {'attr': {'class': 'input'}}) }}
+									{% if form.contactPhone.vars.errors|length > 0 %}
+										<span style="color: #d9534f; font-size: 13px; margin-top: 5px; display: block;">{{ form_errors(form.contactPhone) }}</span>
+									{% endif %}
+								</div>
+							</div>
+						</div>
+
+						<div class="form-group {{ form.website.vars.errors|length > 0 ? 'has-error' : '' }}">
+							{{ form_label(form.website) }}
+							{{ form_widget(form.website, {'attr': {'class': 'input'}}) }}
+							{% if form.website.vars.errors|length > 0 %}
+								<span style="color: #d9534f; font-size: 13px; margin-top: 5px; display: block;">{{ form_errors(form.website) }}</span>
+							{% endif %}
+						</div>
+
+						<hr>
+						<div style="margin-top: 20px;">
+							<button type="submit" class="main-button icon-button">
+								<i class="fa fa-save"></i> Save Changes
+							</button>
+							<a href="{{ path('app_carriere_entreprise_show', {id: company.id}) }}" style="color: #6C3BAA; margin-left: 15px;">Cancel</a>
+						</div>
+					{{ form_end(form) }}
+				</div>
+
+				<!-- Back Link -->
+				<div style="margin-top: 30px;">
+					<a href="{{ path('app_carriere_entreprise_show', {id: company.id}) }}" style="color: #6C3BAA;">
+						<i class="fa fa-arrow-left"></i> Back to {{ company.name }}
+					</a>
+				</div>
+			</div>
+
+			<!-- Sidebar -->
+			<div class="col-md-4">
+				<div class="widget">
+					<h4 class="widget-title">Quick Info</h4>
+					<ul class="list-unstyled" style="line-height: 2.2;">
+						<li><i class="fa fa-building" style="width: 20px;"></i> <strong>{{ company.name }}</strong></li>
+						{% if company.industry %}
+							<li><i class="fa fa-industry" style="width: 20px;"></i> {{ company.industry }}</li>
+						{% endif %}
+						{% if company.contactEmail %}
+							<li><i class="fa fa-envelope" style="width: 20px;"></i> {{ company.contactEmail }}</li>
+						{% endif %}
+						{% if company.contactPhone %}
+							<li><i class="fa fa-phone" style="width: 20px;"></i> {{ company.contactPhone }}</li>
+						{% endif %}
+					</ul>
+					<hr>
+					<p class="text-muted">Created {{ company.createdAt ? company.createdAt|date('M d, Y') : 'N/A' }}</p>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
+{% endblock %}

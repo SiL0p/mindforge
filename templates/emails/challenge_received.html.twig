@@ -1,0 +1,70 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; }
+        .header { color: #333; border-bottom: 3px solid #5B7FFF; padding-bottom: 15px; }
+        .content { margin: 20px 0; line-height: 1.6; }
+        .challenge-card { background: #f9f9f9; padding: 15px; border-left: 4px solid #5B7FFF; margin: 15px 0; }
+        .button { display: inline-block; background: #5B7FFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 15px; }
+        .footer { color: #999; font-size: 12px; border-top: 1px solid #ddd; padding-top: 15px; margin-top: 20px; }
+        .badge { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .badge-category { background: #E3F2FD; color: #1976D2; }
+        .badge-difficulty { background: #FFF3E0; color: #F57C00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1> Vous avez reçu un défi !</h1>
+        </div>
+
+        <div class="content">
+            <p>Bonjour <strong>{{ to_user.profile.firstName ?? 'vous' }}</strong>,</p>
+
+            <p><strong>{{ from_user.profile.firstName ?? 'Un utilisateur' }} {{ from_user.profile.lastName ?? '' }}</strong> vous lance un défi ! 🚀</p>
+            <p style="color: #666; font-size: 14px; margin: 5px 0;">📧 De la part de : <a href="mailto:{{ from_user.email }}">{{ from_user.email }}</a></p>
+
+            <div class="challenge-card">
+                <h2 style="margin-top: 0; color: #5B7FFF;">{{ task.title }}</h2>
+                
+                <div style="margin: 10px 0;">
+                    <span class="badge badge-category">{{ task.category|replace({'_': ' '})|title }}</span>
+                    <span class="badge badge-difficulty">
+                        {% if task.difficulty == 'easy' %}
+                            🟢 Facile
+                        {% elseif task.difficulty == 'medium' %}
+                            🟡 Moyen
+                        {% elseif task.difficulty == 'hard' %}
+                            🔴 Difficile
+                        {% endif %}
+                    </span>
+                </div>
+
+                {% if task.description %}
+                    <p><strong>Description :</strong></p>
+                    <p>{{ task.description }}</p>
+                {% endif %}
+
+                {% if task.attachment %}
+                    <p><strong>Pièce jointe :</strong> <a href="{{ vich_uploader_asset(task, 'attachmentFile') }}">{{ task.attachment }}</a></p>
+                {% endif %}
+
+                <p style="color: #999; font-size: 14px; margin-top: 15px;">
+                    📅 Créé le {{ task.createdAt|date('d/m/Y à H:i') }}
+                </p>
+            </div>
+
+            <p>Allez-vous accepter ce défi ? </p>
+
+            <a href="https://mindforge.local/community/challenge/inbox" class="button">Voir le défi</a>
+        </div>
+
+        <div class="footer">
+            <p>Vous recevez cet email car vous vous êtes inscrit sur MindForge.</p>
+            <p>&copy; 2026 MindForge. Tous droits réservés.</p>
+        </div>
+    </div>
+</body>
+</html>

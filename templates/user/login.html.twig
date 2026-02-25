@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login - MindForge{% endblock %}
+
+{% block header_class %}transparent-nav{% endblock %}
+
+{% block hero %}
+<!-- Hero -->
+<div id="home" class="hero-area">
+	<div class="bg-image bg-parallax overlay" style="background-image:url({{ asset('user/img/home-background.jpg') }})"></div>
+
+	<div class="home-wrapper">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8 col-md-offset-2 text-center">
+
+					<h1 class="white-text" style="margin-bottom: 10px;">Welcome to MindForge</h1>
+					<p class="white-text lead" style="margin-bottom: 40px;">Choose your login portal</p>
+
+					<div class="row">
+						<!-- Student Login Card -->
+						<div class="col-md-6" style="margin-bottom: 20px;">
+							<a href="{{ path('app_login_student') }}" style="text-decoration: none;">
+								<div style="background: #fff; border-radius: 8px; padding: 40px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); transition: transform 0.2s;">
+									<div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #6C3BAA 0%, #9B59B6 100%); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+										<i class="fa fa-graduation-cap" style="font-size: 36px; color: #fff;"></i>
+									</div>
+									<h3 style="color: #374050; margin-bottom: 10px;">Student</h3>
+									<p style="color: #999; margin-bottom: 20px;">Access courses, apply for opportunities, and track your progress</p>
+									<span class="main-button icon-button">
+										<i class="fa fa-sign-in"></i> Student Login
+									</span>
+								</div>
+							</a>
+						</div>
+
+						<!-- Company Login Card -->
+						<div class="col-md-6" style="margin-bottom: 20px;">
+							<a href="{{ path('app_login_company') }}" style="text-decoration: none;">
+								<div style="background: #fff; border-radius: 8px; padding: 40px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); transition: transform 0.2s;">
+									<div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #374050 0%, #2C3E50 100%); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+										<i class="fa fa-building" style="font-size: 36px; color: #fff;"></i>
+									</div>
+									<h3 style="color: #374050; margin-bottom: 10px;">Company</h3>
+									<p style="color: #999; margin-bottom: 20px;">Post career opportunities, manage applications, and find talent</p>
+									<span class="main-button icon-button" style="background: #374050;">
+										<i class="fa fa-sign-in"></i> Company Login
+									</span>
+								</div>
+							</a>
+						</div>
+					</div>
+
+					<p style="margin-top: 20px;">
+						<a href="{{ path('app_signup') }}" class="white-text" style="text-decoration: underline;">Don't have an account? Sign up</a>
+					</p>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- /Hero -->
+{% endblock %}
