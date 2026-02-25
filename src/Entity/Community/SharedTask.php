@@ -7,10 +7,13 @@ use App\Repository\Community\SharedTaskRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\HttpFoundation\File\File;
 
 #[ORM\Entity(repositoryClass: SharedTaskRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Table(name: 'shared_task')]
+#[Vich\Uploadable]
 class SharedTask
 {
     #[ORM\Id]
@@ -48,7 +51,33 @@ class SharedTask
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $respondedAt = null;
 
-    // RELATIONSHIP: SharedTask created by One User (Sender)
+    #[ORM\Column(type: Types::STRING, length: 50, options: ['default' => 'tech_skills'])]
+    #[Assert\Choice(
+        choices: ['tech_skills', 'soft_skills', 'physical', 'creative'],
+        message: 'La catégorie doit être parmi les valeurs acceptées.'
+    )]
+    private string $category = 'tech_skills';
+
+    #[ORM\Column(type: Types::STRING, length: 50, nullable: true, options: ['default' => 'medium'])]
+    #[Assert\Choice(
+        choices: ['easy', 'medium', 'hard'],
+        message: 'La difficulté doit être: easy, medium ou hard.'
+    )]
+    private ?string $difficulty = 'medium';
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $attachment = null;
+
+    #[Vich\UploadableField(mapping: 'challenges', fileNameProperty: 'attachment')]
+    #[Assert\File(
+        maxSize: '5M',
+        mimeTypes: ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        mimeTypesMessage: 'Formats acceptés: PDF, JPG, PNG, DOC, DOCX'
+    )]
+    private ?File $attachmentFile = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'sharedTasksSent')]
     #[ORM\JoinColumn(nullable: false, name: 'shared_by_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     #[Assert\NotNull(message: 'L\'expéditeur du défi est requis.')]
@@ -145,6 +174,64 @@ class SharedTask
     public function setSharedWith(?User $sharedWith): self
     {
         $this->sharedWith = $sharedWith;
+        return $this;
+    }
+
+    public function getCategory(): string
+    {
+        return $this->category;
+    }
+
+    public function setCategory(string $category): self
+    {
+        $this->category = $category;
+        return $this;
+    }
+
+    public function getDifficulty(): ?string
+    {
+        return $this->difficulty;
+    }
+
+    public function setDifficulty(?string $difficulty): self
+    {
+        $this->difficulty = $difficulty;
+        return $this;
+    }
+
+    public function getAttachment(): ?string
+    {
+        return $this->attachment;
+    }
+
+    public function setAttachment(?string $attachment): self
+    {
+        $this->attachment = $attachment;
+        return $this;
+    }
+
+    public function getAttachmentFile(): ?File
+    {
+        return $this->attachmentFile;
+    }
+
+    public function setAttachmentFile(?File $attachmentFile): self
+    {
+        $this->attachmentFile = $attachmentFile;
+        if ($attachmentFile) {
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
         return $this;
     }
 }

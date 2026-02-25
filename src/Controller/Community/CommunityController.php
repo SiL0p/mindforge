@@ -11,10 +11,14 @@ use App\Repository\UserRepository;
 use App\Repository\Community\ChatMessageRepository;
 use App\Repository\Community\ClaimRepository;
 use App\Repository\Community\SharedTaskRepository;
+use App\Form\Community\SharedTaskType;
+use App\Service\Community\CommunityNotificationService;
+use App\Service\Community\AiChallengeGeneratorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -160,11 +164,14 @@ class CommunityController extends AbstractController
     // SHARED TASK ROUTES (Sending Challenges to Friends)
     // ============================================================================
 
+
+
     #[Route('/challenge/send', name: 'community_challenge_send', methods: ['GET', 'POST'])]
     public function sendChallenge(
         Request $request,
         EntityManagerInterface $em,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        CommunityNotificationService $notificationService
     ): Response {
         $user = $this->getUser();
 
@@ -172,49 +179,72 @@ class CommunityController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        if ($request->isMethod('POST')) {
-            $title = trim($request->request->get('title', ''));
-            $description = trim($request->request->get('description', ''));
-            $sharedWithId = $request->request->get('shared_with_id');
+        $sharedTask = new SharedTask();
+        $sharedTask->setSharedBy($user);
 
-            $sharedWithUser = $em->getRepository(User::class)->find($sharedWithId);
+        $form = $this->createForm(SharedTaskType::class, $sharedTask);
+        $form->handleRequest($request);
 
-            if (!$sharedWithUser) {
-                $this->addFlash('error', 'Utilisateur destinataire introuvable.');
-                return $this->redirectToRoute('community_challenge_send');
-            }
-
-            // Create SharedTask entity for validation
-            $sharedTask = new SharedTask();
-            $sharedTask->setTitle($title);
-            $sharedTask->setDescription($description);
-            $sharedTask->setSharedBy($user);
-            $sharedTask->setSharedWith($sharedWithUser);
-
-            // Validate using Symfony Assertions (server-side)
-            $errors = $validator->validate($sharedTask);
-
-            if (count($errors) > 0) {
-                $errorMessages = [];
-                foreach ($errors as $error) {
-                    $errorMessages[] = $error->getMessage();
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                // Définir une difficulté par défaut si elle n'est pas définie
+                if (!$sharedTask->getDifficulty()) {
+                    $sharedTask->setDifficulty('Moyen');
                 }
-                $this->addFlash('error', implode(' ', $errorMessages));
-            } else {
+
                 $em->persist($sharedTask);
                 $em->flush();
-                $this->addFlash('success', 'Défi envoyé avec succès !');
+
+                // Envoyer une notification par email
+                $notificationService->notifyChallengeReceived($sharedTask);
+
+                $this->addFlash('success', 'Défi envoyé avec succès ! 🎉');
                 return $this->redirectToRoute('community_challenge_inbox');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur lors de l\'envoi du défi: ' . $e->getMessage());
             }
         }
 
-        // Get all users except current user for sending challenge
-        $users = $em->getRepository(User::class)->findAll();
-        $users = array_filter($users, fn($u) => $u !== $user);
-
         return $this->render('community/send_challenge.html.twig', [
-            'users' => $users,
+            'form' => $form,
         ]);
+    }
+
+    #[Route('/challenge/generate-ai', name: 'community_challenge_generate_ai', methods: ['POST'])]
+    public function generateChallengeAi(
+        Request $request,
+        AiChallengeGeneratorService $aiService
+    ): JsonResponse {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        $category = $request->request->get('category');
+
+        if (!$category) {
+            return new JsonResponse(['error' => 'Category is required'], 400);
+        }
+
+        // Validate category
+        $validCategories = ['tech_skills', 'soft_skills', 'physical', 'creative'];
+        if (!in_array($category, $validCategories, true)) {
+            return new JsonResponse(['error' => 'Invalid category'], 400);
+        }
+
+        try {
+            $generatedData = $aiService->generateChallenge($category);
+
+            return new JsonResponse([
+                'success' => true,
+                'data' => $generatedData,
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'error' => 'Failed to generate challenge: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     #[Route('/challenge/inbox', name: 'community_challenge_inbox', methods: ['GET'])]
@@ -263,11 +293,57 @@ class CommunityController extends AbstractController
         return $this->redirectToRoute('app_planner_tasks');
     }
 
+    // ============================================================================
+    // CHALLENGES PAR CATÉGORIE
+    // ============================================================================
+
+    #[Route('/challenges/category/{category}', name: 'community_challenges_by_category', methods: ['GET'])]
+    public function challengesByCategory(
+        string $category,
+        SharedTaskRepository $sharedTaskRepo,
+        Request $request
+    ): Response {
+        $validCategories = ['tech_skills', 'soft_skills', 'physical', 'creative'];
+
+        if (!in_array($category, $validCategories)) {
+            $this->addFlash('error', 'Catégorie invalide.');
+            return $this->redirectToRoute('community_index');
+        }
+
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $status = $request->query->get('status');
+
+        // Récupérer les défis reçus par catégorie
+        $tasks = $sharedTaskRepo->findByCategoryAndUser($user->getId(), $category, $status);
+
+        $categoryLabels = [
+            'tech_skills' => 'Compétences Techniques',
+            'soft_skills' => 'Compétences Soft',
+            'physical' => 'Défis Physiques',
+            'creative' => 'Défis Créatifs',
+        ];
+
+        return $this->render('community/challenges_by_category.html.twig', [
+            'tasks' => $tasks,
+            'category' => $category,
+            'categoryLabel' => $categoryLabels[$category],
+            'filterStatus' => $status,
+        ]);
+    }
+
+    // ============================================================================
+
+
     #[Route('/challenge/{id<\d+>}/respond', name: 'community_challenge_respond', methods: ['POST'])]
     public function respondToChallenge(
         int $id,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        CommunityNotificationService $notificationService
     ): Response {
         $sharedTask = $em->getRepository(SharedTask::class)->find($id);
         $user = $this->getUser();
@@ -294,7 +370,15 @@ class CommunityController extends AbstractController
         $sharedTask->setRespondedAt(new \DateTimeImmutable());
         $em->flush();
 
-        $message = ($response === 'accepted') ? 'Défi accepté !' : 'Défi rejeté.';
+        // Envoyer mail de notification
+        if ($response === 'accepted') {
+            $notificationService->notifyChallengeAccepted($sharedTask);
+            $message = 'Défi accepté ! 🎉';
+        } else {
+            $notificationService->notifyChallengeRejected($sharedTask);
+            $message = 'Défi rejeté.';
+        }
+
         $this->addFlash('success', $message);
 
         return $this->redirectToRoute('community_challenge_inbox');
