@@ -1241,14 +1241,23 @@ class GuardianController extends AbstractController
         }
         if ($markDone && $task->getStatus() !== Task::STATUS_DONE) {
             $task->setStatus(Task::STATUS_DONE);
-        } elseif ($task->getStatus() === Task::STATUS_TODO && $newActualMinutes >= 10) {
-            $task->setStatus(Task::STATUS_IN_PROGRESS);
+        } else {
+            $estimated = (int) ($task->getEstimatedMinutes() ?? 0);
+            if ($estimated > 0 && $newActualMinutes >= $estimated) {
+                $task->setStatus(Task::STATUS_DONE);
+            } elseif ($task->getStatus() === Task::STATUS_TODO && $newActualMinutes >= 10) {
+                $task->setStatus(Task::STATUS_IN_PROGRESS);
+            }
         }
 
         $statusChanged = $previousStatus !== $task->getStatus();
 
         $em->persist($focusSession);
         $gamificationPayload = $gamificationService->processFocusSession($user, $effectiveDuration);
+
+        // Persist changes for the focus session and task status update
+        $em->persist($task);
+        $em->flush();
 
         if ($clientSessionId !== '') {
             $processedSessions = $request->getSession()->get('guardian_focus_processed', []);

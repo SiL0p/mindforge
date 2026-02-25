@@ -12,6 +12,7 @@ services:
         autoconfigure: true
         bind:
             string $resourcesDirectory: '%resources_directory%'
+            string $groqApiKey: '%env(GROQ_API_KEY)%'
 
     App\:
         resource: '../src/'
