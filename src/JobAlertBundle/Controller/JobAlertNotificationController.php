@@ -16,7 +16,13 @@ class JobAlertNotificationController extends AbstractController
     #[Route('', name: 'job_alert_notification_index', methods: ['GET'])]
     public function index(JobAlertNotificationRepository $repository): Response
     {
-        $notifications = $repository->findByUser($this->getUser()->getId());
+        $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $notifications = $repository->findByUser($user->getId());
 
         return $this->render('job_alert_bundle/notification/index.html.twig', [
             'notifications' => $notifications,
@@ -41,7 +47,13 @@ class JobAlertNotificationController extends AbstractController
     #[Route('/read-all', name: 'job_alert_notification_read_all', methods: ['POST'])]
     public function markAllRead(EntityManagerInterface $em, JobAlertNotificationRepository $repository): Response
     {
-        $notifications = $repository->findByUser($this->getUser()->getId());
+        $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $notifications = $repository->findByUser($user->getId());
 
         foreach ($notifications as $notification) {
             if (!$notification->isRead()) {

@@ -102,6 +102,8 @@
         }
     },
     "require-dev": {
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-phpunit": "^2.0",
         "phpunit/phpunit": "11.5.55",
         "symfony/browser-kit": "7.4.*",
         "symfony/css-selector": "7.4.*",

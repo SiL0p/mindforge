@@ -30,6 +30,10 @@ class DemandeController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
 
         // Quiz gate: student must pass the quiz before applying
         $passed = $request->getSession()->get('quiz_' . $opportunity->getId() . '_passed');
@@ -83,6 +87,11 @@ class DemandeController extends AbstractController
     public function myDemandes(DemandeRepository $demandeRepository): Response
     {
         $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
+
         $demandes = $demandeRepository->findByUser($user->getId());
 
         return $this->render('carriere/demande/my_applications.html.twig', [
@@ -95,6 +104,11 @@ class DemandeController extends AbstractController
     public function myCompanyDemandes(DemandeRepository $demandeRepository): Response
     {
         $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
+
         $userCompanies = $user->getEntreprises();
 
         if ($userCompanies->isEmpty()) {
@@ -128,6 +142,10 @@ class DemandeController extends AbstractController
         EntrepriseRepository $entrepriseRepository
     ): Response {
         $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
         $company = $entrepriseRepository->find($companyId);
 
         if (!$company) {
@@ -152,6 +170,11 @@ class DemandeController extends AbstractController
     public function show(Demande $demande): Response
     {
         $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
+
         $isApplicant = $demande->getUser() && $demande->getUser()->getId() === $user->getId();
 
         // Check if user is a company manager for this opportunity's company
@@ -181,6 +204,10 @@ class DemandeController extends AbstractController
         MailerInterface $mailer,
     ): Response {
         $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
         $opportunity = $demande->getOpportunity();
 
         if (!$opportunity || !$opportunity->getCompany() || !$user->hasEntreprise($opportunity->getCompany())) {
@@ -233,6 +260,10 @@ class DemandeController extends AbstractController
         MailerInterface $mailer,
     ): Response {
         $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
         $opportunity = $demande->getOpportunity();
 
         if (!$opportunity || !$opportunity->getCompany() || !$user->hasEntreprise($opportunity->getCompany())) {
@@ -285,7 +316,12 @@ class DemandeController extends AbstractController
     ): Response {
         // Check if the logged-in user owns this demande
         $user = $this->getUser();
-        if ($demande->getUser()->getId() !== $user->getId()) {
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if (!$demande->getUser() || $demande->getUser()->getId() !== $user->getId()) {
             throw $this->createAccessDeniedException('You can only withdraw your own applications.');
         }
 

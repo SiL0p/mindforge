@@ -17,8 +17,8 @@ class JobAlertExtension extends AbstractExtension implements GlobalsInterface
     public function getGlobals(): array
     {
         $user = $this->security->getUser();
-
-        if (!$user || in_array('ROLE_COMPANY', $user->getRoles())) {
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User || in_array('ROLE_COMPANY', $user->getRoles())) {
             return [
                 'job_alert_unread_count' => 0,
                 'job_alert_recent' => [],

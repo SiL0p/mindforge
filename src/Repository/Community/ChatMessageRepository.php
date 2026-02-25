@@ -52,7 +52,10 @@ class ChatMessageRepository extends ServiceEntityRepository
     /**
      * Find chat messages by virtual room with pagination
      */
-    public function findByVirtualRoomPaginated($roomId, $limit = 50, $offset = 0)
+    /**
+     * @return ChatMessage[]
+     */
+    public function findByVirtualRoomPaginated(int $roomId, int $limit = 50, int $offset = 0): array
     {
         return $this->createQueryBuilder('cm')
             ->andWhere('cm.virtualRoom = :room_id')
@@ -67,7 +70,7 @@ class ChatMessageRepository extends ServiceEntityRepository
     /**
      * Count messages in a virtual room
      */
-    public function countByVirtualRoom($roomId): int
+    public function countByVirtualRoom(int $roomId): int
     {
         return $this->createQueryBuilder('cm')
             ->select('COUNT(cm.id)')

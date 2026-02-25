@@ -8,6 +8,9 @@ use App\Entity\Architect\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<UserBadge>
+ */
 class UserBadgeRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -29,6 +32,9 @@ class UserBadgeRepository extends ServiceEntityRepository
         return (int) $count > 0;
     }
 
+    /**
+     * @return UserBadge[]
+     */
     public function findByUser(User $user): array
     {
         return $this->createQueryBuilder('ub')

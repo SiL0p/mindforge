@@ -6,6 +6,9 @@ use App\Entity\Analyst\Badge;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Badge>
+ */
 class BadgeRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -13,6 +16,9 @@ class BadgeRepository extends ServiceEntityRepository
         parent::__construct($registry, Badge::class);
     }
 
+    /**
+     * @return Badge[]
+     */
     public function findEligibleBadges(int $xp, int $tasksCompleted, int $focusMinutes): array
     {
         return $this->createQueryBuilder('b')

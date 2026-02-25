@@ -46,6 +46,11 @@ class OpportuniteCarriereController extends AbstractController
     public function myOpportunites(OpportuniteCarriereRepository $opportunityRepository): Response
     {
         $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
+
         $userCompanies = $user->getEntreprises();
 
         if ($userCompanies->isEmpty()) {
@@ -76,6 +81,11 @@ class OpportuniteCarriereController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
+
         $userCompanies = $user->getEntreprises();
 
         if ($userCompanies->isEmpty()) {
@@ -119,7 +129,7 @@ class OpportuniteCarriereController extends AbstractController
         $user = $this->getUser();
         $hasApplied = false;
 
-        if ($user) {
+        if ($user instanceof \App\Entity\Architect\User) {
             $hasApplied = $demandeRepository->hasUserApplied(
                 $user->getId(),
                 $opportunity->getId()
@@ -140,6 +150,11 @@ class OpportuniteCarriereController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
+
         $company = $opportunity->getCompany();
 
         // Check if user has access to this opportunity's company
@@ -182,6 +197,11 @@ class OpportuniteCarriereController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
+
         $company = $opportunity->getCompany();
 
         // Check if user has access to this opportunity's company

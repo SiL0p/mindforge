@@ -9,7 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -64,10 +64,10 @@ class AdminController extends AbstractController
             method_exists($u, 'getProfile') && $u->getProfile() !== null
         ));
         $usersWithAvatar = count(array_filter($allUsers, fn($u) =>
-            method_exists($u, 'getAvatar') && !empty($u->getAvatar())
+            ($p = method_exists($u, 'getProfile') ? $u->getProfile() : null) && !empty($p->getAvatar())
         ));
         $usersWithBio = count(array_filter($allUsers, fn($u) =>
-            method_exists($u, 'getBio') && !empty($u->getBio())
+            ($p = method_exists($u, 'getProfile') ? $u->getProfile() : null) && !empty($p->getBio())
         ));
 
         $userStats = [
@@ -94,25 +94,29 @@ class AdminController extends AbstractController
 
         // ── Recent users (last 10) ────────────────────────────────────────
         $recentRaw   = array_slice(array_reverse($allUsers), 0, 10);
-        $recentUsers = array_map(fn($u) => [
-            'email'            => $u->getEmail(),
-            'first_name'       => method_exists($u, 'getFirstName') ? ($u->getFirstName() ?? '') : '',
-            'last_name'        => method_exists($u, 'getLastName')  ? ($u->getLastName()  ?? '') : '',
-            'avatar'           => method_exists($u, 'getAvatar')    ? ($u->getAvatar()    ?? null) : null,
-            'last_focus'       => null,
-            'focus_sessions'   => 0,
-            'total_focus_time' => 0,
-        ], $recentRaw);
+        $recentUsers = array_map(function($u) {
+            $profile = method_exists($u, 'getProfile') ? $u->getProfile() : null;
+            return [
+                'email'            => $u->getEmail(),
+                'first_name'       => $profile ? ($profile->getFirstName() ?? '') : '',
+                'last_name'        => $profile ? ($profile->getLastName()  ?? '') : '',
+                'avatar'           => $profile ? ($profile->getAvatar()    ?? null) : null,
+                'last_focus'       => null,
+                'focus_sessions'   => 0,
+                'total_focus_time' => 0,
+            ];
+        }, $recentRaw);
 
         // ── Locales & timezones ───────────────────────────────────────────
         $locales   = [];
         $timezones = [];
         foreach ($allUsers as $u) {
-            if (method_exists($u, 'getLocale') && $u->getLocale()) {
-                $locales[$u->getLocale()] = ($locales[$u->getLocale()] ?? 0) + 1;
+            $profile = method_exists($u, 'getProfile') ? $u->getProfile() : null;
+            if ($profile && $profile->getLocale()) {
+                $locales[$profile->getLocale()] = ($locales[$profile->getLocale()] ?? 0) + 1;
             }
-            if (method_exists($u, 'getTimezone') && $u->getTimezone()) {
-                $timezones[$u->getTimezone()] = ($timezones[$u->getTimezone()] ?? 0) + 1;
+            if ($profile && $profile->getTimezone()) {
+                $timezones[$profile->getTimezone()] = ($timezones[$profile->getTimezone()] ?? 0) + 1;
             }
         }
         arsort($locales);
@@ -600,18 +604,19 @@ PROMPT;
         $results  = [];
 
         foreach ($allUsers as $u) {
-            $email     = strtolower($u->getEmail());
-            $firstName = strtolower(method_exists($u, 'getFirstName') ? ($u->getFirstName() ?? '') : '');
-            $lastName  = strtolower(method_exists($u, 'getLastName')  ? ($u->getLastName()  ?? '') : '');
+            $email = strtolower($u->getEmail());
+            $profile = method_exists($u, 'getProfile') ? $u->getProfile() : null;
+            $firstName = strtolower($profile ? ($profile->getFirstName() ?? '') : '');
+            $lastName  = strtolower($profile ? ($profile->getLastName() ?? '') : '');
             $q         = strtolower($query);
 
             if (str_contains($email, $q) || str_contains($firstName, $q) || str_contains($lastName, $q)) {
                 $results[] = [
                     'id'         => $u->getId(),
                     'email'      => $u->getEmail(),
-                    'name'       => trim($firstName . ' ' . $lastName),
+                    'name'       => trim(($profile ? ($profile->getFirstName() ?? '') : '') . ' ' . ($profile ? ($profile->getLastName() ?? '') : '')),
                     'verified'   => method_exists($u, 'isVerified') ? $u->isVerified() : false,
-                    'has_profile'=> method_exists($u, 'getProfile') && $u->getProfile() !== null,
+                    'has_profile'=> $profile !== null,
                 ];
                 if (count($results) >= 8) break;
             }

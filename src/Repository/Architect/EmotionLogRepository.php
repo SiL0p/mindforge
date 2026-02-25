@@ -5,6 +5,9 @@ use App\Entity\Architect\EmotionLog;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<EmotionLog>
+ */
 class EmotionLogRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

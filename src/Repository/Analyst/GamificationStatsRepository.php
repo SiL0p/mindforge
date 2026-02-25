@@ -7,6 +7,9 @@ use App\Entity\Architect\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<GamificationStats>
+ */
 class GamificationStatsRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

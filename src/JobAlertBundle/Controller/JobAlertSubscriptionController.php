@@ -19,7 +19,13 @@ class JobAlertSubscriptionController extends AbstractController
     #[Route('', name: 'job_alert_subscription_index', methods: ['GET'])]
     public function index(JobAlertSubscriptionRepository $repository): Response
     {
-        $subscriptions = $repository->findByUser($this->getUser()->getId());
+        $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $subscriptions = $repository->findByUser($user->getId());
 
         return $this->render('job_alert_bundle/subscription/index.html.twig', [
             'subscriptions' => $subscriptions,
@@ -30,7 +36,13 @@ class JobAlertSubscriptionController extends AbstractController
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $subscription = new JobAlertSubscription();
-        $subscription->setUser($this->getUser());
+        $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $subscription->setUser($user);
 
         $form = $this->createForm(JobAlertSubscriptionType::class, $subscription);
         $form->handleRequest($request);
@@ -55,7 +67,9 @@ class JobAlertSubscriptionController extends AbstractController
     {
         $subscription = $repository->find($id);
 
-        if (!$subscription || $subscription->getUser() !== $this->getUser()) {
+        $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User || !$subscription || $subscription->getUser() !== $user) {
             throw $this->createAccessDeniedException();
         }
 
@@ -81,7 +95,9 @@ class JobAlertSubscriptionController extends AbstractController
     {
         $subscription = $repository->find($id);
 
-        if (!$subscription || $subscription->getUser() !== $this->getUser()) {
+        $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User || !$subscription || $subscription->getUser() !== $user) {
             throw $this->createAccessDeniedException();
         }
 
@@ -97,7 +113,9 @@ class JobAlertSubscriptionController extends AbstractController
     {
         $subscription = $repository->find($id);
 
-        if (!$subscription || $subscription->getUser() !== $this->getUser()) {
+        $user = $this->getUser();
+        /** @var \App\Entity\Architect\User|null $user */
+        if (!$user instanceof \App\Entity\Architect\User || !$subscription || $subscription->getUser() !== $user) {
             throw $this->createAccessDeniedException();
         }
 

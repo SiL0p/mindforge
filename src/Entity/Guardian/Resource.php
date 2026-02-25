@@ -9,6 +9,7 @@ use App\Repository\Guardian\ResourceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 #[ORM\Entity(repositoryClass: ResourceRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -80,6 +81,7 @@ class Resource
     private ?User $uploader = null;
 
     // Transient property for file upload (not persisted)
+    /** @var UploadedFile|null */
     #[Assert\File(
         maxSize: '10M',
         mimeTypes: ['application/pdf', 'application/x-pdf'],
@@ -87,7 +89,7 @@ class Resource
         maxSizeMessage: 'Le fichier est trop grand ({{ size }}). Maximum autorisé: {{ limit }}.'
     )]
     #[Assert\NotBlank(message: 'Veuillez sélectionner un fichier PDF.', groups: ['create'])]
-    private $file;
+    private ?UploadedFile $file = null;
 
     #[ORM\PrePersist]
     public function onPrePersist(): void
@@ -123,6 +125,6 @@ class Resource
     public function setSubject(?Subject $subject): self { $this->subject = $subject; return $this; }
     public function getUploader(): ?User { return $this->uploader; }
     public function setUploader(?User $uploader): self { $this->uploader = $uploader; return $this; }
-    public function getFile() { return $this->file; }
-    public function setFile($file): self { $this->file = $file; return $this; }
+    public function getFile(): ?UploadedFile { return $this->file; }
+    public function setFile(?UploadedFile $file): self { $this->file = $file; return $this; }
 }
