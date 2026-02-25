@@ -11,6 +11,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -26,6 +30,13 @@ class DemandeController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         $user = $this->getUser();
+
+        // Quiz gate: student must pass the quiz before applying
+        $passed = $request->getSession()->get('quiz_' . $opportunity->getId() . '_passed');
+        if (!$passed) {
+            $this->addFlash('error', 'You must pass the quiz before applying.');
+            return $this->redirectToRoute('app_carriere_quiz_show', ['id' => $opportunity->getId()]);
+        }
 
         // Check if already applied
         if ($demandeRepository->hasUserApplied($user->getId(), $opportunity->getId())) {
@@ -159,6 +170,110 @@ class DemandeController extends AbstractController
             'application' => $demande,
             'isCompanyView' => $isCompanyManager && !$isApplicant,
         ]);
+    }
+
+    #[Route('/{id}/accept', name: 'app_carriere_demande_accept', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted('ROLE_COMPANY')]
+    public function accept(
+        Request $request,
+        Demande $demande,
+        EntityManagerInterface $entityManager,
+        MailerInterface $mailer,
+    ): Response {
+        $user = $this->getUser();
+        $opportunity = $demande->getOpportunity();
+
+        if (!$opportunity || !$opportunity->getCompany() || !$user->hasEntreprise($opportunity->getCompany())) {
+            throw $this->createAccessDeniedException('You do not have access to manage this application.');
+        }
+
+        if ($this->isCsrfTokenValid('accept'.$demande->getId(), $request->request->get('_token'))) {
+            if ($demande->isPending()) {
+                $demande->accept();
+                $entityManager->flush();
+                $this->addFlash('success', 'Application accepted.');
+
+                $applicant = $demande->getUser();
+                if ($applicant) {
+                    $applicantName = $applicant->getEmail();
+                    if ($applicant->getProfile() && ($applicant->getProfile()->getFirstName() || $applicant->getProfile()->getLastName())) {
+                        $applicantName = trim($applicant->getProfile()->getFirstName() . ' ' . $applicant->getProfile()->getLastName());
+                    }
+
+                    $email = (new TemplatedEmail())
+                        ->from(new Address('mohamedamine.rja053@gmail.com', 'MindForge Careers'))
+                        ->to(new Address($applicant->getEmail()))
+                        ->subject('Your application for "' . $opportunity->getTitle() . '" has been accepted!')
+                        ->htmlTemplate('emails/carriere/application_accepted.html.twig')
+                        ->context([
+                            'applicantName' => $applicantName,
+                            'opportunity'   => $opportunity,
+                        ]);
+
+                    try {
+                        $mailer->send($email);
+                    } catch (TransportExceptionInterface $e) {
+                        $this->addFlash('warning', 'Application accepted, but the notification email could not be sent: ' . $e->getMessage());
+                    }
+                }
+            } else {
+                $this->addFlash('error', 'Only pending applications can be accepted.');
+            }
+        }
+
+        return $this->redirectToRoute('app_carriere_demande_show', ['id' => $demande->getId()]);
+    }
+
+    #[Route('/{id}/reject', name: 'app_carriere_demande_reject', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted('ROLE_COMPANY')]
+    public function reject(
+        Request $request,
+        Demande $demande,
+        EntityManagerInterface $entityManager,
+        MailerInterface $mailer,
+    ): Response {
+        $user = $this->getUser();
+        $opportunity = $demande->getOpportunity();
+
+        if (!$opportunity || !$opportunity->getCompany() || !$user->hasEntreprise($opportunity->getCompany())) {
+            throw $this->createAccessDeniedException('You do not have access to manage this application.');
+        }
+
+        if ($this->isCsrfTokenValid('reject'.$demande->getId(), $request->request->get('_token'))) {
+            if ($demande->isPending()) {
+                $demande->reject();
+                $entityManager->flush();
+                $this->addFlash('success', 'Application rejected.');
+
+                $applicant = $demande->getUser();
+                if ($applicant) {
+                    $applicantName = $applicant->getEmail();
+                    if ($applicant->getProfile() && ($applicant->getProfile()->getFirstName() || $applicant->getProfile()->getLastName())) {
+                        $applicantName = trim($applicant->getProfile()->getFirstName() . ' ' . $applicant->getProfile()->getLastName());
+                    }
+
+                    $email = (new TemplatedEmail())
+                        ->from(new Address('mohamedamine.rja053@gmail.com', 'MindForge Careers'))
+                        ->to(new Address($applicant->getEmail()))
+                        ->subject('Update on your application for "' . $opportunity->getTitle() . '"')
+                        ->htmlTemplate('emails/carriere/application_rejected.html.twig')
+                        ->context([
+                            'applicantName' => $applicantName,
+                            'opportunity'   => $opportunity,
+                        ]);
+
+                    try {
+                        $mailer->send($email);
+                    } catch (TransportExceptionInterface $e) {
+                        $this->addFlash('warning', 'Application rejected, but the notification email could not be sent: ' . $e->getMessage());
+                    }
+                }
+            } else {
+                $this->addFlash('error', 'Only pending applications can be rejected.');
+            }
+        }
+
+        return $this->redirectToRoute('app_carriere_demande_show', ['id' => $demande->getId()]);
     }
 
     #[Route('/{id}/withdraw', name: 'app_carriere_demande_withdraw', requirements: ['id' => '\d+'], methods: ['POST'])]
