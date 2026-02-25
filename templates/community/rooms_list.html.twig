@@ -1,0 +1,28 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Virtual Rooms{% endblock %}
+
+{% block module_title %}Virtual Rooms{% endblock %}
+{% block module_subtitle %}Rooms are managed in Guardian module.{% endblock %}
+{% block module_content %}
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="page-header">
+                    <h2><i class="fa fa-users"></i> Virtual Rooms</h2>
+                    <p class="text-muted">Virtual rooms are managed in the Guardian module.</p>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <p>Use the Virtual Rooms page to browse and join available rooms.</p>
+                        <a href="{{ path('guardian_rooms') }}" class="btn btn-primary">Go to Virtual Rooms</a>
+                        <a href="{{ path('community_index') }}" class="btn btn-default">Back to Community</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

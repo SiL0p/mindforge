@@ -1,0 +1,66 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Create Support Ticket{% endblock %}
+
+{% block module_title %}Create Support Ticket{% endblock %}
+{% block module_subtitle %}Submit a support request to the team.{% endblock %}
+{% block module_content %}
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="page-header">
+                    <h2><i class="fa fa-ticket"></i> Create Support Ticket</h2>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <form method="POST">
+                            <div class="form-group">
+                                <label for="title">Title</label>
+                                <input
+                                    type="text"
+                                    name="title"
+                                    id="title"
+                                    class="form-control"
+                                    maxlength="255"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="description">Description</label>
+                                <textarea
+                                    name="description"
+                                    id="description"
+                                    class="form-control"
+                                    rows="6"
+                                    minlength="10"
+                                    maxlength="5000"
+                                    required
+                                ></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="priority">Priority</label>
+                                <select name="priority" id="priority" class="form-control">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" style="margin-top: 20px;">
+                                <button type="submit" class="btn btn-primary">Create Ticket</button>
+                                <a href="{{ path('community_claim_list') }}" class="btn btn-default">My Tickets</a>
+                                <a href="{{ path('community_index') }}" class="btn btn-link">Back to Community</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

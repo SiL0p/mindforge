@@ -1,0 +1,40 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; }
+        .header { color: #333; border-bottom: 3px solid #FF9800; padding-bottom: 15px; }
+        .content { margin: 20px 0; line-height: 1.6; }
+        .challenge-card { background: #f9f9f9; padding: 15px; border-left: 4px solid #FF9800; margin: 15px 0; }
+        .button { display: inline-block; background: #FF9800; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 15px; }
+        .footer { color: #999; font-size: 12px; border-top: 1px solid #ddd; padding-top: 15px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⏰ Rappel : Répondez au défi</h1>
+        </div>
+
+        <div class="content">
+            <p>Bonjour <strong>{{ to_user.firstName }}</strong>,</p>
+
+            <p>Vous avez reçu un défi il y a 3 jours de <strong>{{ from_user.profile.firstName ?? 'Un utilisateur' }} {{ from_user.profile.lastName ?? '' }}</strong> et vous n'avez pas encore répondu. Qu'en est-il ? 🤔</p>
+
+            <div class="challenge-card">
+                <h2 style="margin-top: 0; color: #FF9800;">{{ task.title }}</h2>
+                <p>{{ task.description }}</p>
+            </div>
+
+            <p>Voulez-vous l'accepter et relever ce défi ? 💪 Ou préférez-vous le décliner ?</p>
+
+            <a href="https://mindforge.local/community/challenge/inbox" class="button">Répondre maintenant</a>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2026 MindForge. Tous droits réservés.</p>
+        </div>
+    </div>
+</body>
+</html>
