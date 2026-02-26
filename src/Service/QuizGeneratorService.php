@@ -10,7 +10,7 @@ class QuizGeneratorService
 {
     public function __construct(
         private HttpClientInterface $httpClient,
-        #[Autowire(env: 'OPENAI_KEY')]
+        #[Autowire(env: 'OPENAI_API_KEY')]
         private string $openAiKey,
     ) {}
 
