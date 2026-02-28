@@ -57,7 +57,7 @@
                                                 {% endif %}
                                             </div>
 
-                                            <div style="margin-top: 10px; display: flex; gap: 6px;">
+                                            <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px;">
                                                 <a href="{{ path('app_planner_task_edit', {id: task.id}) }}" class="btn btn-xs btn-info">Edit</a>
                                                 <a href="{{ path('guardian_focus_timer', {task: task.id}) }}" class="btn btn-xs btn-primary">Start Focus</a>
                                                 <form method="POST" action="{{ path('app_planner_task_delete', {id: task.id}) }}" onsubmit="return confirm('Delete this task?');" style="display:inline;">

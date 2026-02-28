@@ -77,7 +77,7 @@ class CalendarController extends AbstractController
             if ($endTime < $now) {
                 $endedItems[] = [
                     'title' => '🎓 '.$exam->getTitle(),
-                    'date' => $endTime,
+                    'date' => $exam->getExamDate(), // Use the actual start time
                     'url' => $this->generateUrl('app_planner_exam_edit', ['id' => $exam->getId()]),
                     'type' => 'exam',
                     'status' => 'past'
