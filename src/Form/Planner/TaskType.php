@@ -24,28 +24,34 @@ class TaskType extends AbstractType
         $builder
             ->add('title', TextType::class, [
                 'constraints' => [
-                    new NotBlank(['message' => 'Please enter a task title.']),
+                    new NotBlank(['message' => 'The task title is required.']),
                     new Length([
                         'min' => 3,
                         'max' => 150,
                         'minMessage' => 'The title must be at least {{ limit }} characters long.',
-                        'maxMessage' => 'The title cannot be longer than {{ limit }} characters.',
+                        'maxMessage' => 'The title cannot exceed {{ limit }} characters.',
                     ]),
                 ],
                 'attr' => [
                     'placeholder' => 'Ex: Review chapter 3',
                     'maxlength' => 150,
                     'class' => 'form-control bg-dark text-light border-secondary',
+                    'title' => 'The task title is required',
+                    'oninvalid' => "this.setCustomValidity('The task title is required.')",
+                    'oninput' => "this.setCustomValidity('')",
                 ],
                 'label' => 'Title',
                 'label_attr' => ['class' => 'form-label text-light'],
             ])
             ->add('description', TextareaType::class, [
-                'required' => false,
+                'required' => true,
                 'attr' => [
                     'rows' => 3,
                     'class' => 'form-control bg-dark text-light border-secondary',
                     'placeholder' => 'Additional details...',
+                    'title' => 'The description is required',
+                    'oninvalid' => "this.setCustomValidity('The description is required.')",
+                    'oninput' => "this.setCustomValidity('')",
                 ],
                 'label' => 'Description',
                 'label_attr' => ['class' => 'form-label text-light'],
@@ -53,9 +59,14 @@ class TaskType extends AbstractType
             ->add('subject', EntityType::class, [
                 'class' => Subject::class,
                 'choice_label' => 'name',
-                'required' => false,
+                'required' => true,
                 'placeholder' => 'Select a subject (optional)',
-                'attr' => ['class' => 'form-select bg-dark text-light border-secondary'],
+                'attr' => [
+                    'class' => 'form-select bg-dark text-light border-secondary',
+                    'title' => 'The subject is required',
+                    'oninvalid' => "this.setCustomValidity('The subject is required.')",
+                    'onchange' => "this.setCustomValidity('')",
+                ],
                 'label' => 'Subject',
                 'label_attr' => ['class' => 'form-label text-light'],
             ])
@@ -65,20 +76,32 @@ class TaskType extends AbstractType
                     'Medium 🟡' => Task::PRIORITY_MEDIUM,
                     'High 🔴' => Task::PRIORITY_HIGH,
                 ],
-                'attr' => ['class' => 'form-select bg-dark text-light border-secondary'],
+                'required' => true,
+                'placeholder' => 'Select a priority',
+                'attr' => [
+                    'class' => 'form-select bg-dark text-light border-secondary',
+                    'title' => 'The priority is required',
+                    'oninvalid' => "this.setCustomValidity('The priority is required.')",
+                    'onchange' => "this.setCustomValidity('')",
+                ],
                 'label' => 'Priority',
                 'label_attr' => ['class' => 'form-label text-light'],
             ])
             ->add('dueDate', DateTimeType::class, [
                 'widget' => 'single_text',
                 'input' => 'datetime_immutable',
-                'required' => false,
-                'attr' => ['class' => 'form-control bg-dark text-light border-secondary'],
+                'required' => true,
+                'attr' => [
+                    'class' => 'form-control bg-dark text-light border-secondary',
+                    'title' => 'The due date is required',
+                    'oninvalid' => "this.setCustomValidity('The due date is required.')",
+                    'oninput' => "this.setCustomValidity('')",
+                ],
                 'label' => 'Due date',
                 'label_attr' => ['class' => 'form-label text-light'],
             ])
             ->add('estimatedMinutes', IntegerType::class, [
-                'required' => false,
+                'required' => true,
                 'constraints' => [
                     new Range([
                         'min' => 1,
@@ -91,6 +114,9 @@ class TaskType extends AbstractType
                     'max' => 480,
                     'class' => 'form-control bg-dark text-light border-secondary',
                     'placeholder' => 'Ex: 60',
+                    'title' => 'The estimated time is required',
+                    'oninvalid' => "this.setCustomValidity('The estimated time is required.')",
+                    'oninput' => "this.setCustomValidity('')",
                 ],
                 'label' => 'Estimated time (minutes)',
                 'label_attr' => ['class' => 'form-label text-light'],
@@ -102,7 +128,6 @@ class TaskType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Task::class,
-            'attr' => ['novalidate' => 'novalidate'], // Force validation serveur
         ]);
     }
 }

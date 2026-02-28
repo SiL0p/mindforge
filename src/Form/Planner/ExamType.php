@@ -24,24 +24,30 @@ class ExamType extends AbstractType
         $builder
             ->add('title', TextType::class, [
                 'constraints' => [
-                    new NotBlank(['message' => 'Le titre de l\'examen est obligatoire.']),
+                    new NotBlank(['message' => 'The exam title is required.']),
                     new Length([
                         'max' => 150,
-                        'maxMessage' => 'Le titre ne peut pas dépasser {{ limit }} caractères.',
+                        'maxMessage' => 'The title cannot exceed {{ limit }} characters.',
                     ]),
                 ],
                 'attr' => [
                     'class' => 'form-control bg-dark text-light border-secondary',
-                    'placeholder' => 'Ex: Examen final Java',
+                    'placeholder' => 'Ex: Final Java Exam',
+                    'title' => 'The exam title is required',
+                    'oninvalid' => "this.setCustomValidity('The exam title is required.')",
+                    'oninput' => "this.setCustomValidity('')",
                 ],
-                'label' => 'Titre',
+                'label' => 'Title',
                 'label_attr' => ['class' => 'form-label text-light'],
             ])
             ->add('description', TextareaType::class, [
-                'required' => false,
+                'required' => true,
                 'attr' => [
                     'rows' => 2,
                     'class' => 'form-control bg-dark text-light border-secondary',
+                    'title' => 'The description is required',
+                    'oninvalid' => "this.setCustomValidity('The description is required.')",
+                    'oninput' => "this.setCustomValidity('')",
                 ],
                 'label' => 'Description',
                 'label_attr' => ['class' => 'form-label text-light'],
@@ -49,40 +55,55 @@ class ExamType extends AbstractType
             ->add('subject', EntityType::class, [
                 'class' => Subject::class,
                 'choice_label' => 'name',
-                'required' => false,
-                'placeholder' => 'Sélectionner une matière',
-                'attr' => ['class' => 'form-select bg-dark text-light border-secondary'],
-                'label' => 'Matière',
+                'required' => true,
+                'placeholder' => 'Select a subject',
+                'attr' => [
+                    'class' => 'form-select bg-dark text-light border-secondary',
+                    'title' => 'The subject is required',
+                    'oninvalid' => "this.setCustomValidity('The subject is required.')",
+                    'onchange' => "this.setCustomValidity('')",
+                ],
+                'label' => 'Subject',
                 'label_attr' => ['class' => 'form-label text-light'],
             ])
             ->add('examDate', DateTimeType::class, [
                 'widget' => 'single_text',
                 'input' => 'datetime_immutable',
+                'required' => true,
                 'constraints' => [
-                    new NotBlank(['message' => 'La date de l\'examen est obligatoire.']),
+                    new NotBlank(['message' => 'The exam date is required.']),
                 ],
                 'attr' => [
                     'class' => 'form-control bg-dark text-light border-secondary',
+                    'title' => 'The exam date is required',
+                    'oninvalid' => "this.setCustomValidity('The exam date is required.')",
+                    'oninput' => "this.setCustomValidity('')",
                 ],
-                'label' => 'Date et heure',
+                'label' => 'Date and time',
                 'label_attr' => ['class' => 'form-label text-light'],
             ])
             ->add('durationMinutes', IntegerType::class, [
-                'required' => false,
+                'required' => true,
                 'attr' => [
                     'class' => 'form-control bg-dark text-light border-secondary',
                     'placeholder' => 'Ex: 120',
+                    'title' => 'The duration is required',
+                    'oninvalid' => "this.setCustomValidity('The duration is required.')",
+                    'oninput' => "this.setCustomValidity('')",
                 ],
-                'label' => 'Durée (minutes)',
+                'label' => 'Duration (minutes)',
                 'label_attr' => ['class' => 'form-label text-light'],
             ])
             ->add('location', TextType::class, [
-                'required' => false,
+                'required' => true,
                 'attr' => [
                     'class' => 'form-control bg-dark text-light border-secondary',
-                    'placeholder' => 'Ex: Salle A101',
+                    'placeholder' => 'Ex: Room A101',
+                    'title' => 'The location is required',
+                    'oninvalid' => "this.setCustomValidity('The location is required.')",
+                    'oninput' => "this.setCustomValidity('')",
                 ],
-                'label' => 'Lieu',
+                'label' => 'Location',
                 'label_attr' => ['class' => 'form-label text-light'],
             ])
             ->add('importance', RangeType::class, [
@@ -101,7 +122,6 @@ class ExamType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Exam::class,
-            'attr' => ['novalidate' => 'novalidate'],
         ]);
     }
 }

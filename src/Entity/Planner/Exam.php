@@ -70,7 +70,7 @@ class Exam
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(?string $description): static { $this->description = $description; return $this; }
     public function getExamDate(): ?\DateTimeImmutable { return $this->examDate; }
-    public function setExamDate(\DateTimeImmutable $examDate): static { $this->examDate = $examDate; return $this; }
+    public function setExamDate(?\DateTimeImmutable $examDate): static { $this->examDate = $examDate; return $this; }
     public function getDurationMinutes(): ?int { return $this->durationMinutes; }
     public function setDurationMinutes(?int $durationMinutes): static { $this->durationMinutes = $durationMinutes; return $this; }
     public function getLocation(): ?string { return $this->location; }
