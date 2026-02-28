@@ -76,15 +76,8 @@ class ExamAIService
         $totalTasks = (int) ($result['totalTasks'] ?? 0);
         $doneTasks = (int) ($result['doneTasks'] ?? 0);
 
-        $taskScore = 0;
-        if ($totalTasks > 0) {
-            $taskScore = ($doneTasks / $totalTasks) * 100;
-        }
-        
-        $baseScore = $taskScore * 0.7; // Tasks give up to 70% of prep score
-        $volumeBonus = min(30, $doneTasks * 5); // 5 points per done task, up to 30%
-
-        $finalScore = (int) min(100, $baseScore + $volumeBonus);
+        // Each done task gives exactly 30% preparation
+        $finalScore = (int) min(100, $doneTasks * 30);
         
         return $finalScore;
     }
