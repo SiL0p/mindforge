@@ -86,7 +86,7 @@ class ExamAIService
 
         $finalScore = (int) min(100, $baseScore + $volumeBonus);
         
-        return $finalScore > 0 ? $finalScore : rand(5, 15); // Give a small default if no tasks to simulate initial prep status
+        return $finalScore;
     }
 
     public function predictSuccessProbability(Exam $exam, User $user): int
