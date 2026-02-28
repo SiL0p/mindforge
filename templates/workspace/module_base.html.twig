@@ -154,7 +154,8 @@
         <div class="module-brand">MindForge</div>
         <nav class="module-nav">
             <a href="{{ path('app_workspace') }}"><i class="fa fa-th-large"></i> Workspace</a>
-            <a href="{{ path('app_planner_tasks') }}"><i class="fa fa-folder"></i> Planner</a>
+            <a href="{{ path('app_planner_tasks') }}"><i class="fa fa-folder"></i> Tasks</a>
+            <a href="{{ path('app_planner_exams') }}"><i class="fa fa-graduation-cap"></i> Exams</a>
             <a href="{{ path('community_index') }}"><i class="fa fa-users"></i> Community</a>
             <a href="{{ path('guardian_library') }}"><i class="fa fa-book"></i> Guardian</a>
             <a href="{{ app.user and 'ROLE_COMPANY' in app.user.roles ? path('app_carriere_opportunite_my_opportunites') : path('app_carriere_opportunite_index') }}"><i class="fa fa-briefcase"></i> Careers</a>

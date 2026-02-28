@@ -10,9 +10,15 @@
         {% include 'components/_sidebar_planner.html.twig' %}
 
         <main class="col-md-9 col-lg-10">
-            <div class="page-header">
-                <h1>Planner Calendar</h1>
-                <p class="text-muted">All tasks and exams in one place.</p>
+            <div class="page-header d-flex flex-wrap align-items-center justify-content-between" style="margin-bottom: 20px;">
+                <div>
+                    <h1 style="margin-bottom: 8px;">Planner Calendar</h1>
+                    <p class="text-muted" style="margin: 0;">All tasks and exams in one place.</p>
+                </div>
+                <div>
+                    <a href="{{ path('app_planner_tasks') }}" class="btn btn-primary" style="margin-right: 8px;"><i class="fa fa-folder"></i> Tasks</a>
+                    <a href="{{ path('app_planner_exams') }}" class="btn btn-primary"><i class="fa fa-graduation-cap"></i> Exams</a>
+                </div>
             </div>
 
             {% if endedItems|length > 0 %}

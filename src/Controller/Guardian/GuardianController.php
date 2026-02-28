@@ -314,7 +314,7 @@ class GuardianController extends AbstractController
                 'id' => $task->getId(),
                 'title' => $task->getTitle(),
                 'priority' => $task->getPriority(),
-                'recommended_duration' => $this->getDurationForTaskPriority($task->getPriority()),
+                'recommended_duration' => $task->getEstimatedMinutes() ?? $this->getDurationForTaskPriority($task->getPriority()),
             ];
         }, $tasks);
 
@@ -366,7 +366,7 @@ class GuardianController extends AbstractController
             'success' => true,
             'task_id' => $task->getId(),
             'priority' => $task->getPriority(),
-            'recommended_duration' => $this->getDurationForTaskPriority($task->getPriority()),
+            'recommended_duration' => $task->getEstimatedMinutes() ?? $this->getDurationForTaskPriority($task->getPriority()),
         ]);
     }
 
@@ -454,7 +454,8 @@ class GuardianController extends AbstractController
             return $this->redirectToRoute('guardian_focus_timer');
         }
 
-        $duration = $this->getDurationForTaskPriority($task->getPriority());
+        $calculatedDuration = $task->getEstimatedMinutes() ?? $this->getDurationForTaskPriority($task->getPriority());
+        $duration = $elapsedMinutes > 0 ? $elapsedMinutes : $calculatedDuration;
 
         if ($focusSessionRepository->hasRecentDuplicate($user, $task, $duration, 20)) {
             $message = 'Duplicate session detected. Please wait a few seconds before saving again.';

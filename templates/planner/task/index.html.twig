@@ -15,7 +15,10 @@
                     <h1 style="margin-bottom: 8px;">Task Board</h1>
                     <p class="text-muted" style="margin: 0;">Move tasks across columns and earn XP when completing them.</p>
                 </div>
-                <a href="{{ path('app_planner_task_new') }}" class="btn btn-primary">New task</a>
+                <div>
+                    <a href="{{ path('app_planner_task_new') }}" class="btn btn-primary">New task</a>
+                    <a href="{{ path('app_planner_calendar') }}" class="btn btn-default" style="margin-left: 8px;">View calendar</a>
+                </div>
             </div>
 
             <div id="gamification-toast" class="alert alert-success" style="display:none; position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 320px;"></div>
