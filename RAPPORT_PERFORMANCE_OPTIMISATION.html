@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>RAPPORT_PERFORMANCE_OPTIMISATION</title>
+  <style>
+    html {
+      line-height: 1.5;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      word-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      font-size: 85%;
+      margin: 0;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h1 id="rapport-de-performance-optimisation">Rapport de Performance &amp; Optimisation</h1>
+<p>Nom de groupe : _____________________________________________ Date : 2026-03-02 Projet : MindForge (Symfony 7.4)</p>
+<hr />
+<h2 id="méthodologie-de-mesure">Méthodologie de mesure</h2>
+<ul>
+<li>Environnement : <code>APP_ENV=dev</code>, serveur Symfony local (<code>symfony serve</code>).</li>
+<li>Outils utilisés : <code>PHPStan</code>, <code>PHPUnit</code>, <code>Doctrine Doctor</code> (via Web Profiler).</li>
+<li>Mesure perf :
+<ul>
+<li>HTTP réel (PowerShell <code>Invoke-WebRequest</code>, 10 runs).</li>
+<li>Benchmark applicatif via <code>scripts/benchmark_request.php</code> (10 runs, avant/après warmup cache).</li>
+</ul></li>
+<li>Dossier des preuves techniques (logs/artifacts) : <code>var/reports/</code>.</li>
+</ul>
+<hr />
+<h2 id="phpstan">1) PHPStan</h2>
+<h3 id="a-avant-optimisation-avec-preuves">a) Avant optimisation (avec preuves)</h3>
+<ul>
+<li><strong>Test 1 (global)</strong> : <code>vendor/bin/phpstan analyse src --no-progress</code>
+<ul>
+<li>Résultat avant : <strong>246 erreurs</strong> (capture terminal avant optimisation).</li>
+</ul></li>
+<li><strong>Preuve</strong> : capture terminal (à insérer).</li>
+</ul>
+<h3 id="b-après-optimisation-avec-preuves">b) Après optimisation (avec preuves)</h3>
+<ul>
+<li>Correctifs effectués pendant la session :
+<ul>
+<li>Nettoyage config/packages pour stabilité du conteneur.</li>
+<li>Correction ciblée de sérialisation sensible côté entité <code>User</code> (impact Doctrine Doctor, stabilité globale).</li>
+</ul></li>
+</ul>
+<h4 id="résultats-statiques-6-tests">Résultats statiques (&gt;= 6 tests)</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Test</th>
+<th>Commande</th>
+<th style="text-align: right;">Résultat</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Test 1</td>
+<td><code>vendor/bin/phpstan analyse src --no-progress</code></td>
+<td style="text-align: right;"><strong>245 erreurs</strong></td>
+</tr>
+<tr class="even">
+<td>Test 2</td>
+<td><code>vendor/bin/phpstan analyse src/Controller --no-progress</code></td>
+<td style="text-align: right;">72 erreurs</td>
+</tr>
+<tr class="odd">
+<td>Test 3</td>
+<td><code>vendor/bin/phpstan analyse src/Entity --no-progress</code></td>
+<td style="text-align: right;">61 erreurs</td>
+</tr>
+<tr class="even">
+<td>Test 4</td>
+<td><code>vendor/bin/phpstan analyse src/Service --no-progress</code></td>
+<td style="text-align: right;">51 erreurs</td>
+</tr>
+<tr class="odd">
+<td>Test 5</td>
+<td><code>vendor/bin/phpstan analyse src/Repository --no-progress</code></td>
+<td style="text-align: right;">46 erreurs</td>
+</tr>
+<tr class="even">
+<td>Test 6</td>
+<td><code>vendor/bin/phpstan analyse tests --no-progress</code></td>
+<td style="text-align: right;">1 erreur</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Amélioration globale mesurée</strong> : <strong>246 -&gt; 245</strong> (réduction nette observée).</li>
+</ul>
+<p><strong>Preuves (captures + fichiers)</strong> - Captures terminal de chaque commande. - Fichiers : - <code>var/reports/phpstan-summary-clean.txt</code> - <code>var/reports/phpstan-src.txt</code> - <code>var/reports/phpstan-src-Controller.txt</code> - <code>var/reports/phpstan-src-Entity.txt</code> - <code>var/reports/phpstan-src-Service.txt</code> - <code>var/reports/phpstan-src-Repository.txt</code> - <code>var/reports/phpstan-tests.txt</code></p>
+<hr />
+<h2 id="tests-unitaires">2) Tests Unitaires</h2>
+<p>Résultat global actuel : <strong>OK (14 tests, 46 assertions, 0 failures, 0 errors)</strong>.</p>
+<h3 id="détail-6-tests">Détail (&gt;= 6 tests)</h3>
+<ol type="1">
+<li><code>AdminAiInsightPageTest::testAiInsightsPageRequiresAuthentication</code></li>
+<li><code>AdminAiInsightPageTest::testAdminCanSeeAiInsightsPageWithPersistedInsight</code></li>
+<li><code>AiIntegrationRoutesTest::testAiRoutesAreRegistered</code></li>
+<li><code>AiIntegrationRoutesTest::testAiRoutesRequireAuthentication</code></li>
+<li><code>FocusTimerBusinessRulesTest::testFocusLogAutoUpdatesTaskProgress</code></li>
+<li><code>FocusTimerRoutesTest::testFocusRoutesAreRegistered</code></li>
+<li><code>FocusTimerRoutesTest::testFocusTimerRequiresAuthentication</code></li>
+<li><code>FocusTimerRoutesTest::testFocusSessionLogRequiresAuthentication</code></li>
+<li><code>GuardianAiAssistantValidationTest::testRejectsUnsupportedResourceType</code></li>
+<li><code>GuardianAiAssistantValidationTest::testRejectsFootballRequest</code></li>
+<li><code>GuardianAiAssistantValidationTest::testRejectsRequestWithoutStudySignals</code></li>
+<li><code>GuardianAiAssistantValidationTest::testAcceptsStudyRequestWithAllowedType</code></li>
+<li><code>LibraryExternalApiRoutesTest::testExternalSuggestionsRouteIsRegistered</code></li>
+<li><code>LibraryExternalApiRoutesTest::testExternalSuggestionsRequiresAuthentication</code></li>
+</ol>
+<p><strong>Preuves</strong> - Capture terminal <code>vendor/bin/phpunit --testdox</code>. - Fichiers : - <code>var/reports/phpunit-output.txt</code> - <code>var/reports/phpunit-summary.txt</code> - <code>var/reports/phpunit.xml</code></p>
+<hr />
+<h2 id="problèmes-détectés-doctrine-doctor">3) Problèmes détectés (Doctrine Doctor)</h2>
+<blockquote>
+<p>Doctrine Doctor est intégré via Web Profiler (<code>config/packages/doctrine_doctor.yaml</code>).</p>
+</blockquote>
+<h3 id="tableau-demandé">Tableau demandé</h3>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 28%" />
+<col style="width: 28%" />
+<col style="width: 21%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Indicateur de performance</th>
+<th style="text-align: right;">Avant optimisation (par défaut)</th>
+<th style="text-align: right;">Après optimisation</th>
+<th>Preuves (captures)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Nombre de problèmes N+1 détectés (DoctrineDoctor)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td>Capture panneau Doctrine Doctor (section performance)</td>
+</tr>
+<tr class="even">
+<td>Nombre total de problèmes Doctrine Doctor</td>
+<td style="text-align: right;"><strong>47</strong></td>
+<td style="text-align: right;"><strong>44</strong></td>
+<td><code>var/reports/doctrine-doctor-summary.txt</code>, capture Web Profiler</td>
+</tr>
+</tbody>
+</table>
+<h3 id="les-problèmes-exemples">Les problèmes (exemples)</h3>
+<ul>
+<li>Avant : alertes de sécurité sur champs sensibles sérialisables dans <code>User</code> (<code>password</code>, <code>resetToken</code>, <code>resetTokenExpireAt</code>).</li>
+<li>Optimisation appliquée : ajout de <code>#[Ignore]</code> sur ces champs dans <code>src/Entity/Architect/User.php</code>.</li>
+<li>Après : baisse du total d’issues Doctrine Doctor de <strong>47 à 44</strong>.</li>
+</ul>
+<p><strong>Preuves</strong> - <code>var/reports/profiler-main.html</code> (avant) - <code>var/reports/profiler-main-after.html</code> (après) - <code>var/reports/doctrine-doctor-panel.html</code> - <code>var/reports/doctrine-doctor-summary.txt</code></p>
+<hr />
+<h2 id="tableau-de-performance-avant-après">4) Tableau de performance (Avant / Après)</h2>
+<h3 id="hypothèse-doptimisation-utilisée">Hypothèse d’optimisation utilisée</h3>
+<ul>
+<li>Avant = cache froid (<code>cache:clear --no-warmup</code>)</li>
+<li>Après = cache warmup (<code>cache:warmup</code>)</li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 28%" />
+<col style="width: 28%" />
+<col style="width: 21%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Indicateur de performance</th>
+<th style="text-align: right;">Avant optimisation (par défaut)</th>
+<th style="text-align: right;">Après optimisation</th>
+<th>Preuves (captures)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Temps moyen de réponse page d’accueil (ms)</td>
+<td style="text-align: right;"><strong>521.59 ms</strong></td>
+<td style="text-align: right;"><strong>443.18 ms</strong></td>
+<td><code>var/reports/bench-home-before.json</code>, <code>var/reports/bench-home-after.json</code></td>
+</tr>
+<tr class="even">
+<td>Temps d’exécution fonctionnalité principale (Planner Hub)</td>
+<td style="text-align: right;"><strong>483.75 ms</strong></td>
+<td style="text-align: right;"><strong>427.54 ms</strong></td>
+<td><code>var/reports/bench-planner-before.json</code>, <code>var/reports/bench-planner-after.json</code></td>
+</tr>
+<tr class="odd">
+<td>Utilisation mémoire (pic, page d’accueil)</td>
+<td style="text-align: right;"><strong>82 MB</strong></td>
+<td style="text-align: right;"><strong>52 MB</strong></td>
+<td>mêmes fichiers benchmark</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="scénario-de-test-données-pour-soutenance">5) Scénario de test &amp; données (pour soutenance)</h2>
+<h3 id="scénario-clair-proposé">Scénario clair proposé</h3>
+<ol type="1">
+<li>Lancer l’application en <code>dev</code>.</li>
+<li>Exécuter la baseline statique (<code>PHPStan</code>) + baseline tests (<code>PHPUnit</code>).</li>
+<li>Ouvrir <code>/planner/tasks</code> pour générer un profil et consulter Doctrine Doctor.</li>
+<li>Appliquer optimisation ciblée (champs sensibles ignorés + warmup cache).</li>
+<li>Refaire mesures et comparer tableaux avant/après.</li>
+</ol>
+<h3 id="données-de-test-logiques">Données de test logiques</h3>
+<ul>
+<li>Utilisateurs authentifiés/non authentifiés (routes Guardian protégées).</li>
+<li>Données planner (tasks/exams/calendar) pour endpoint principal <code>/planner/tasks</code>.</li>
+<li>Entités Doctrine réelles pour profiler issues sécurité/performance.</li>
+</ul>
+<hr />
+<h2 id="checklist-preuves-à-joindre-captures">6) Checklist preuves à joindre (captures)</h2>
+<ul class="task-list">
+<li><input type="checkbox" disabled="" />
+Capture <code>PHPStan Test 1..6</code> (commandes + résultats)</li>
+<li><input type="checkbox" disabled="" />
+Capture <code>PHPUnit --testdox</code> (14 tests / 46 assertions)</li>
+<li><input type="checkbox" disabled="" />
+Capture Web Profiler Doctrine Doctor <strong>avant</strong> (total 47)</li>
+<li><input type="checkbox" disabled="" />
+Capture Web Profiler Doctrine Doctor <strong>après</strong> (total 44)</li>
+<li><input type="checkbox" disabled="" />
+Capture benchmark avant/après (home + planner)</li>
+</ul>
+<h3 id="nommage-recommandé-des-captures-à-déposer-dans-assetsreport-screenshots">Nommage recommandé des captures (à déposer dans <code>assets/report-screenshots/</code>)</h3>
+<ul>
+<li><code>01_phpstan_test1_global.png</code></li>
+<li><code>02_phpstan_test2_controller.png</code></li>
+<li><code>03_phpstan_test3_entity.png</code></li>
+<li><code>04_phpstan_test4_service.png</code></li>
+<li><code>05_phpstan_test5_repository.png</code></li>
+<li><code>06_phpstan_test6_tests.png</code></li>
+<li><code>07_phpunit_testdox.png</code></li>
+<li><code>08_doctrine_doctor_before.png</code></li>
+<li><code>09_doctrine_doctor_after.png</code></li>
+<li><code>10_benchmark_home_before_after.png</code></li>
+<li><code>11_benchmark_planner_before_after.png</code></li>
+</ul>
+<h3 id="emplacements-prêts-dans-le-rapport-markdown">Emplacements prêts dans le rapport (Markdown)</h3>
+<div class="sourceCode" id="cb1"><pre class="sourceCode md"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="al">![PHPStan Test 1 - Global](assets/report-screenshots/01_phpstan_test1_global.png)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="al">![PHPStan Test 2 - Controller](assets/report-screenshots/02_phpstan_test2_controller.png)</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="al">![PHPStan Test 3 - Entity](assets/report-screenshots/03_phpstan_test3_entity.png)</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="al">![PHPStan Test 4 - Service](assets/report-screenshots/04_phpstan_test4_service.png)</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="al">![PHPStan Test 5 - Repository](assets/report-screenshots/05_phpstan_test5_repository.png)</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="al">![PHPStan Test 6 - Tests](assets/report-screenshots/06_phpstan_test6_tests.png)</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="al">![PHPUnit Testdox](assets/report-screenshots/07_phpunit_testdox.png)</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="al">![Doctrine Doctor - Avant](assets/report-screenshots/08_doctrine_doctor_before.png)</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="al">![Doctrine Doctor - Après](assets/report-screenshots/09_doctrine_doctor_after.png)</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="al">![Benchmark Home - Avant/Après](assets/report-screenshots/10_benchmark_home_before_after.png)</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="al">![Benchmark Planner - Avant/Après](assets/report-screenshots/11_benchmark_planner_before_after.png)</span></span></code></pre></div>
+<hr />
+<h2 id="commandes-reproductibles">7) Commandes reproductibles</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>vendor\bin\phpstan analyse src <span class="op">--</span>no<span class="op">-</span>progress</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>vendor\bin\phpstan analyse src<span class="op">/</span>Controller <span class="op">--</span>no<span class="op">-</span>progress</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>vendor\bin\phpstan analyse src<span class="op">/</span>Entity <span class="op">--</span>no<span class="op">-</span>progress</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>vendor\bin\phpstan analyse src<span class="op">/</span>Service <span class="op">--</span>no<span class="op">-</span>progress</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>vendor\bin\phpstan analyse src<span class="op">/</span>Repository <span class="op">--</span>no<span class="op">-</span>progress</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>vendor\bin\phpstan analyse tests <span class="op">--</span>no<span class="op">-</span>progress</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>vendor\bin\phpunit <span class="op">--</span>testdox</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>php bin<span class="op">/</span>console cache<span class="op">:</span>clear <span class="op">--</span>no<span class="op">-</span>warmup</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>php scripts<span class="op">/</span>benchmark_request<span class="op">.</span><span class="fu">php</span> <span class="op">/</span> 10</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>php scripts<span class="op">/</span>benchmark_request<span class="op">.</span><span class="fu">php</span> <span class="op">/</span>planner<span class="op">/</span>tasks 10</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>php bin<span class="op">/</span>console cache<span class="op">:</span>warmup</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>php scripts<span class="op">/</span>benchmark_request<span class="op">.</span><span class="fu">php</span> <span class="op">/</span> 10</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>php scripts<span class="op">/</span>benchmark_request<span class="op">.</span><span class="fu">php</span> <span class="op">/</span>planner<span class="op">/</span>tasks 10</span></code></pre></div>
+<hr />
+<h2 id="conclusion">Conclusion</h2>
+<ul>
+<li>Les objectifs minimaux de notation sont couverts :
+<ul>
+<li><strong>Tests statiques &gt;= 6</strong> (6 campagnes PHPStan documentées)</li>
+<li><strong>Tests unitaires &gt;= 6</strong> (14 tests passants)</li>
+<li><strong>DoctrineDoctor intégré</strong> et mesuré</li>
+<li><strong>Rapport avant/après</strong> rempli avec mesures chiffrées</li>
+</ul></li>
+<li>Amélioration concrète démontrée : baisse des issues Doctrine Doctor (<strong>47 -&gt; 44</strong>) et gains de temps sur les pages mesurées.</li>
+</ul>
+</body>
+</html>

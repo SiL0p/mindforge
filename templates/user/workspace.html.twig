@@ -559,7 +559,7 @@
         </a>
         <nav class="nav-block">
             <a href="{{ path('app_workspace') }}" class="{{ currentRoute == 'app_workspace' ? 'active' : '' }}"><i class="fa fa-th-large"></i>Overview</a>
-            <a href="{{ path('app_planner_calendar') }}" class="{{ currentRoute starts with 'app_planner_' ? 'active' : '' }}"><i class="fa fa-calendar"></i>Planner</a>
+            <a href="{{ path('app_planner_hub') }}" class="{{ currentRoute starts with 'app_planner_' ? 'active' : '' }}"><i class="fa fa-calendar"></i>Planner</a>
             <a href="{{ path('app_analyst_gamification') }}" class="{{ currentRoute starts with 'app_analyst_' ? 'active' : '' }}"><i class="fa fa-pie-chart"></i>Analytics</a>
             <a href="{{ path('community_index') }}" class="{{ currentRoute starts with 'community_' ? 'active' : '' }}"><i class="fa fa-users"></i>Community</a>
             <a href="{{ path('guardian_hub') }}" class="{{ currentRoute starts with 'guardian_' ? 'active' : '' }}"><i class="fa fa-book"></i>Guardian</a>
@@ -605,7 +605,7 @@
         <div class="main-header">Welcome back. Your workspace is ready.</div>
 
         <div class="folder-grid">
-            <a href="{{ path('app_planner_tasks') }}" class="folder-card">
+            <a href="{{ path('app_planner_hub') }}" class="folder-card">
                 <div><span class="dot" style="background:#ea6faf"></span><span class="folder-title">Planner</span></div>
                 <div class="folder-date">{{ myTaskCount }} tasks</div>
             </a>

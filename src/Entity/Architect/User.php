@@ -15,6 +15,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Serializer\Attribute\Ignore;
 use App\Entity\Architect\Profile;
 use App\Entity\Planner\Exam;
 use App\Entity\Planner\Task;
@@ -35,6 +36,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private array $roles = [];
 
     #[ORM\Column]
+    #[Ignore]
     private ?string $password = null;
 
     #[ORM\Column(type: 'boolean')]
@@ -47,9 +49,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Ignore]
     private ?string $resetToken = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Ignore]
     private ?\DateTimeInterface $resetTokenExpireAt = null;
 
     // ✅ PROFILE RELATION (NO DB CHANGE)
