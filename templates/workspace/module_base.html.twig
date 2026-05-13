@@ -220,6 +220,32 @@
                 <a class="item" href="{{ path('app_analyst_leaderboard') }}">Leaderboard</a>
             </div>
         </section>
+        <section class="module-widget">
+            <h4>Modules</h4>
+            <div class="body">
+                <a class="item" href="{{ path('guardian_rooms') }}">Virtual Rooms</a>
+                <div>
+                    <a class="item" href="#" onclick="event.preventDefault(); var el=document.getElementById('careers-sub'); el.style.display=el.style.display==='none'?'block':'none';" style="margin-bottom: 0;">
+                        Careers Center <i class="fa fa-caret-down" style="float:right; margin-top:2px;"></i>
+                    </a>
+                    <div id="careers-sub" style="display:none; padding: 0 0 7px 12px;">
+                        <a class="item" href="{{ path('app_carriere_opportunite_index') }}" style="font-size:11px;"><i class="fa fa-search" style="margin-right:5px;"></i> Browse Opportunities</a>
+                        <a class="item" href="{{ path('app_carriere_entreprise_index') }}" style="font-size:11px;"><i class="fa fa-building" style="margin-right:5px;"></i> Companies</a>
+                        {% if app.user %}
+                            {% if 'ROLE_COMPANY' not in app.user.roles %}
+                                <a class="item" href="{{ path('app_carriere_demande_my_demandes') }}" style="font-size:11px;"><i class="fa fa-file-text" style="margin-right:5px;"></i> My Applications</a>
+                            {% endif %}
+                            {% if 'ROLE_COMPANY' in app.user.roles %}
+                                <a class="item" href="{{ path('app_carriere_opportunite_new') }}" style="font-size:11px;"><i class="fa fa-plus-circle" style="margin-right:5px;"></i> Post Opportunity</a>
+                                <a class="item" href="{{ path('app_carriere_opportunite_my_opportunites') }}" style="font-size:11px;"><i class="fa fa-list" style="margin-right:5px;"></i> My Job Postings</a>
+                                <a class="item" href="{{ path('app_carriere_demande_my_company_demandes') }}" style="font-size:11px;"><i class="fa fa-inbox" style="margin-right:5px;"></i> Applications Received</a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                <a class="item" href="{{ path('app_profile_view') }}">Profile</a>
+            </div>
+        </section>
         {% block module_right %}{% endblock %}
     </aside>
 </div>
