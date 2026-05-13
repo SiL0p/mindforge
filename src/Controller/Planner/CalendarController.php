@@ -13,6 +13,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class CalendarController extends AbstractController
 {
+    #[Route('/hub', name: 'app_planner_hub', methods: ['GET'])]
+    public function hub(): Response
+    {
+        return $this->render('planner/hub/index.html.twig');
+    }
+
     #[Route('', name: 'app_planner_calendar', methods: ['GET'])]
     public function index(TaskRepository $taskRepo, ExamRepository $examRepo): Response
     {
@@ -32,10 +38,20 @@ class CalendarController extends AbstractController
         
         $now = new \DateTimeImmutable();
         $endedItems = [];
+        $notifications = [];
+        $historyItems = [];
 
         foreach ($tasks as $task) {
             if ($task->getDueDate()) {
                 if ($task->getDueDate() < $now && $task->getStatus() !== 'done') {
+                    $isTodayOverdue = $task->getDueDate()->format('Y-m-d') === $now->format('Y-m-d');
+                    $notifications[] = [
+                        'title' => $task->getTitle(),
+                        'date' => $task->getDueDate(),
+                        'url' => $this->generateUrl('app_planner_task_edit', ['id' => $task->getId()]),
+                        'type' => $isTodayOverdue ? 'overdue_today' : 'overdue',
+                    ];
+
                     $endedItems[] = [
                         'title' => '📝 '.$task->getTitle(),
                         'date' => $task->getDueDate(),
@@ -44,6 +60,13 @@ class CalendarController extends AbstractController
                         'status' => 'overdue'
                     ];
                 } elseif ($task->getStatus() === 'done') {
+                    $historyItems[] = [
+                        'title' => $task->getTitle(),
+                        'date' => $task->getCompletedAt() ?? $task->getDueDate(),
+                        'url' => $this->generateUrl('app_planner_task_edit', ['id' => $task->getId()]),
+                        'type' => 'task_done',
+                    ];
+
                     $endedItems[] = [
                         'title' => '📝 '.$task->getTitle(),
                         'date' => $task->getCompletedAt() ?? $task->getDueDate(),
@@ -75,12 +98,26 @@ class CalendarController extends AbstractController
                 : $exam->getExamDate();
                 
             if ($endTime < $now) {
+                $historyItems[] = [
+                    'title' => $exam->getTitle(),
+                    'date' => $exam->getExamDate(),
+                    'url' => $this->generateUrl('app_planner_exam_edit', ['id' => $exam->getId()]),
+                    'type' => 'exam_passed',
+                ];
+
                 $endedItems[] = [
                     'title' => '🎓 '.$exam->getTitle(),
                     'date' => $exam->getExamDate(), // Use the actual start time
                     'url' => $this->generateUrl('app_planner_exam_edit', ['id' => $exam->getId()]),
                     'type' => 'exam',
                     'status' => 'past'
+                ];
+            } elseif ($exam->getExamDate() >= $now && $exam->getExamDate() <= $now->modify('+7 days')) {
+                $notifications[] = [
+                    'title' => $exam->getTitle(),
+                    'date' => $exam->getExamDate(),
+                    'url' => $this->generateUrl('app_planner_exam_edit', ['id' => $exam->getId()]),
+                    'type' => 'exam_soon',
                 ];
             }
 
@@ -102,10 +139,14 @@ class CalendarController extends AbstractController
 
         // Sort ended items by date descending (most recent first)
         usort($endedItems, fn($a, $b) => $b['date'] <=> $a['date']);
+        usort($notifications, fn($a, $b) => $a['date'] <=> $b['date']);
+        usort($historyItems, fn($a, $b) => $b['date'] <=> $a['date']);
 
         return $this->render('planner/calendar/index.html.twig', [
             'events' => json_encode($events),
             'endedItems' => $endedItems,
+            'notifications' => $notifications,
+            'historyItems' => $historyItems,
         ]);
     }
 

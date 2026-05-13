@@ -1,0 +1,61 @@
+{% extends 'workspace/module_base.html.twig' %}
+
+{% block title %}Planner Hub{% endblock %}
+{% block module_title %}Planner Hub{% endblock %}
+{% block module_subtitle %}Choose your planning mode: Tasks, Exams, or Calendar.{% endblock %}
+
+{% block module_content %}
+<style>
+.planner-hub-wrap{max-width:1120px;margin:16px auto 6px;padding:0 10px;font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+.planner-hero{background:linear-gradient(120deg,#9754ff 0%,#3b82f6 100%);color:#fff;border-radius:14px;padding:22px 24px;margin-bottom:16px}
+.planner-hero h2{margin:0 0 4px;font-size:2rem;font-weight:800}
+.planner-hero p{margin:0;opacity:.95}
+.planner-panel{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px}
+.planner-intro{border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.planner-pill{display:inline-block;background:#f2ecff;color:#7c3aed;border-radius:999px;padding:3px 10px;font-size:.75rem;font-weight:700;margin-bottom:6px}
+.planner-intro h3{margin:0 0 4px;font-size:1.9rem;font-weight:800;color:#0f172a}
+.planner-intro p{margin:0;color:#475569}
+.planner-cards{display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:12px}
+.planner-card{display:block;text-decoration:none;color:inherit;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;transition:.2s transform,.2s border-color,.2s box-shadow}
+.planner-card:hover{transform:translateY(-2px);border-color:#8b5cf6;box-shadow:0 8px 22px rgba(99,102,241,.14)}
+.planner-card h4{margin:0 0 8px;font-size:1.5rem;font-weight:800;color:#111827}
+.planner-card p{margin:0 0 10px;color:#64748b;min-height:42px}
+.planner-card span{font-weight:700;color:#6d28d9}
+@media (max-width:900px){.planner-cards{grid-template-columns:1fr}}
+</style>
+
+<div class="planner-hub-wrap">
+    <div class="planner-hero">
+        <h2>Planner Hub</h2>
+        <p>Choose your planning mode: Tasks, Exams, or Calendar.</p>
+    </div>
+
+    <div class="planner-panel">
+        <div class="planner-intro">
+            <span class="planner-pill">Planner</span>
+            <h3>What do you want to plan?</h3>
+            <p>Open your task board, manage exams, or view the calendar.</p>
+        </div>
+
+        <div class="planner-cards">
+            <a href="{{ path('app_planner_tasks') }}" class="planner-card">
+                <h4>Tasks</h4>
+                <p>Manage your task board and update progress by status.</p>
+                <span>Open tasks →</span>
+            </a>
+
+            <a href="{{ path('app_planner_exams') }}" class="planner-card">
+                <h4>Exams</h4>
+                <p>Review upcoming exams, create new ones, and adjust plans.</p>
+                <span>Open exams →</span>
+            </a>
+
+            <a href="{{ path('app_planner_calendar') }}" class="planner-card">
+                <h4>Calendar</h4>
+                <p>See tasks and exams stats together with a calendar view.</p>
+                <span>Open calendar →</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

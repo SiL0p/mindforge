@@ -5,59 +5,114 @@
 {% block module_title %}Calendar{% endblock %}
 {% block module_subtitle %}Visualize your schedule and deadlines.{% endblock %}
 {% block module_content %}
-<div class="container-fluid" style="margin-top: 20px;">
-    <div class="row">
-        {% include 'components/_sidebar_planner.html.twig' %}
+<style>
+.planner-page{max-width:1160px;margin:18px auto;padding:0 12px;color:#1e293b;font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+.planner-actions{display:flex;gap:8px;margin-bottom:14px}
+.btn-nav{background:#6c47ff;color:#fff;text-decoration:none;border-radius:10px;padding:8px 14px;font-weight:600;font-size:.85rem}
+.btn-nav:hover{background:#5535e0;color:#fff}
+.dashboard-title{font-size:34px;font-weight:700;margin:0 0 12px}
+.stats-grid{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:12px;margin-bottom:12px}
+.stat-card{background:#fff;border:2px solid #dbe2f0;border-radius:14px;padding:14px 8px;text-align:center}
+.stat-card .n{font-size:40px;font-weight:800;line-height:1}
+.stat-card .l{font-size:.95rem;color:#475569}
+.b-blue{border-color:#3b82f6}.b-yellow{border-color:#f59e0b}.b-green{border-color:#10b981}.b-red{border-color:#ef4444}.b-dark{border-color:#94a3b8}.b-purple{border-color:#6c47ff}
+.n-blue{color:#3b82f6}.n-yellow{color:#f59e0b}.n-green{color:#10b981}.n-red{color:#ef4444}.n-dark{color:#64748b}.n-purple{color:#6c47ff}
+.refresh-row{margin-bottom:12px}
+.refresh-btn{background:#2388d9;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700}
+.panel-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.panel-box{background:#fff;border:2px solid #e2e8f0;border-radius:14px;padding:12px}
+.panel-box h4{margin:0 0 10px;font-size:1.05rem;font-weight:700}
+.notif{border-color:#fda4af}.hist{border-color:#86efac}
+.list-zone{max-height:130px;overflow:auto;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px}
+.list-item{display:block;padding:6px 8px;border-radius:6px;margin-bottom:6px;text-decoration:none;font-size:.9rem}
+.list-item:last-child{margin-bottom:0}
+.li-overdue{background:#fee2e2;color:#991b1b}
+.li-completed{background:#dcfce7;color:#166534}
+.li-exam{background:#dbeafe;color:#1e3a8a}
+.calendar-shell{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:16px}
+#planner-calendar-view .fc .fc-toolbar{margin-bottom:16px}
+#planner-calendar-view .fc .fc-toolbar-title{text-transform:uppercase;font-weight:800;letter-spacing:.02em}
+#planner-calendar-view .fc .fc-button{background:#6247ea;border:none;border-radius:10px;padding:8px 14px}
+#planner-calendar-view .fc .fc-button:hover{background:#5039c3}
+#planner-calendar-view .fc .fc-button:focus{box-shadow:none}
+#planner-calendar-view .fc .fc-daygrid-day-frame{background:#f8fafc;border-radius:12px;min-height:92px}
+#planner-calendar-view .fc .fc-daygrid-day-top{padding:8px 10px}
+#planner-calendar-view .fc .fc-daygrid-day-number{font-weight:700;color:#334155}
+#planner-calendar-view .fc .fc-day-today .fc-daygrid-day-frame{background:#ede9fe;box-shadow:inset 0 0 0 2px #7c3aed}
+#planner-calendar-view .fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-frame{opacity:.65}
+#planner-calendar-view .fc .fc-daygrid-day-events{padding:0 6px 6px}
+#planner-calendar-view .fc .fc-event{border:none;border-radius:7px;padding:1px 6px;font-weight:600}
+@media (max-width:1000px){.stats-grid{grid-template-columns:repeat(3,minmax(120px,1fr))}.panel-grid{grid-template-columns:1fr}}
+@media (max-width:700px){.stats-grid{grid-template-columns:repeat(2,minmax(120px,1fr))}}
+</style>
 
-        <main class="col-md-9 col-lg-10">
-            <div class="page-header d-flex flex-wrap align-items-center justify-content-between" style="margin-bottom: 20px;">
-                <div>
-                    <h1 style="margin-bottom: 8px;">Planner Calendar</h1>
-                    <p class="text-muted" style="margin: 0;">All tasks and exams in one place.</p>
-                </div>
-                <div>
-                    <a href="{{ path('app_planner_tasks') }}" class="btn btn-primary" style="margin-right: 8px;"><i class="fa fa-folder"></i> Tasks</a>
-                    <a href="{{ path('app_planner_exams') }}" class="btn btn-primary"><i class="fa fa-graduation-cap"></i> Exams</a>
-                </div>
+<div class="planner-page">
+    <div class="planner-actions">
+        <a href="{{ path('app_planner_tasks') }}" class="btn-nav">Tasks</a>
+        <a href="{{ path('app_planner_exams') }}" class="btn-nav">Exams</a>
+        <a href="{{ path('app_workspace') }}" class="btn-nav">Back to Dashboard</a>
+    </div>
+
+    <h2 class="dashboard-title">Dashboard</h2>
+
+    <div class="stats-grid">
+        <div class="stat-card b-blue"><div class="n n-blue" id="stat-in-progress">0</div><div class="l">In Progress</div></div>
+        <div class="stat-card b-yellow"><div class="n n-yellow" id="stat-todo">0</div><div class="l">Todo</div></div>
+        <div class="stat-card b-green"><div class="n n-green" id="stat-done">0</div><div class="l">Done</div></div>
+        <div class="stat-card b-red"><div class="n n-red" id="stat-overdue">0</div><div class="l">Overdue</div></div>
+        <div class="stat-card b-dark"><div class="n n-dark" id="stat-total">0</div><div class="l">Total Tasks</div></div>
+        <div class="stat-card b-purple"><div class="n n-purple" id="stat-exams-week">0</div><div class="l">Exams/Week</div></div>
+    </div>
+
+    <div class="refresh-row">
+        <button type="button" class="refresh-btn" id="calendar-refresh-btn">Refresh</button>
+    </div>
+
+    <div class="panel-grid">
+        <section class="panel-box notif">
+            <h4><i class="fa fa-bell"></i> Notifications</h4>
+            <div class="list-zone">
+                {% if notifications is empty %}
+                    <span class="list-item">No overdue notifications.</span>
+                {% else %}
+                    {% for item in notifications %}
+                        <a href="{{ item.url }}" class="list-item {{ item.type == 'exam_soon' ? 'li-exam' : 'li-overdue' }}">
+                            {% if item.type == 'exam_soon' %}
+                                Exam '{{ item.title }}' soon at {{ item.date|date('Y-m-d H:i:s') }}
+                            {% elseif item.type == 'overdue_today' %}
+                                Task '{{ item.title }}' OVERDUE TODAY ({{ item.date|date('Y-m-d H:i:s') }})
+                            {% else %}
+                                Task '{{ item.title }}' OVERDUE since {{ item.date|date('Y-m-d H:i:s') }}
+                            {% endif %}
+                        </a>
+                    {% endfor %}
+                {% endif %}
             </div>
+        </section>
 
-            {% if endedItems|length > 0 %}
-                <div class="alert alert-info shadow-sm mb-4" role="alert">
-                    <h4 class="alert-heading"><i class="fa fa-info-circle"></i> Past & Completed Items</h4>
-                    <p class="mb-2">The following items have ended recently:</p>
-                    <ul class="list-unstyled mb-0 ms-3">
-                        {% for item in endedItems|slice(0, 5) %}
-                            <li class="mb-1">
-                                <a href="{{ item.url }}" class="text-info fw-bold" style="text-decoration: none;">
-                                    {{ item.title }}
-                                </a>
-                                <span class="text-muted small ms-2">
-                                    {% if item.type == 'task' %}
-                                        {% if item.status == 'completed' %}
-                                            <span class="badge bg-success">Completed</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">Overdue</span>
-                                        {% endif %}
-                                    {% else %}
-                                        <span class="badge bg-secondary">Past Exam</span>
-                                    {% endif %}
-                                    - {{ item.date|date('M d, Y H:i') }}
-                                </span>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                    {% if endedItems|length > 5 %}
-                        <p class="small text-muted mt-2 mb-0">And {{ endedItems|length - 5 }} more...</p>
-                    {% endif %}
-                </div>
-            {% endif %}
-
-            <div class="panel panel-default">
-                <div class="panel-body bg-white p-4 rounded shadow-sm">
-                    <div id="planner-calendar-view"></div>
-                </div>
+        <section class="panel-box hist">
+            <h4><i class="fa fa-history"></i> History</h4>
+            <div class="list-zone">
+                {% if historyItems is empty %}
+                    <span class="list-item">No history yet.</span>
+                {% else %}
+                    {% for item in historyItems|slice(0, 8) %}
+                        <a href="{{ item.url }}" class="list-item {{ item.type == 'exam_passed' ? 'li-exam' : 'li-completed' }}">
+                            {% if item.type == 'task_done' %}
+                                Task '{{ item.title }}' completed
+                            {% else %}
+                                Exam '{{ item.title }}' passed
+                            {% endif %}
+                            ({{ item.date|date('Y-m-d H:i:s') }})
+                        </a>
+                    {% endfor %}
+                {% endif %}
             </div>
-        </main>
+        </section>
+    </div>
+
+    <div class="calendar-shell">
+        <div id="planner-calendar-view"></div>
     </div>
 </div>
 
@@ -67,32 +122,80 @@ document.addEventListener('DOMContentLoaded', function() {
     const eventsData = {{ events|raw }};
     const calendarEl = document.getElementById('planner-calendar-view');
 
-    if (calendarEl) {
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,listWeek'
-            },
-            themeSystem: 'standard',
-            height: 'auto',
-            events: eventsData,
-            eventClick: function(info) {
-                if (info.event.url) {
-                    window.location.href = info.event.url;
-                    info.jsEvent.preventDefault();
-                }
-            },
-            eventDidMount: function(info) {
-                // Add tooltips if there are extended props
-                if (info.event.extendedProps && info.event.extendedProps.subject) {
-                    info.el.title = info.event.extendedProps.subject;
-                }
-            }
-        });
+    const now = new Date();
+    let taskTotal = 0;
+    let taskTodo = 0;
+    let taskInProgress = 0;
+    let taskDone = 0;
+    let taskOverdue = 0;
+    let examsThisWeek = 0;
 
-        calendar.render();
+    eventsData.forEach((event) => {
+        if (event.type === 'task') {
+            taskTotal += 1;
+            const status = event.extendedProps?.status || 'todo';
+            if (status === 'in_progress') taskInProgress += 1;
+            else if (status === 'done') taskDone += 1;
+            else taskTodo += 1;
+
+            if (status !== 'done' && new Date(event.start) < now) {
+                taskOverdue += 1;
+            }
+        }
+
+        if (event.type === 'exam') {
+            const examDate = new Date(event.start);
+            const diffDays = (examDate - now) / (1000 * 60 * 60 * 24);
+            if (diffDays >= 0 && diffDays <= 7) examsThisWeek += 1;
+        }
+    });
+
+    document.getElementById('stat-in-progress').textContent = taskInProgress;
+    document.getElementById('stat-todo').textContent = taskTodo;
+    document.getElementById('stat-done').textContent = taskDone;
+    document.getElementById('stat-overdue').textContent = taskOverdue;
+    document.getElementById('stat-total').textContent = taskTotal;
+    document.getElementById('stat-exams-week').textContent = examsThisWeek;
+
+    const refreshBtn = document.getElementById('calendar-refresh-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            window.location.reload();
+        });
+    }
+
+    if (calendarEl) {
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+          left: 'prev,next',
+          center: 'title',
+          right: ''
+        },
+        buttonText: {
+          prev: '◀',
+          next: '▶'
+        },
+        firstDay: 1,
+        dayMaxEvents: 3,
+        fixedWeekCount: false,
+        showNonCurrentDates: true,
+        events: eventsData,
+        eventDisplay: 'block',
+        eventClick: function(info) {
+          if (info.event.url) {
+            info.jsEvent.preventDefault();
+            window.location.href = info.event.url;
+          }
+        },
+        eventDidMount: function(info) {
+          if (info.event.extendedProps && info.event.extendedProps.subject) {
+            info.el.title = info.event.extendedProps.subject;
+          }
+        }
+      });
+
+      calendar.render();
     }
 });
 </script>

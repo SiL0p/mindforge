@@ -4,12 +4,15 @@ namespace App\Controller\Planner;
 
 use App\Entity\Architect\User;
 use App\Entity\Planner\Task;
+use App\Entity\Planner\Subject;
 use App\Form\Planner\TaskType;
 use App\Repository\Planner\TaskRepository;
+use App\Repository\Planner\SubjectRepository;
 use App\Service\Analyst\DifficultyClassifierService;
 use App\Service\Analyst\GamificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -209,5 +212,166 @@ class TaskController extends AbstractController
         return $this->redirectToRoute('app_planner_task_new', [
             'voice' => substr($transcribedText, 0, 150),
         ]);
+    }
+
+    // ─── AJAX Table UI endpoints ───────────────────────────────────────────
+
+    #[Route('/ajax/list', name: 'app_planner_tasks_ajax_list', methods: ['GET'])]
+    public function ajaxList(Request $request, TaskRepository $taskRepository): JsonResponse
+    {
+        $user = $this->getUser();
+        $filter = $request->query->get('filter', 'all');
+        $sort   = $request->query->get('sort', '');
+
+        $criteria = ['owner' => $user];
+        $validStatuses = [Task::STATUS_TODO, Task::STATUS_IN_PROGRESS, Task::STATUS_DONE];
+        if (in_array($filter, $validStatuses, true)) {
+            $criteria['status'] = $filter;
+        }
+
+        $orderBy = $sort === 'due' ? ['dueDate' => 'ASC'] : ['id' => 'ASC'];
+        $tasks = $taskRepository->findBy($criteria, $orderBy);
+
+        $now = new \DateTimeImmutable();
+        $rows = [];
+        foreach ($tasks as $t) {
+            $rows[] = [
+                'id'          => $t->getId(),
+                'title'       => $t->getTitle(),
+                'description' => $t->getDescription(),
+                'status'      => $t->getStatus(),
+                'priority'    => $t->getPriority(),
+                'dueDate'     => $t->getDueDate() ? $t->getDueDate()->format('Y-m-d H:i:s') : null,
+                'ownerId'     => $t->getOwner()?->getId(),
+                'duration'    => $t->getEstimatedMinutes(),
+                'overdue'     => $t->getDueDate() && $t->getStatus() !== Task::STATUS_DONE && $t->getDueDate() < $now,
+            ];
+        }
+
+        return $this->json($rows);
+    }
+
+    #[Route('/ajax/add', name: 'app_planner_tasks_ajax_add', methods: ['POST'])]
+    public function ajaxAdd(
+        Request $request,
+        EntityManagerInterface $em,
+        TaskRepository $taskRepository,
+        SubjectRepository $subjectRepository,
+        DifficultyClassifierService $difficultyClassifierService
+    ): JsonResponse {
+        $user = $this->getUser();
+        $data = json_decode($request->getContent(), true);
+
+        $task = new Task();
+        $task->setOwner($user);
+        $task->setTitle(substr(trim($data['title'] ?? ''), 0, 150));
+        $task->setDescription(trim($data['description'] ?? '') ?: null);
+        $task->setStatus(in_array($data['status'] ?? '', [Task::STATUS_TODO, Task::STATUS_IN_PROGRESS, Task::STATUS_DONE]) ? $data['status'] : Task::STATUS_TODO);
+
+        $priority = (int)($data['priority'] ?? Task::PRIORITY_MEDIUM);
+        $task->setPriority(in_array($priority, [1, 2, 3]) ? $priority : Task::PRIORITY_MEDIUM);
+
+        if (!empty($data['dueDate'])) {
+            try {
+                $task->setDueDate(new \DateTimeImmutable($data['dueDate']));
+            } catch (\Exception) {}
+        }
+
+        $duration = isset($data['duration']) ? (int)$data['duration'] : null;
+        $task->setEstimatedMinutes($duration > 0 ? $duration : null);
+
+        if (!empty($task->getTitle())) {
+            $task->setPriority($difficultyClassifierService->classifyTask($task));
+            $em->persist($task);
+            $em->flush();
+
+            $now = new \DateTimeImmutable();
+            return $this->json([
+                'success' => true,
+                'task' => [
+                    'id'          => $task->getId(),
+                    'title'       => $task->getTitle(),
+                    'description' => $task->getDescription(),
+                    'status'      => $task->getStatus(),
+                    'priority'    => $task->getPriority(),
+                    'dueDate'     => $task->getDueDate() ? $task->getDueDate()->format('Y-m-d H:i:s') : null,
+                    'ownerId'     => $task->getOwner()?->getId(),
+                    'duration'    => $task->getEstimatedMinutes(),
+                    'overdue'     => $task->getDueDate() && $task->getStatus() !== Task::STATUS_DONE && $task->getDueDate() < $now,
+                ],
+            ]);
+        }
+
+        return $this->json(['error' => 'Title is required.'], 400);
+    }
+
+    #[Route('/{id}/ajax/edit', name: 'app_planner_task_ajax_edit', methods: ['POST'])]
+    public function ajaxEdit(
+        Task $task,
+        Request $request,
+        EntityManagerInterface $em,
+        DifficultyClassifierService $difficultyClassifierService
+    ): JsonResponse {
+        $user = $this->getUser();
+        if ($task->getOwner() !== $user && !$this->isGranted('ROLE_ADMIN')) {
+            return $this->json(['error' => 'Access denied.'], 403);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        if (isset($data['title'])) {
+            $task->setTitle(substr(trim($data['title']), 0, 150));
+        }
+        if (array_key_exists('description', $data)) {
+            $task->setDescription(trim($data['description']) ?: null);
+        }
+        if (isset($data['status']) && in_array($data['status'], [Task::STATUS_TODO, Task::STATUS_IN_PROGRESS, Task::STATUS_DONE])) {
+            $task->setStatus($data['status']);
+        }
+        if (isset($data['priority']) && in_array((int)$data['priority'], [1, 2, 3])) {
+            $task->setPriority((int)$data['priority']);
+        }
+        if (array_key_exists('dueDate', $data)) {
+            try {
+                $task->setDueDate(!empty($data['dueDate']) ? new \DateTimeImmutable($data['dueDate']) : null);
+            } catch (\Exception) {}
+        }
+        if (array_key_exists('duration', $data)) {
+            $dur = (int)$data['duration'];
+            $task->setEstimatedMinutes($dur > 0 ? $dur : null);
+        }
+
+        $task->setPriority($difficultyClassifierService->classifyTask($task));
+        $em->flush();
+
+        $now = new \DateTimeImmutable();
+        return $this->json([
+            'success' => true,
+            'task' => [
+                'id'          => $task->getId(),
+                'title'       => $task->getTitle(),
+                'description' => $task->getDescription(),
+                'status'      => $task->getStatus(),
+                'priority'    => $task->getPriority(),
+                'dueDate'     => $task->getDueDate() ? $task->getDueDate()->format('Y-m-d H:i:s') : null,
+                'ownerId'     => $task->getOwner()?->getId(),
+                'duration'    => $task->getEstimatedMinutes(),
+                'overdue'     => $task->getDueDate() && $task->getStatus() !== Task::STATUS_DONE && $task->getDueDate() < $now,
+            ],
+        ]);
+    }
+
+    #[Route('/{id}/ajax/delete', name: 'app_planner_task_ajax_delete', methods: ['DELETE'])]
+    public function ajaxDelete(Task $task, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $this->getUser();
+        if ($task->getOwner() !== $user && !$this->isGranted('ROLE_ADMIN')) {
+            return $this->json(['error' => 'Access denied.'], 403);
+        }
+
+        $em->remove($task);
+        $em->flush();
+
+        return $this->json(['success' => true]);
     }
 }

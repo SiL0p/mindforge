@@ -1,91 +1,470 @@
 {% extends 'workspace/module_base.html.twig' %}
-
-{% block title %}Planner Exams{% endblock %}
-
+{% block title %}Exams{% endblock %}
 {% block module_title %}Exams{% endblock %}
-{% block module_subtitle %}Manage upcoming exams and deadlines.{% endblock %}
+{% block module_subtitle %}Manage your exams and get AI study assistance.{% endblock %}
 {% block module_content %}
-<div class="container-fluid" style="margin-top: 20px;">
-    <div class="row">
-        {% include 'components/_sidebar_planner.html.twig' %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#6c47ff;--accent-h:#5535e0;--border:#e2e8f0;--surface:#fff;--bg:#f4f6fb;--text:#1e293b;--muted:#64748b;--radius:8px;--shadow:0 2px 12px rgba(0,0,0,.08);}
+body,*{font-family:'Inter',sans-serif;}
+.ex-wrap{max-width:1100px;margin:24px auto;padding:0 16px;color:var(--text);}
+.ex-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.ex-header h1{display:flex;align-items:center;gap:10px;font-size:1.5rem;font-weight:700;margin:0;}
+.btn-hub{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:6px 16px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;transition:background .2s;}
+.btn-hub:hover{background:var(--accent-h);color:#fff;}
+.ex-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px;}
+.ex-table{width:100%;border-collapse:collapse;font-size:.875rem;}
+.ex-table th{background:#f1f5f9;color:var(--muted);font-weight:600;text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);white-space:nowrap;}
+.ex-table td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.ex-table tbody tr:last-child td{border-bottom:none;}
+.ex-table tbody tr:nth-child(odd){background:#f8fafc;}
+.ex-table tbody tr:hover{background:#eff6ff;cursor:pointer;}
+.ex-table tbody tr.selected-row{outline:2px solid var(--accent);outline-offset:-2px;}
+.oid-link{color:var(--accent);text-decoration:none;font-weight:600;}
+/* toolbar */
+.ex-toolbar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;}
+.tb-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.tb-top label{font-size:.875rem;font-weight:600;color:var(--muted);}
+.fsel,.finput{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:.875rem;color:var(--text);background:var(--surface);outline:none;transition:border-color .2s;}
+.fsel:focus,.finput:focus{border-color:var(--accent);}
+.btn-sort{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 16px;font-size:.875rem;font-weight:600;cursor:pointer;}
+.btn-sort:hover{background:var(--accent-h);}
+.frow{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;margin-bottom:14px;}
+.fg{display:flex;flex-direction:column;gap:3px;}
+.fg label{font-size:.72rem;font-weight:600;color:var(--muted);}
+.date-g{display:flex;align-items:center;gap:4px;}
+/* action buttons */
+.btn-a{border:none;border-radius:6px;padding:7px 18px;font-size:.875rem;font-weight:600;cursor:pointer;transition:opacity .2s;color:#fff;}
+.btn-a:hover{opacity:.85;}
+.ba-add{background:#22c55e;}.ba-edit{background:#3b82f6;}.ba-del{background:#ef4444;}.ba-ref{background:#94a3b8;}.ba-new{background:var(--accent);}
+/* validation */
+.ferr{border-color:#ef4444!important;background:#fff5f5!important;animation:shk .3s ease;}
+.ferr-msg{font-size:.7rem;color:#ef4444;font-weight:600;margin-top:2px;display:block;}
+@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+/* analytics section */
+.analytics-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-top:24px;}
+.analytics-wrap h2{font-size:1.1rem;font-weight:700;color:var(--accent);margin:0 0 16px;}
+.choose-row{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.choose-row label{font-weight:600;font-size:.9rem;}
+.choose-row select{padding:6px 12px;border:1px solid var(--border);border-radius:6px;font-size:.875rem;min-width:220px;}
+.analytics-body{display:grid;grid-template-columns:auto 1fr 1fr;gap:20px;align-items:start;}
+@media(max-width:700px){.analytics-body{grid-template-columns:1fr;}}
+/* success rate card */
+.sr-card{border:2px solid #22c55e;border-radius:var(--radius);padding:20px 28px;text-align:center;min-width:120px;}
+.sr-pct{font-size:2rem;font-weight:700;color:#334155;}
+.sr-label{font-size:.8rem;color:var(--muted);margin-top:4px;}
+/* study plan */
+.plan-box,.chat-box{border:1px solid #dbeafe;border-radius:var(--radius);padding:16px;background:#f0f7ff;}
+.plan-box h3,.chat-box h3{font-size:.9rem;font-weight:700;color:var(--accent);margin:0 0 10px;}
+.plan-box ul{margin:0;padding-left:18px;font-size:.85rem;color:var(--text);}
+.plan-box li{margin-bottom:5px;}
+.plan-empty{font-size:.85rem;color:var(--muted);font-style:italic;}
+/* chat */
+.chat-messages{height:200px;overflow-y:auto;font-size:.83rem;margin-bottom:10px;}
+.chat-messages p{margin:0 0 6px;}
+.chat-msg-user{color:var(--accent);font-weight:600;}
+.chat-msg-ai{color:var(--text);}
+.chat-input-row{display:flex;gap:8px;}
+.chat-input-row input{flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:.85rem;}
+.btn-send{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:.85rem;font-weight:600;cursor:pointer;}
+.btn-send:hover{background:var(--accent-h);}
+/* toast */
+#ex-toast{position:fixed;top:20px;right:20px;z-index:9999;min-width:260px;padding:12px 18px;border-radius:var(--radius);font-size:.875rem;font-weight:600;display:none;box-shadow:0 4px 20px rgba(0,0,0,.15);}
+.t-ok{background:#22c55e;color:#fff;}.t-err{background:#ef4444;color:#fff;}
+</style>
 
-        <main class="col-md-9 col-lg-10">
-            <div class="page-header d-flex flex-wrap align-items-center justify-content-between">
-                <div>
-                    <h1>Exams</h1>
-                    <p class="text-muted">Manage upcoming and past exams.</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ path('app_planner_exam_new') }}" class="btn btn-primary">Add exam</a>
-                    <a href="{{ path('app_planner_calendar') }}" class="btn btn-default">View calendar</a>
-                </div>
-            </div>
+<div class="ex-wrap">
 
-            <div class="panel panel-default">
-                <div class="panel-heading">Upcoming</div>
-                <div class="panel-body">
-                    {% if upcoming is empty %}
-                        <div class="text-muted">No upcoming exams yet.</div>
-                    {% else %}
-                        <ul class="list-group">
-                            {% for exam in upcoming %}
-                                <li class="list-group-item">
-                                    <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                        <div>
-                                            <strong>{{ exam.title }}</strong>
-                                            <div class="text-muted">
-                                                {{ exam.examDate|date('Y-m-d H:i') }}
-                                                {% if exam.subject %} - {{ exam.subject.name }}{% endif %}
-                                            </div>
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            <a href="{{ path('app_planner_exam_show', {'id': exam.id}) }}" class="btn btn-sm btn-info text-white"><i class="fa fa-robot"></i> AI Plan</a>
-                                            <a href="{{ path('app_planner_exam_edit', {'id': exam.id}) }}" class="btn btn-sm btn-default">Edit</a>
-                                            <form method="POST" action="{{ path('app_planner_exam_delete', {'id': exam.id}) }}" onsubmit="return confirm('Delete this exam?');">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ exam.id) }}">
-                                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                </div>
-            </div>
+  {# ── Header ── #}
+  <div class="ex-header">
+    <h1>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+      Exams
+    </h1>
+    <a href="{{ path('app_planner_hub') }}" class="btn-hub">← Hub</a>
+    <a href="{{ path('app_workspace') }}" class="btn-hub">← Back to Dashboard</a>
+  </div>
 
-            <div class="panel panel-default" style="margin-top: 20px;">
-                <div class="panel-heading">Past</div>
-                <div class="panel-body">
-                    {% if past is empty %}
-                        <div class="text-muted">No past exams yet.</div>
-                    {% else %}
-                        <ul class="list-group">
-                            {% for exam in past %}
-                                <li class="list-group-item">
-                                    <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                        <div>
-                                            <strong>{{ exam.title }}</strong>
-                                            <div class="text-muted">
-                                                {{ exam.examDate|date('Y-m-d H:i') }}
-                                                {% if exam.subject %} - {{ exam.subject.name }}{% endif %}
-                                            </div>
-                                        </div>
-                                            <a href="{{ path('app_planner_exam_show', {'id': exam.id}) }}" class="btn btn-sm btn-info text-white"><i class="fa fa-robot"></i> AI Plan</a>
-                                            <a href="{{ path('app_planner_exam_edit', {'id': exam.id}) }}" class="btn btn-sm btn-default">Edit</a>
-                                            <form method="POST" action="{{ path('app_planner_exam_delete', {'id': exam.id}) }}" onsubmit="return confirm('Delete this exam?');">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ exam.id) }}">
-                                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                </div>
-            </div>
-        </main>
+  {# ── Table card ── #}
+  <div class="ex-card">
+    <table class="ex-table" id="ex-table">
+      <thead>
+        <tr>
+          <th>ID</th><th>Title</th><th>Description</th><th>Date</th>
+          <th>Duration (min)</th><th>Location</th><th>Importance</th><th>Owner ID</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="ex-tbody">
+        <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px;">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  {# ── Toolbar ── #}
+  <div class="ex-toolbar">
+    <div class="tb-top">
+      <label for="f-filter">Filter by importance:</label>
+      <select id="f-filter" class="fsel">
+        <option value="all">All</option>
+        {% for i in 1..10 %}<option value="{{ i }}">{{ i }}</option>{% endfor %}
+      </select>
+      <button class="btn-sort" id="btn-sort">Sort by date</button>
     </div>
+
+    <div class="frow">
+      <div class="fg">
+        <label>Title *</label>
+        <input id="f-title" type="text" class="finput" placeholder="Title (required)" style="width:140px;">
+      </div>
+      <div class="fg">
+        <label>Description:</label>
+        <input id="f-desc" type="text" class="finput" placeholder="Description" style="width:150px;">
+      </div>
+      <div class="fg">
+        <label>Location:</label>
+        <input id="f-loc" type="text" class="finput" placeholder="Location" style="width:120px;">
+      </div>
+      <div class="fg">
+        <label>Date *</label>
+        <div class="date-g">
+          <input id="f-date" type="date" class="finput">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <select id="f-hour" class="fsel" style="width:58px;">
+            {% for h in 0..23 %}<option value="{{ '%02d'|format(h) }}" {{ h==8?'selected':'' }}>{{ '%02d'|format(h) }}</option>{% endfor %}
+          </select>
+          <span style="font-weight:700;color:var(--muted)">:</span>
+          <select id="f-min" class="fsel" style="width:58px;">
+            {% for m in [0,15,30,45] %}<option value="{{ '%02d'|format(m) }}">{{ '%02d'|format(m) }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Duration *</label>
+        <input id="f-dur" type="number" min="1" max="600" class="finput" placeholder="Duration in minutes" style="width:150px;">
+      </div>
+      <div class="fg">
+        <label>Importance *</label>
+        <select id="f-imp" class="fsel" style="width:70px;">
+          {% for i in 1..10 %}<option value="{{ i }}" {{ i==3?'selected':'' }}>{{ i }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn-a ba-add"  id="btn-add">Add</button>
+      <button class="btn-a ba-edit" id="btn-edit">Edit</button>
+      <button class="btn-a ba-del"  id="btn-del">Delete</button>
+      <button class="btn-a ba-ref"  id="btn-ref">Refresh</button>
+      <a href="{{ path('app_planner_exam_new') }}" class="btn-a ba-new" style="text-decoration:none;display:inline-flex;align-items:center;">New</a>
+    </div>
+  </div>
+
+  {# ── Analytics & Chatbot ── #}
+  <div class="analytics-wrap">
+    <h2>Exam Analytics &amp; Tools</h2>
+
+    <div class="choose-row">
+      <label>Choose Exam:</label>
+      <select id="exam-select">
+        <option value="">-- Select an exam --</option>
+      </select>
+    </div>
+
+    <div class="analytics-body" id="analytics-body" style="display:none;">
+      <div class="sr-card">
+        <div class="sr-pct" id="sr-pct">—</div>
+        <div class="sr-label">Success Rate</div>
+      </div>
+
+      <div class="plan-box">
+        <h3>Daily Study Program</h3>
+        <div id="plan-content"><p class="plan-empty">Select an exam above to generate your study plan.</p></div>
+      </div>
+
+      <div class="chat-box">
+        <h3>AI Assistant</h3>
+        <div class="chat-messages" id="chat-msgs">
+          <p class="plan-empty">Select an exam above to start chatting.</p>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input" placeholder="Ask something about the selected exam…">
+          <button class="btn-send" id="btn-send">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="analytics-placeholder" style="color:var(--muted);font-size:.875rem;">
+      Select an exam above to start chatting.
+    </div>
+  </div>
+
 </div>
+<div id="ex-toast"></div>
+
+<script>
+(function(){
+  let exams = [], selId = null, sortByDate = false, filterVal = 'all';
+
+  const tbody    = document.getElementById('ex-tbody');
+  const examSel  = document.getElementById('exam-select');
+  const toast    = document.getElementById('ex-toast');
+
+  const fTitle = document.getElementById('f-title');
+  const fDesc  = document.getElementById('f-desc');
+  const fLoc   = document.getElementById('f-loc');
+  const fDate  = document.getElementById('f-date');
+  const fHour  = document.getElementById('f-hour');
+  const fMin   = document.getElementById('f-min');
+  const fDur   = document.getElementById('f-dur');
+  const fImp   = document.getElementById('f-imp');
+
+  /* ── toast ── */
+  function showToast(msg, err=false){
+    toast.textContent=msg; toast.className=err?'t-err':'t-ok';
+    toast.style.display='block';
+    setTimeout(()=>{toast.style.display='none';},3500);
+  }
+
+  /* ── validation ── */
+  function clearErr(){
+    document.querySelectorAll('.ferr').forEach(e=>e.classList.remove('ferr'));
+    document.querySelectorAll('.ferr-msg').forEach(e=>e.remove());
+  }
+  function markErr(el,msg){
+    el.classList.add('ferr');
+    const p=el.parentElement.querySelector('.ferr-msg');if(p)p.remove();
+    const s=document.createElement('span');s.className='ferr-msg';s.textContent=msg;
+    el.parentElement.appendChild(s);
+  }
+  function validate(){
+    clearErr(); let ok=true;
+    if(!fTitle.value.trim()){markErr(fTitle,'Title is required.');ok=false;}
+    else if(fTitle.value.trim().length<2){markErr(fTitle,'Title too short.');ok=false;}
+    if(!fDate.value){markErr(fDate,'Date is required.');ok=false;}
+    const d=parseInt(fDur.value);
+    if(!fDur.value||isNaN(d)||d<1||d>600){markErr(fDur,'Duration required (1-600 min).');ok=false;}
+    if(!ok) showToast('Please fill all required fields.',true);
+    return ok;
+  }
+  [fTitle,fDate,fDur].forEach(el=>{
+    el.addEventListener('input',()=>{el.classList.remove('ferr');const m=el.parentElement.querySelector('.ferr-msg');if(m)m.remove();});
+  });
+
+  /* ── helpers ── */
+  function buildDate(){
+    if(!fDate.value) return null;
+    return `${fDate.value} ${fHour.value}:${fMin.value}:00`;
+  }
+  function fillForm(e){
+    fTitle.value=e.title||''; fDesc.value=e.description||''; fLoc.value=e.location||'';
+    fImp.value=e.importance||3; fDur.value=e.duration||'';
+    if(e.date){
+      const dt=new Date(e.date.replace(' ','T'));
+      fDate.value=dt.toISOString().slice(0,10);
+      fHour.value=String(dt.getHours()).padStart(2,'0');
+      fMin.value=String(Math.round(dt.getMinutes()/15)*15%60).padStart(2,'0');
+    } else { fDate.value=''; fHour.value='08'; fMin.value='00'; }
+  }
+  function clearForm(){
+    fTitle.value='';fDesc.value='';fLoc.value='';fDate.value='';
+    fHour.value='08';fMin.value='00';fDur.value='';fImp.value='3';
+    selId=null; clearErr(); highlight();
+  }
+  function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  /* ── render table ── */
+  function applyFilter(data){
+    let r = filterVal==='all' ? data : data.filter(e=>String(e.importance)===filterVal);
+    if(sortByDate) r=[...r].sort((a,b)=>(!a.date?1:!b.date?-1:a.date<b.date?-1:1));
+    return r;
+  }
+  function renderTable(data){
+    if(!data.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px;">No exams found.</td></tr>';return;}
+    tbody.innerHTML=data.map(e=>`
+      <tr data-id="${e.id}" class="${selId===e.id?'selected-row':''}">
+        <td>${e.id}</td>
+        <td style="color:var(--accent);font-weight:600;">${esc(e.title)}</td>
+        <td style="color:var(--accent);">${esc(e.description||'')}</td>
+        <td>${e.date?e.date.slice(0,16).replace('T',' '):'—'}</td>
+        <td>${e.duration??''}</td>
+        <td>${esc(e.location||'')}</td>
+        <td>${e.importance}</td>
+        <td><a class="oid-link">${e.ownerId}</a></td>
+        <td></td>
+      </tr>`).join('');
+    tbody.querySelectorAll('tr[data-id]').forEach(row=>{
+      row.addEventListener('click',()=>{
+        const id=parseInt(row.dataset.id);
+        if(selId===id){clearForm();}
+        else{selId=id;const ex=exams.find(e=>e.id===id);if(ex)fillForm(ex);highlight();}
+      });
+    });
+    highlight();
+  }
+  function highlight(){
+    document.querySelectorAll('#ex-tbody tr[data-id]').forEach(r=>{
+      r.classList.toggle('selected-row',parseInt(r.dataset.id)===selId);
+    });
+  }
+
+  /* ── populate exam select ── */
+  function populateSelect(){
+    const prev=examSel.value;
+    examSel.innerHTML='<option value="">-- Select an exam --</option>';
+    exams.forEach(e=>{
+      const o=document.createElement('option');
+      o.value=e.id; o.textContent=`${e.title} (${(e.date||'').slice(0,10)})`;
+      examSel.appendChild(o);
+    });
+    if(prev) examSel.value=prev;
+  }
+
+  /* ── load exams ── */
+  async function load(){
+    const p=new URLSearchParams();
+    if(filterVal!=='all') p.set('filter',filterVal);
+    if(sortByDate) p.set('sort','date');
+    try{
+      const r=await fetch(`/planner/exams/ajax/list?${p}`,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+      exams=await r.json();
+      renderTable(applyFilter(exams));
+      populateSelect();
+    }catch(e){showToast('Failed to load exams.',true);}
+  }
+
+  /* ── Add ── */
+  document.getElementById('btn-add').addEventListener('click',async()=>{
+    if(!validate()) return;
+    const body={title:fTitle.value.trim(),description:fDesc.value.trim(),location:fLoc.value.trim(),
+      date:buildDate(),duration:parseInt(fDur.value),importance:parseInt(fImp.value)};
+    try{
+      const r=await fetch('/planner/exams/ajax/add',{method:'POST',
+        headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},body:JSON.stringify(body)});
+      const d=await r.json();
+      if(!r.ok||!d.success){showToast(d.error||'Could not add.',true);return;}
+      exams.push(d.exam); renderTable(applyFilter(exams)); populateSelect();
+      clearForm(); showToast('Exam added!');
+    }catch{showToast('Network error.',true);}
+  });
+
+  /* ── Edit ── */
+  document.getElementById('btn-edit').addEventListener('click',async()=>{
+    if(!selId){showToast('Select an exam row first.',true);return;}
+    if(!validate()) return;
+    const body={title:fTitle.value.trim(),description:fDesc.value.trim(),location:fLoc.value.trim(),
+      date:buildDate(),duration:parseInt(fDur.value),importance:parseInt(fImp.value)};
+    try{
+      const r=await fetch(`/planner/exams/${selId}/ajax/edit`,{method:'POST',
+        headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},body:JSON.stringify(body)});
+      const d=await r.json();
+      if(!r.ok||!d.success){showToast(d.error||'Could not update.',true);return;}
+      const idx=exams.findIndex(e=>e.id===selId);if(idx!==-1)exams[idx]=d.exam;
+      renderTable(applyFilter(exams)); populateSelect(); showToast('Exam updated.');
+    }catch{showToast('Network error.',true);}
+  });
+
+  /* ── Delete ── */
+  document.getElementById('btn-del').addEventListener('click',async()=>{
+    if(!selId){showToast('Select an exam row first.',true);return;}
+    if(!confirm('Delete this exam?')) return;
+    try{
+      const r=await fetch(`/planner/exams/${selId}/ajax/delete`,{method:'DELETE',
+        headers:{'X-Requested-With':'XMLHttpRequest'}});
+      const d=await r.json();
+      if(!r.ok||!d.success){showToast(d.error||'Could not delete.',true);return;}
+      exams=exams.filter(e=>e.id!==selId);
+      renderTable(applyFilter(exams)); populateSelect(); clearForm(); showToast('Exam deleted.');
+    }catch{showToast('Network error.',true);}
+  });
+
+  /* ── Refresh ── */
+  document.getElementById('btn-ref').addEventListener('click',()=>{clearForm();load();});
+
+  /* ── Sort ── */
+  document.getElementById('btn-sort').addEventListener('click',()=>{
+    sortByDate=!sortByDate;
+    document.getElementById('btn-sort').style.opacity=sortByDate?'1':'.75';
+    renderTable(applyFilter(exams));
+  });
+
+  /* ── Filter ── */
+  document.getElementById('f-filter').addEventListener('change',function(){
+    filterVal=this.value; renderTable(applyFilter(exams));
+  });
+
+  /* ── Analytics: exam select ── */
+  let analyticsCache={};
+  examSel.addEventListener('change',async function(){
+    const id=parseInt(this.value);
+    if(!id){
+      document.getElementById('analytics-body').style.display='none';
+      document.getElementById('analytics-placeholder').style.display='block';
+      document.getElementById('chat-msgs').innerHTML='<p class="plan-empty">Select an exam above to start chatting.</p>';
+      return;
+    }
+    document.getElementById('analytics-placeholder').style.display='none';
+    document.getElementById('analytics-body').style.display='grid';
+    document.getElementById('sr-pct').textContent='…';
+    document.getElementById('plan-content').innerHTML='<p class="plan-empty">Loading…</p>';
+    // reset chat
+    document.getElementById('chat-msgs').innerHTML='<p class="plan-empty">Ask me anything about this exam!</p>';
+
+    try{
+      const r=await fetch(`/planner/exams/${id}/ajax/analytics`,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+      const d=await r.json();
+      document.getElementById('sr-pct').textContent=d.successRate+'%';
+      if(d.plan&&d.plan.length){
+        document.getElementById('plan-content').innerHTML=
+          '<ul>'+d.plan.map(p=>`<li><strong>${esc(p.day)}:</strong> ${esc(p.action)}</li>`).join('')+'</ul>';
+      } else {
+        document.getElementById('plan-content').innerHTML='<p class="plan-empty">No plan available.</p>';
+      }
+    }catch{
+      document.getElementById('sr-pct').textContent='—';
+    }
+  });
+
+  /* ── Chat ── */
+  const chatMsgs  = document.getElementById('chat-msgs');
+  const chatInput = document.getElementById('chat-input');
+
+  function appendMsg(role,text){
+    const p=document.createElement('p');
+    p.className=role==='user'?'chat-msg-user':'chat-msg-ai';
+    p.innerHTML=(role==='user'?'<strong>You:</strong> ':' <strong>AI:</strong> ')+esc(text);
+    chatMsgs.appendChild(p);
+    chatMsgs.scrollTop=chatMsgs.scrollHeight;
+  }
+
+  async function sendChat(){
+    const id=parseInt(examSel.value);
+    if(!id){showToast('Select an exam first.',true);return;}
+    const msg=chatInput.value.trim();
+    if(!msg) return;
+    chatInput.value='';
+    appendMsg('user',msg);
+    const typing=document.createElement('p');
+    typing.className='chat-msg-ai';typing.textContent='AI: typing…';
+    chatMsgs.appendChild(typing);chatMsgs.scrollTop=chatMsgs.scrollHeight;
+    try{
+      const r=await fetch(`/planner/exams/${id}/ajax/chat`,{method:'POST',
+        headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+        body:JSON.stringify({message:msg})});
+      const d=await r.json();
+      typing.remove();
+      appendMsg('ai',d.reply||d.error||'No response.');
+    }catch{
+      typing.remove();
+      appendMsg('ai','Network error. Please try again.');
+    }
+  }
+
+  document.getElementById('btn-send').addEventListener('click',sendChat);
+  chatInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
+
+  /* ── boot ── */
+  load();
+})();
+</script>
 {% endblock %}

@@ -1,131 +1,716 @@
 {% extends 'workspace/module_base.html.twig' %}
 
-{% block title %}Planner Tasks{% endblock %}
+{% block title %}Tasks{% endblock %}
+{% block module_title %}Tasks{% endblock %}
+{% block module_subtitle %}Manage and track your study tasks.{% endblock %}
 
-{% block module_title %}Planner Tasks{% endblock %}
-{% block module_subtitle %}Track and organize your tasks.{% endblock %}
 {% block module_content %}
-<div class="container-fluid" style="margin-top: 20px; margin-bottom: 30px;">
-    <div class="row">
-        {% include 'components/_sidebar_planner.html.twig' %}
+<style>
+/* ── Variables ─────────────────────────────────────────── */
+:root {
+  --bg:          #f4f6fb;
+  --surface:     #ffffff;
+  --border:      #e2e8f0;
+  --text:        #1e293b;
+  --muted:       #64748b;
+  --accent:      #6c47ff;
+  --accent-hover:#5535e0;
+  --row-odd:     #f8fafc;
+  --row-hover:   #eff6ff;
+  --overdue-bg:  #fff0f0;
+  --overdue-border:#fca5a5;
+  --radius:      8px;
+  --shadow:      0 2px 12px rgba(0,0,0,.08);
+}
 
-        <main class="col-md-9 col-lg-10">
-            <div class="page-header d-flex flex-wrap align-items-center justify-content-between" style="margin-bottom: 20px;">
-                <div>
-                    <h1 style="margin-bottom: 8px;">Task Board</h1>
-                    <p class="text-muted" style="margin: 0;">Move tasks across columns and earn XP when completing them.</p>
-                </div>
-                <div>
-                    <a href="{{ path('app_planner_task_new') }}" class="btn btn-primary">New task</a>
-                    <a href="{{ path('app_planner_calendar') }}" class="btn btn-default" style="margin-left: 8px;">View calendar</a>
-                </div>
-            </div>
+/* ── Layout ────────────────────────────────────────────── */
+.tasks-wrapper {
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 0 16px;
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+}
 
-            <div id="gamification-toast" class="alert alert-success" style="display:none; position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 320px;"></div>
+/* ── Header ────────────────────────────────────────────── */
+.tasks-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.tasks-header h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+.tasks-header h1 svg { color: var(--accent); }
+.btn-hub {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 6px 16px;
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .2s;
+}
+.btn-hub:hover { background: var(--accent-hover); color:#fff; }
 
-            <div class="row">
-                {% for statusKey, list in tasks %}
-                    <div class="col-md-4" style="margin-bottom: 20px;">
-                        <div class="panel panel-default" style="height: 100%;">
-                            <div class="panel-heading">
-                                <strong>{{ statuses[statusKey].label }}</strong>
-                                <span class="badge" style="float:right;">{{ list|length }}</span>
-                            </div>
-                            <div class="panel-body" style="min-height: 220px;">
-                                {% if list is empty %}
-                                    <p class="text-muted" style="margin:0;">No tasks in this column.</p>
-                                {% else %}
-                                    {% for task in list %}
-                                        <div class="well" style="margin-bottom: 12px;">
-                                            <h5 style="margin-top: 0; margin-bottom: 6px;">{{ task.title }}</h5>
-                                            {% if task.subject %}
-                                                <div class="text-muted" style="font-size: 12px;">{{ task.subject.name }}</div>
-                                            {% endif %}
-                                            {% if task.dueDate %}
-                                                <div class="text-muted" style="font-size: 12px; margin-top: 4px;">Due: {{ task.dueDate|date('Y-m-d H:i') }}</div>
-                                            {% endif %}
+/* ── Table card ─────────────────────────────────────────── */
+.tasks-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
 
-                                            <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px;">
-                                                {% if statusKey != 'todo' %}
-                                                    <button class="btn btn-xs btn-default js-status-btn" data-task-id="{{ task.id }}" data-status="todo">To do</button>
-                                                {% endif %}
-                                                {% if statusKey != 'in_progress' %}
-                                                    <button class="btn btn-xs btn-warning js-status-btn" data-task-id="{{ task.id }}" data-status="in_progress">In progress</button>
-                                                {% endif %}
-                                                {% if statusKey != 'done' %}
-                                                    <button class="btn btn-xs btn-success js-status-btn" data-task-id="{{ task.id }}" data-status="done">Done</button>
-                                                {% endif %}
-                                            </div>
+/* ── Table ──────────────────────────────────────────────── */
+.tasks-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .875rem;
+}
+.tasks-table th {
+  background: #f1f5f9;
+  color: var(--muted);
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.tasks-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.tasks-table tbody tr:last-child td { border-bottom: none; }
+.tasks-table tbody tr:nth-child(odd) { background: var(--row-odd); }
+.tasks-table tbody tr:hover { background: var(--row-hover); }
+.tasks-table tbody tr.overdue-row { background: var(--overdue-bg) !important; }
+.tasks-table tbody tr.overdue-row td:first-child { border-left: 3px solid #ef4444; }
+.tasks-table tbody tr.selected-row { outline: 2px solid var(--accent); outline-offset: -2px; }
 
-                                            <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px;">
-                                                <a href="{{ path('app_planner_task_edit', {id: task.id}) }}" class="btn btn-xs btn-info">Edit</a>
-                                                <a href="{{ path('guardian_focus_timer', {task: task.id}) }}" class="btn btn-xs btn-primary">Start Focus</a>
-                                                <form method="POST" action="{{ path('app_planner_task_delete', {id: task.id}) }}" onsubmit="return confirm('Delete this task?');" style="display:inline;">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
-                                                    <button type="submit" class="btn btn-xs btn-danger">Delete</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    {% endfor %}
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </main>
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: .75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.status-todo        { background:#fee2e2; color:#dc2626; }
+.status-in_progress { background:#fef3c7; color:#d97706; }
+.status-done        { background:#dcfce7; color:#16a34a; }
+
+/* ── Toolbar ────────────────────────────────────────────── */
+.tasks-toolbar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 20px;
+}
+
+.toolbar-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.toolbar-top label { font-size: .875rem; font-weight: 600; color: var(--muted); }
+
+.form-select-sm, .form-control-sm {
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: .875rem;
+  color: var(--text);
+  background: var(--surface);
+  outline: none;
+  transition: border-color .2s;
+}
+.form-select-sm:focus, .form-control-sm:focus { border-color: var(--accent); }
+
+.btn-sort {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-sort:hover { background: var(--accent-hover); }
+
+/* overdue legend */
+.overdue-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .8rem;
+  color: #dc2626;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  padding: 3px 10px;
+}
+
+/* ── Inline form ────────────────────────────────────────── */
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: .75rem; font-weight: 600; color: var(--muted); }
+
+.date-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.date-group input[type="date"] {
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: .875rem;
+}
+.date-group select {
+  padding: 5px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: .875rem;
+}
+
+/* action buttons */
+.btn-add    { background:#22c55e; color:#fff; }
+.btn-edit   { background:#3b82f6; color:#fff; }
+.btn-delete { background:#ef4444; color:#fff; }
+.btn-refresh{ background:#94a3b8; color:#fff; }
+.btn-action {
+  border: none;
+  border-radius: 6px;
+  padding: 7px 18px;
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.btn-action:hover { opacity: .85; }
+
+/* ── Validation ─────────────────────────────────────────── */
+.field-error {
+  border-color: #ef4444 !important;
+  background: #fff5f5 !important;
+  animation: shake .3s ease;
+}
+.field-error-msg {
+  font-size: .7rem;
+  color: #ef4444;
+  font-weight: 600;
+  margin-top: 2px;
+  display: block;
+}
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-4px)}
+  75%{transform:translateX(4px)}
+}
+
+/* ── Toast ──────────────────────────────────────────────── */
+#task-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  min-width: 280px;
+  padding: 12px 18px;
+  border-radius: var(--radius);
+  font-size: .875rem;
+  font-weight: 600;
+  display: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,.15);
+}
+.toast-success { background:#22c55e; color:#fff; }
+.toast-error   { background:#ef4444; color:#fff; }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<div class="tasks-wrapper">
+
+  {# Header #}
+  <div class="tasks-header">
+    <h1>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+      </svg>
+      Tasks
+    </h1>
+    <a href="{{ path('app_planner_hub') }}" class="btn-hub">← Hub</a>
+    <a href="{{ path('app_workspace') }}" class="btn-hub">← Back to Dashboard</a>
+  </div>
+
+  {# Table card #}
+  <div class="tasks-card">
+    <table class="tasks-table" id="tasks-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Priority</th>
+          <th>Due Date</th>
+          <th>Owner ID</th>
+          <th>Duration (min)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tasks-tbody">
+        <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px;">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  {# Toolbar #}
+  <div class="tasks-toolbar">
+
+    {# Filter + Sort row #}
+    <div class="toolbar-top">
+      <label for="filter-select">Filter:</label>
+      <select id="filter-select" class="form-select-sm">
+        <option value="all">All</option>
+        <option value="todo">To do</option>
+        <option value="in_progress">In progress</option>
+        <option value="done">Done</option>
+      </select>
+
+      <button class="btn-sort" id="btn-sort-due" type="button">Sort by due date</button>
+
+      <span class="overdue-legend">
+        <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><rect width="16" height="16" rx="2"/></svg>
+        Overdue task (due date passed)
+      </span>
     </div>
-</div>
+
+    {# Inline form #}
+    <div class="form-row">
+      <div class="form-group">
+        <label for="f-title">Title *</label>
+        <input id="f-title" type="text" class="form-control-sm" placeholder="Title (required)" style="width:140px;">
+      </div>
+
+      <div class="form-group">
+        <label for="f-desc">Description:</label>
+        <input id="f-desc" type="text" class="form-control-sm" placeholder="Description" style="width:140px;">
+      </div>
+
+      <div class="form-group">
+        <label for="f-status">Status *</label>
+        <select id="f-status" class="form-select-sm">
+          <option value="todo">todo</option>
+          <option value="in_progress">in_progress</option>
+          <option value="done">done</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="f-priority">Priority *</label>
+        <select id="f-priority" class="form-select-sm">
+          <option value="1">1 - Low</option>
+          <option value="2" selected>2 - Medium</option>
+          <option value="3">3 - High</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Due Date:
+        </label>
+        <div class="date-group">
+          <input id="f-date" type="date" class="form-control-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <select id="f-hour" class="form-select-sm" style="width:58px;">
+            {% for h in 0..23 %}
+              <option value="{{ '%02d'|format(h) }}" {{ h == 8 ? 'selected' : '' }}>{{ '%02d'|format(h) }}</option>
+            {% endfor %}
+          </select>
+          <span style="font-weight:700;color:var(--muted)">:</span>
+          <select id="f-min" class="form-select-sm" style="width:58px;">
+            {% for m in [0, 15, 30, 45] %}
+              <option value="{{ '%02d'|format(m) }}">{{ '%02d'|format(m) }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Duration (min):
+        </label>
+        <input id="f-duration" type="number" min="1" max="480" class="form-control-sm" placeholder="Duration (min)" style="width:120px;">
+      </div>
+    </div>
+
+    {# Action buttons #}
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+      <button class="btn-action btn-add"    id="btn-add"    type="button">Add</button>
+      <button class="btn-action btn-edit"   id="btn-edit"   type="button">Edit</button>
+      <button class="btn-action btn-delete" id="btn-delete" type="button">Delete</button>
+      <button class="btn-action btn-refresh"id="btn-refresh"type="button">Refresh</button>
+    </div>
+
+  </div>{# /toolbar #}
+
+</div>{# /tasks-wrapper #}
+
+<div id="task-toast"></div>
 
 <script>
 (function () {
-    const buttons = document.querySelectorAll('.js-status-btn');
-    const toastEl = document.getElementById('gamification-toast');
+  /* ── State ─────────────────────────────────────────────── */
+  let tasks       = [];
+  let selectedId  = null;
+  let sortByDue   = false;
+  let filterVal   = 'all';
 
-    function showToast(message, isError) {
-        toastEl.className = isError ? 'alert alert-danger' : 'alert alert-success';
-        toastEl.textContent = message;
-        toastEl.style.display = 'block';
-        setTimeout(() => { toastEl.style.display = 'none'; }, 3500);
+  const tbody       = document.getElementById('tasks-tbody');
+  const filterSel   = document.getElementById('filter-select');
+  const toast       = document.getElementById('task-toast');
+
+  /* form inputs */
+  const fTitle    = document.getElementById('f-title');
+  const fDesc     = document.getElementById('f-desc');
+  const fStatus   = document.getElementById('f-status');
+  const fPriority = document.getElementById('f-priority');
+  const fDate     = document.getElementById('f-date');
+  const fHour     = document.getElementById('f-hour');
+  const fMin      = document.getElementById('f-min');
+  const fDuration = document.getElementById('f-duration');
+
+  /* ── Toast ──────────────────────────────────────────────── */
+  function showToast(msg, isErr = false) {
+    toast.textContent = msg;
+    toast.className   = isErr ? 'toast-error' : 'toast-success';
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 3500);
+  }
+
+  /* ── Helpers ────────────────────────────────────────────── */
+  function priorityLabel(p) {
+    return p === 1 ? '1 - Low' : p === 2 ? '2 - Medium' : '3 - High';
+  }
+
+  function buildDueDateString() {
+    if (!fDate.value) return null;
+    return `${fDate.value} ${fHour.value}:${fMin.value}:00`;
+  }
+
+  function fillForm(task) {
+    fTitle.value    = task.title    || '';
+    fDesc.value     = task.description || '';
+    fStatus.value   = task.status   || 'todo';
+    fPriority.value = task.priority || 2;
+    fDuration.value = task.duration || '';
+
+    if (task.dueDate) {
+      const dt = new Date(task.dueDate.replace(' ', 'T'));
+      fDate.value = dt.toISOString().slice(0, 10);
+      fHour.value = String(dt.getHours()).padStart(2, '0');
+      const mins  = dt.getMinutes();
+      // snap to nearest 15
+      fMin.value  = String(Math.round(mins / 15) * 15 % 60).padStart(2, '0');
+    } else {
+      fDate.value = '';
+      fHour.value = '08';
+      fMin.value  = '00';
+    }
+  }
+
+  function clearForm() {
+    fTitle.value = ''; fDesc.value = ''; fStatus.value = 'todo';
+    fPriority.value = '2'; fDate.value = ''; fHour.value = '08';
+    fMin.value = '00'; fDuration.value = '';
+    selectedId = null;
+    highlightSelected();
+  }
+
+  function highlightSelected() {
+    document.querySelectorAll('#tasks-tbody tr').forEach(r => {
+      r.classList.toggle('selected-row', parseInt(r.dataset.id) === selectedId);
+    });
+  }
+
+  /* ── Render ─────────────────────────────────────────────── */
+  function renderTable(data) {
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px;">No tasks found.</td></tr>';
+      return;
     }
 
-    buttons.forEach((btn) => {
-        btn.addEventListener('click', async () => {
-            const taskId = btn.getAttribute('data-task-id');
-            const status = btn.getAttribute('data-status');
-            btn.disabled = true;
+    tbody.innerHTML = data.map(t => {
+      const overdue = t.overdue;
+      const trClass = overdue ? 'overdue-row' : '';
+      const statusClass = `status-badge status-${t.status}`;
+      const due = t.dueDate ? t.dueDate.replace('T', ' ').slice(0, 19) : '—';
+      return `<tr class="${trClass}" data-id="${t.id}" style="cursor:pointer;">
+        <td>${t.id}</td>
+        <td>${escHtml(t.title)}</td>
+        <td>${escHtml(t.description || '')}</td>
+        <td><span class="${statusClass}">${t.status}</span></td>
+        <td>${t.priority}</td>
+        <td>${due}</td>
+        <td>${t.ownerId}</td>
+        <td>${t.duration ?? ''}</td>
+        <td></td>
+      </tr>`;
+    }).join('');
 
-            try {
-                const response = await fetch(`/planner/tasks/${taskId}/status/${status}`, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
-                });
-
-                const data = await response.json();
-                if (!response.ok || !data.success) {
-                    showToast(data.error || 'Unable to update status.', true);
-                    btn.disabled = false;
-                    return;
-                }
-
-                if (data.gamification) {
-                    const unlocked = (data.gamification.unlocked_badges || []);
-                    const badgeText = unlocked.length ? ` New badge: ${unlocked.join(', ')}` : '';
-                    showToast(`+${data.gamification.xp_gained} XP gained.${badgeText}`, false);
-                    setTimeout(() => window.location.reload(), 700);
-                    return;
-                }
-
-                window.location.reload();
-            } catch (error) {
-                showToast('Network error while updating task.', true);
-                btn.disabled = false;
-            }
-        });
+    /* click to select row */
+    tbody.querySelectorAll('tr[data-id]').forEach(row => {
+      row.addEventListener('click', () => {
+        const id = parseInt(row.dataset.id);
+        if (selectedId === id) {
+          clearForm();
+        } else {
+          selectedId = id;
+          const task = tasks.find(t => t.id === id);
+          if (task) fillForm(task);
+          highlightSelected();
+        }
+      });
     });
+
+    highlightSelected();
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  /* ── Fetch tasks ────────────────────────────────────────── */
+  async function loadTasks() {
+    const params = new URLSearchParams();
+    if (filterVal !== 'all') params.set('filter', filterVal);
+    if (sortByDue)           params.set('sort', 'due');
+
+    try {
+      const r = await fetch(`/planner/tasks/ajax/list?${params}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      tasks = await r.json();
+      renderTable(tasks);
+    } catch (e) {
+      showToast('Failed to load tasks.', true);
+    }
+  }
+
+  /* ── Validation ────────────────────────────────────────── */
+  function clearErrors() {
+    document.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
+    document.querySelectorAll('.field-error-msg').forEach(el => el.remove());
+  }
+
+  function markError(el, msg) {
+    el.classList.add('field-error');
+    // remove old msg if any
+    const prev = el.parentElement.querySelector('.field-error-msg');
+    if (prev) prev.remove();
+    const span = document.createElement('span');
+    span.className = 'field-error-msg';
+    span.textContent = msg;
+    el.parentElement.appendChild(span);
+  }
+
+  function validateForm() {
+    clearErrors();
+    let valid = true;
+
+    if (!fTitle.value.trim()) {
+      markError(fTitle, 'Title is required.');
+      valid = false;
+    } else if (fTitle.value.trim().length < 3) {
+      markError(fTitle, 'Title must be at least 3 characters.');
+      valid = false;
+    }
+
+    if (!fDesc.value.trim()) {
+      markError(fDesc, 'Description is required.');
+      valid = false;
+    }
+
+    if (!fStatus.value) {
+      markError(fStatus, 'Status is required.');
+      valid = false;
+    }
+
+    if (!fPriority.value) {
+      markError(fPriority, 'Priority is required.');
+      valid = false;
+    }
+
+    if (!fDate.value) {
+      markError(fDate, 'Due date is required.');
+      valid = false;
+    }
+
+    const dur = fDuration.value ? parseInt(fDuration.value) : 0;
+    if (!fDuration.value || dur < 1 || dur > 480) {
+      markError(fDuration, 'Duration is required (1-480 min).');
+      valid = false;
+    }
+
+    if (!valid) showToast('Please fill in all required fields.', true);
+    return valid;
+  }
+
+  /* ── Clear errors on input ──────────────────────────────── */
+  [fTitle, fDesc, fStatus, fPriority, fDate, fDuration].forEach(el => {
+    el.addEventListener('input', () => {
+      el.classList.remove('field-error');
+      const msg = el.parentElement.querySelector('.field-error-msg');
+      if (msg) msg.remove();
+    });
+    el.addEventListener('change', () => {
+      el.classList.remove('field-error');
+      const msg = el.parentElement.querySelector('.field-error-msg');
+      if (msg) msg.remove();
+    });
+  });
+
+  /* ── Add ────────────────────────────────────────────────── */
+  document.getElementById('btn-add').addEventListener('click', async () => {
+    if (!validateForm()) return;
+
+    const body = {
+      title:       fTitle.value.trim(),
+      description: fDesc.value.trim(),
+      status:      fStatus.value,
+      priority:    parseInt(fPriority.value),
+      dueDate:     buildDueDateString(),
+      duration:    fDuration.value ? parseInt(fDuration.value) : null,
+    };
+
+    try {
+      const r = await fetch('/planner/tasks/ajax/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify(body),
+      });
+      const data = await r.json();
+      if (!r.ok || !data.success) { showToast(data.error || 'Could not add task.', true); return; }
+      tasks.push(data.task);
+      renderTable(applyFilter(tasks));
+      clearForm();
+      showToast('Task added successfully.');
+    } catch (e) {
+      showToast('Network error.', true);
+    }
+  });
+
+  /* ── Edit ───────────────────────────────────────────────── */
+  document.getElementById('btn-edit').addEventListener('click', async () => {
+    if (!selectedId) { showToast('Select a task row first.', true); return; }
+    if (!validateForm()) return;
+
+    const body = {
+      title:       fTitle.value.trim(),
+      description: fDesc.value.trim(),
+      status:      fStatus.value,
+      priority:    parseInt(fPriority.value),
+      dueDate:     buildDueDateString(),
+      duration:    fDuration.value ? parseInt(fDuration.value) : null,
+    };
+
+    try {
+      const r = await fetch(`/planner/tasks/${selectedId}/ajax/edit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify(body),
+      });
+      const data = await r.json();
+      if (!r.ok || !data.success) { showToast(data.error || 'Could not update task.', true); return; }
+      const idx = tasks.findIndex(t => t.id === selectedId);
+      if (idx !== -1) tasks[idx] = data.task;
+      renderTable(applyFilter(tasks));
+      showToast('Task updated.');
+    } catch (e) {
+      showToast('Network error.', true);
+    }
+  });
+
+  /* ── Delete ─────────────────────────────────────────────── */
+  document.getElementById('btn-delete').addEventListener('click', async () => {
+    if (!selectedId) { showToast('Select a task row first.', true); return; }
+    if (!confirm('Delete this task?')) return;
+
+    try {
+      const r = await fetch(`/planner/tasks/${selectedId}/ajax/delete`, {
+        method: 'DELETE',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      });
+      const data = await r.json();
+      if (!r.ok || !data.success) { showToast(data.error || 'Could not delete task.', true); return; }
+      tasks = tasks.filter(t => t.id !== selectedId);
+      renderTable(applyFilter(tasks));
+      clearForm();
+      showToast('Task deleted.');
+    } catch (e) {
+      showToast('Network error.', true);
+    }
+  });
+
+  /* ── Refresh ────────────────────────────────────────────── */
+  document.getElementById('btn-refresh').addEventListener('click', () => {
+    clearForm();
+    loadTasks();
+  });
+
+  /* ── Sort toggle ────────────────────────────────────────── */
+  document.getElementById('btn-sort-due').addEventListener('click', () => {
+    sortByDue = !sortByDue;
+    document.getElementById('btn-sort-due').style.opacity = sortByDue ? '1' : '.75';
+    renderTable(applyFilter(tasks));
+  });
+
+  /* ── Filter ─────────────────────────────────────────────── */
+  filterSel.addEventListener('change', () => {
+    filterVal = filterSel.value;
+    renderTable(applyFilter(tasks));
+  });
+
+  function applyFilter(data) {
+    let result = filterVal === 'all' ? data : data.filter(t => t.status === filterVal);
+    if (sortByDue) {
+      result = [...result].sort((a, b) => {
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return a.dueDate < b.dueDate ? -1 : 1;
+      });
+    }
+    return result;
+  }
+
+  /* ── Boot ───────────────────────────────────────────────── */
+  loadTasks();
 })();
 </script>
 {% endblock %}

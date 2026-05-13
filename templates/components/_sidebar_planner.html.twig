@@ -3,13 +3,13 @@
     <div class="position-sticky pt-4 px-3">
         <div class="d-flex align-items-center mb-4 px-2">
             <i class="bi bi-calendar-check text-primary-mf fs-4 me-2"></i>
-            <span class="montserrat fw-semibold">Planner</span>
+            <a href="{{ path('app_planner_hub') }}" class="montserrat fw-semibold" style="text-decoration:none;color:inherit;">Planner</a>
         </div>
         
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link-mf d-flex align-items-center {{ app.request.get('_route') == 'app_planner_tasks' ? 'active' : '' }}" 
-                   href="{{ path('app_planner_tasks') }}">
+                <a class="nav-link-mf d-flex align-items-center {{ app.request.get('_route') == 'app_planner_hub' ? 'active' : '' }}" 
+                   href="{{ path('app_planner_hub') }}">
                     <i class="bi bi-grid me-3"></i>
                     Dashboard
                 </a>
