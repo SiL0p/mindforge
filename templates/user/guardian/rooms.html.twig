@@ -57,7 +57,7 @@
                         <div class="d-flex align-items-start justify-content-between">
                             <div>
                                 <h5 class="mb-1">{{ room.name }}</h5>
-                                <div class="text-muted small">{{ room.subject.name }}</div>
+                                <div class="text-muted small">{{ room.subject ? room.subject.name : 'No subject' }}</div>
                             </div>
                             <span class="guardian-badge" style="background: {{ room.isFull ? 'rgba(255, 107, 107, 0.2)' : 'rgba(72, 198, 239, 0.2)' }}; color: {{ room.isFull ? '#9b1c1c' : '#1b4d6b' }};">
                                 {{ room.isFull ? 'Full' : 'Available' }}

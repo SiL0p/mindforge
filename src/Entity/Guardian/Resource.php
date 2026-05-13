@@ -49,7 +49,6 @@ class Resource
     )]
     private ?string $type = null;
 
-    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $aiGenerated = false;
 
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
